@@ -1,4 +1,3 @@
 module.exports = {
-  transpileDependencies: ["vuetify"],
-  outputDir: '../dist/app'
+  transpileDependencies: ["vuetify"]
 };
