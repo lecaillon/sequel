@@ -56,6 +56,14 @@ Task("install-vue-cli").Does(() =>
     }
 });
 
+Task("npm-install-front").Does(() =>
+{
+    StartProcess("powershell", new ProcessSettings().UseWorkingDirectory("./front").WithArguments
+    (
+        args => args.Append($"npm install")
+    ));
+});
+
 Task("win-publish-front").WithCriteria(() => IsRunningOnWindows()).Does(() =>
 {
     StartProcess("powershell", new ProcessSettings().UseWorkingDirectory("./front").WithArguments
@@ -132,6 +140,7 @@ Task("linux-warp").WithCriteria(() => IsRunningOnUnix()).Does(() =>
 Task("default")
     .IsDependentOn("clean")
     .IsDependentOn("install-vue-cli")
+    .IsDependentOn("npm-install-front")
     .IsDependentOn("win-publish-front")
     .IsDependentOn("linux-publish-front")
     .IsDependentOn("build-back")
