@@ -14,7 +14,7 @@
               <v-select
                 label="Type*"
                 v-model="cnn.type"
-                :items="['PostgreSQL', 'SQL Server']"
+                :items="['PostgreSQL', 'SQLServer']"
                 required
                 clearable
               ></v-select>
