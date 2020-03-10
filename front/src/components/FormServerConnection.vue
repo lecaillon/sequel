@@ -37,7 +37,7 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn text @click.stop="close">Cancel</v-btn>
-        <v-btn text @click.stop="close">Test</v-btn>
+        <v-btn text :loading="testing" @click.stop="test">Test</v-btn>
         <v-btn text @click.stop="close">Save</v-btn>
       </v-card-actions>
     </v-card>
@@ -47,6 +47,7 @@
 <script lang="ts">
 import Vue from "vue";
 import { ServerConnection } from "../models/serverConnection";
+import { http } from "../core/http";
 
 export default Vue.extend({
   name: "FormServerConnection",
@@ -54,11 +55,24 @@ export default Vue.extend({
     show: Boolean
   },
   data: () => ({
-    cnn: {} as ServerConnection
+    cnn: {} as ServerConnection,
+    testing: false
   }),
   methods: {
     close() {
       this.$emit("close");
+    },
+    test() {
+      this.testing = true;
+      http
+        .post<boolean>(
+          "http://localhost:5000/sequel/server-connection/test",
+          this.cnn
+        )
+        .then(function(response) {
+          console.log(response);
+        })
+        .finally(() => (this.testing = false));
     }
   }
 });
