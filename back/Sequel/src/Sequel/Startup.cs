@@ -15,6 +15,7 @@ namespace Sequel
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors();
             services.AddControllers();
         }
 
@@ -22,6 +23,7 @@ namespace Sequel
         {
             app.UseDefaultFiles();
             app.UseStaticFiles();
+            app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
