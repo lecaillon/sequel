@@ -18,7 +18,7 @@
         <v-icon>mdi-wrench-outline</v-icon>
       </v-btn>
       <v-divider vertical inset />
-      <v-btn icon @click.stop="showDbConnectionForm = true">
+      <v-btn icon @click.stop="showFormServerConnection = true">
         <v-icon>mdi-server-plus</v-icon>
       </v-btn>
       <v-autocomplete
@@ -83,7 +83,7 @@
 
     <v-footer app></v-footer>
     
-    <DbConnectionForm :show="showDbConnectionForm" @close="showDbConnectionForm = false"></DbConnectionForm>
+    <FormServerConnection :show="showFormServerConnection" @close="showFormServerConnection = false"></FormServerConnection>
   </v-app>
 </template>
 
@@ -91,7 +91,7 @@
 import Vue from "vue";
 import Vuetify from "vuetify";
 
-import DbConnectionForm from "@/components/DbConnectionForm.vue";
+import FormServerConnection from "@/components/FormServerConnection.vue";
 
 export default Vue.extend({
   name: "App",
@@ -99,12 +99,12 @@ export default Vue.extend({
     theme: { dark: true }
   }),
   components: {
-    DbConnectionForm
+    FormServerConnection
   },
   data: () => ({
     showDbExplorer: true,
     showDbProperty: false,
-    showDbConnectionForm: false,
+    showFormServerConnection: false,
     nodes: [
       {
         id: 1,
