@@ -14,4 +14,15 @@ namespace Sequel
         Cassandra,
         CockroachDB
     }
+
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum Env
+    {
+        Development,
+        Testing,
+        Staging,
+        UAT,
+        Demo,
+        Production
+    }
 }

@@ -1,15 +1,22 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Sequel.Models
 {
-    public class ServerConnection
+    public class ServerConnection : ValueObject
     {
         [Required]
-        public string Name { get; set; }
+        public string Name { get; set; } = default!;
         [Required]
         public DBMS Type { get; set; }
         [Required]
-        public string ConnectionString { get; set; }
-        public string Environment { get; set; }
+        public string ConnectionString { get; set; } = default!;
+        public Env? Environment { get; set; }
+
+        protected override IEnumerable<object?> GetAtomicValues()
+        {
+            yield return Name;
+            yield return Environment;
+        }
     }
 }
