@@ -18,7 +18,7 @@ namespace Sequel.Core
             return await DeserializeCollection(fs);
         }
 
-        public static async Task<List<T>> Add(T item, bool unique = false)
+        public static async Task Add(T item, bool unique = false)
         {
             Check.NotNull(item, nameof(item));
 
@@ -31,8 +31,6 @@ namespace Sequel.Core
 
             list.Add(item);
             await JsonSerializer.SerializeAsync(fs, list);
-
-            return list;
         }
 
         public static async Task<T> GetItem()
