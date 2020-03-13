@@ -23,6 +23,7 @@ namespace Sequel
         {
             app.UseDefaultFiles();
             app.UseStaticFiles();
+            app.UseExceptionHandler("/detailed-error");
             app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             app.UseRouting();
             app.UseEndpoints(endpoints =>
