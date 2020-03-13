@@ -1,6 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using Sequel.Core;
 using Sequel.Models;
 
 namespace Sequel.Controllers
@@ -9,13 +10,6 @@ namespace Sequel.Controllers
     [Route("[controller]")]
     public class SequelController : ControllerBase
     {
-        private readonly ILogger _logger;
-
-        public SequelController(ILogger<SequelController> logger)
-        {
-            _logger = logger;
-        }
-
         [HttpGet]
         [Route("ping")]
         public string Ping()
@@ -23,12 +17,19 @@ namespace Sequel.Controllers
             return "pong";
         }
 
+        [HttpGet]
+        [Route("server-connection")]
+        public async Task<ActionResult<List<ServerConnection>>> GetAllServerConnection()
+        {
+            return Ok(await Store<ServerConnection>.GetCollection());
+        }
+
         [HttpPost]
         [Route("server-connection/test")]
-        public async Task<ActionResult<bool>> TestServerConnection(ServerConnection cnn)
+        public async Task<IActionResult> TestServerConnection(ServerConnection cnn)
         {
-            await Task.Delay(5000);
-            return true;
+            await Store<ServerConnection>.Add(cnn, unique: true);
+            return Ok();
         }
     }
 }
