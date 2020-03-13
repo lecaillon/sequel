@@ -25,10 +25,18 @@ namespace Sequel.Controllers
         }
 
         [HttpPost]
+        [Route("server-connection")]
+        public async Task<IActionResult> AddServerConnection(ServerConnection cnn)
+        {
+            await Store<ServerConnection>.Add(cnn, unique: true);
+            return Ok();
+        }
+
+        [HttpPost]
         [Route("server-connection/test")]
         public async Task<IActionResult> TestServerConnection(ServerConnection cnn)
         {
-            await Store<ServerConnection>.Add(cnn, unique: true);
+            await Task.Delay(5000);
             return Ok();
         }
     }
