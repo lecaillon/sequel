@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <PublishTrimmed>true</PublishTrimmed>
+    <nullable>enable</nullable>
   </PropertyGroup>
   
 </Project>
