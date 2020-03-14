@@ -16,6 +16,7 @@ namespace Sequel
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
+                    webBuilder.UseUrls("http://*:3010");
                     webBuilder.UseContentRoot(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
                     webBuilder.UseStartup<Startup>();
                 });

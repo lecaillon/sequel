@@ -1,6 +1,7 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import { http } from "@/core/http";
+import { BASE_URL } from "@/appsettings"
 import { ServerConnection } from "@/models/serverConnection";
 
 Vue.use(Vuex);
@@ -12,7 +13,7 @@ export default new Vuex.Store({
   },
   actions: {
     fetchServers: async context => {
-      const servers = await http.get<ServerConnection[]>("http://localhost:5000/sequel/server-connection");
+      const servers = await http.get<ServerConnection[]>(`${BASE_URL}/sequel/server-connection`);
       context.commit("setServers", servers);
     },
     changeActiveServer: (context, server) => {
