@@ -29,6 +29,7 @@
         clearable
         solo
         :items="servers"
+        item-text="connectionString"
       ></v-autocomplete>
     </v-app-bar>
 
@@ -82,15 +83,18 @@
     </v-content>
 
     <v-footer app></v-footer>
-    
-    <FormServerConnection :show="showFormServerConnection" @close="showFormServerConnection = false"></FormServerConnection>
+
+    <FormServerConnection
+      :show="showFormServerConnection"
+      @close="showFormServerConnection = false"
+    ></FormServerConnection>
   </v-app>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
 import Vuetify from "vuetify";
-
+import store from "./store";
 import FormServerConnection from "@/components/FormServerConnection.vue";
 
 export default Vue.extend({
@@ -134,8 +138,15 @@ export default Vue.extend({
       }
     ],
     openedNodes: [1, 11, 111],
-    dbObjectSearch: null,
-    servers: ["Programming", "Design", "Vue", "Vuetify"]
-  })
+    dbObjectSearch: null
+  }),
+  computed: {
+    servers() {
+      return store.state.servers;
+    }
+  },
+  created() {
+    store.dispatch("fetchServers");
+  }
 });
 </script>
