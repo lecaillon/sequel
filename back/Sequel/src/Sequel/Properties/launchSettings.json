@@ -3,7 +3,7 @@
   "profiles": {
     "Sequel": {
       "commandName": "Project",
-      "launchBrowser": true,
+      "launchBrowser": false,
       "launchUrl": "sequel/ping",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
