@@ -46,8 +46,8 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { ServerConnection } from "../models/serverConnection";
-import { http } from "../core/http";
+import { ServerConnection } from '@/models/serverConnection';
+import { http } from '@/core/http';
 
 export default Vue.extend({
   name: "FormServerConnection",
