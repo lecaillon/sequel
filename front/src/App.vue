@@ -21,16 +21,7 @@
       <v-btn icon @click.stop="showFormServerConnection = true">
         <v-icon>mdi-server-plus</v-icon>
       </v-btn>
-      <v-autocomplete
-        placeholder="Select a server"
-        auto-select-first="false"
-        dense
-        hide-details
-        clearable
-        solo
-        :items="servers"
-        item-text="connectionString"
-      ></v-autocomplete>
+      <SelectServerConnection />
     </v-app-bar>
 
     <v-navigation-drawer
@@ -94,8 +85,9 @@
 <script lang="ts">
 import Vue from "vue";
 import Vuetify from "vuetify";
-import store from "./store";
+import store from "@/store";
 import FormServerConnection from "@/components/FormServerConnection.vue";
+import SelectServerConnection from "@/components/SelectServerConnection.vue";
 
 export default Vue.extend({
   name: "App",
@@ -103,7 +95,8 @@ export default Vue.extend({
     theme: { dark: true }
   }),
   components: {
-    FormServerConnection
+    FormServerConnection,
+    SelectServerConnection
   },
   data: () => ({
     showDbExplorer: true,
@@ -139,14 +132,6 @@ export default Vue.extend({
     ],
     openedNodes: [1, 11, 111],
     dbObjectSearch: null
-  }),
-  computed: {
-    servers() {
-      return store.state.servers;
-    }
-  },
-  created() {
-    store.dispatch("fetchServers");
-  }
+  })
 });
 </script>
