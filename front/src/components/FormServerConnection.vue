@@ -63,7 +63,9 @@ export default Vue.extend({
       this.$emit("close");
     },
     add() {
-      store.dispatch("addServer", this.server);
+      store
+        .dispatch("addServer", this.server)
+        .finally(() => this.$emit("close"));
     },
     test() {
       this.testing = true;
