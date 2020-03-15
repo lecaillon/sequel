@@ -21,7 +21,7 @@
       <v-btn icon @click.stop="showFormServerConnection = true">
         <v-icon>mdi-server-plus</v-icon>
       </v-btn>
-      <SelectServerConnection />
+      <SelectServerConnection style="max-width: 650px" />
     </v-app-bar>
 
     <v-navigation-drawer
