@@ -24,7 +24,7 @@ namespace Sequel
             app.UseDefaultFiles();
             app.UseStaticFiles();
             app.UseExceptionHandler("/detailed-error");
-            app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+            app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().WithExposedHeaders("Content-Length"));
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
