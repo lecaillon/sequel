@@ -30,7 +30,7 @@ namespace Sequel.Core
             }
 
             list.Add(item);
-            await JsonSerializer.SerializeAsync(fs, list);
+            await SaveFile(fs, list);
         }
 
         public static async Task<T> GetItem()
@@ -44,7 +44,7 @@ namespace Sequel.Core
             Check.NotNull(item, nameof(item));
 
             using var fs = OpenFile();
-            await JsonSerializer.SerializeAsync(fs, item);
+            await SaveFile(fs, item);
         }
 
         private static FileStream OpenFile()
@@ -58,5 +58,17 @@ namespace Sequel.Core
 
         private static async Task<T> DeserializeItem(FileStream fs)
             => fs.Length > 0 ? await JsonSerializer.DeserializeAsync<T>(fs) : new T();
+
+        private static async Task SaveFile(FileStream fs, T value)
+        {
+            fs.SetLength(0);
+            await JsonSerializer.SerializeAsync(fs, value);
+        }
+
+        private static async Task SaveFile(FileStream fs, List<T> value)
+        {
+            fs.SetLength(0);
+            await JsonSerializer.SerializeAsync(fs, value);
+        }
     }
 }
