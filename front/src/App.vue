@@ -79,6 +79,11 @@
       :show="showFormServerConnection"
       @close="showFormServerConnection = false"
     ></FormServerConnection>
+
+    <v-snackbar v-model="appSnackbar.show" :color="appSnackbar.color" :timeout="6000" bottom right>
+      {{ appSnackbar.message }}
+      <v-btn text @click="appSnackbar.show = false">Close</v-btn>
+    </v-snackbar>
   </v-app>
 </template>
 
@@ -132,6 +137,11 @@ export default Vue.extend({
     ],
     openedNodes: [1, 11, 111],
     dbObjectSearch: null
-  })
+  }),
+  computed: {
+    appSnackbar() {
+      return store.state.appSnackbar;
+    }
+  }
 });
 </script>

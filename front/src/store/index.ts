@@ -3,13 +3,15 @@ import Vuex from "vuex";
 import { http } from "@/core/http";
 import { BASE_URL } from "@/appsettings"
 import { ServerConnection } from "@/models/serverConnection";
+import { AppSnackbar } from '@/models/appSnackbar';
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
     servers: [] as ServerConnection[],
-    activeServer: {} as ServerConnection
+    activeServer: {} as ServerConnection,
+    appSnackbar: {} as AppSnackbar
   },
   actions: {
     fetchServers: async context => {
@@ -25,6 +27,9 @@ export default new Vuex.Store({
     },
     changeActiveServer: (context, server) => {
       context.commit("setActiveServer", server);
+    },
+    displayAppSnackbar: (context, appSnackbar) => {
+      context.commit("setAppSnackbar", appSnackbar);
     }
   },
   mutations: {
@@ -33,6 +38,9 @@ export default new Vuex.Store({
     },
     setActiveServer(state, server) {
       state.activeServer = server;
+    },
+    setAppSnackbar(state, appSnackbar) {
+      state.appSnackbar = appSnackbar;
     }
   },
   modules: {}
