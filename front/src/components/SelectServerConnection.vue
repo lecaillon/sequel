@@ -1,7 +1,6 @@
 <template>
   <v-autocomplete
     placeholder="Select a server"
-    auto-select-first="false"
     dense
     hide-details
     clearable
