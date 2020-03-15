@@ -15,6 +15,9 @@ class Http {
             }
         });
         if (response.ok) {
+            if (response.headers.get('Content-Length') === "0") {
+                return undefined!;
+            }
             return await response.json();
         }
         else {
