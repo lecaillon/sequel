@@ -8,24 +8,24 @@
         <v-container>
           <v-row>
             <v-col cols="12" sm="6">
-              <v-text-field label="Name*" v-model="cnn.name" required></v-text-field>
+              <v-text-field label="Name*" v-model="server.name" required></v-text-field>
             </v-col>
             <v-col cols="12" sm="6">
               <v-select
                 label="Type*"
-                v-model="cnn.type"
+                v-model="server.type"
                 :items="['PostgreSQL', 'SQLServer']"
                 required
                 clearable
               ></v-select>
             </v-col>
             <v-col cols="12">
-              <v-text-field label="Connection string*" v-model="cnn.connectionString" required></v-text-field>
+              <v-text-field label="Connection string*" v-model="server.connectionString" required></v-text-field>
             </v-col>
             <v-col cols="12" sm="6">
               <v-select
                 label="Environment"
-                v-model="cnn.environment"
+                v-model="server.environment"
                 :items="['Development', 'Testing', 'Staging', 'UAT', 'Demo', 'Production']"
                 clearable
               ></v-select>
@@ -38,7 +38,7 @@
         <v-spacer></v-spacer>
         <v-btn text @click.stop="close">Cancel</v-btn>
         <v-btn text :loading="testing" @click.stop="test">Test</v-btn>
-        <v-btn text @click.stop="close">Save</v-btn>
+        <v-btn text @click.stop="add">Save</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -46,8 +46,8 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { ServerConnection } from '@/models/serverConnection';
-import { http } from '@/core/http';
+import store from "@/store";
+import { ServerConnection } from "@/models/serverConnection";
 
 export default Vue.extend({
   name: "FormServerConnection",
@@ -55,23 +55,20 @@ export default Vue.extend({
     show: Boolean
   },
   data: () => ({
-    cnn: {} as ServerConnection,
+    server: {} as ServerConnection,
     testing: false
   }),
   methods: {
     close() {
       this.$emit("close");
     },
+    add() {
+      store.dispatch("addServer", this.server);
+    },
     test() {
       this.testing = true;
-      http
-        .post<boolean>(
-          "http://localhost:5000/sequel/server-connection/test",
-          this.cnn
-        )
-        .then(function(response) {
-          console.log(response);
-        })
+      store
+        .dispatch("testServer", this.server)
         .finally(() => (this.testing = false));
     }
   }

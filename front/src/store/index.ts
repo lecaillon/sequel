@@ -16,6 +16,13 @@ export default new Vuex.Store({
       const servers = await http.get<ServerConnection[]>(`${BASE_URL}/sequel/server-connection`);
       context.commit("setServers", servers);
     },
+    addServer: async (context, server) => {
+      await http.post<void>(`${BASE_URL}/sequel/server-connection`, server);
+      context.dispatch("fetchServers");
+    },
+    testServer: async (context, server) => {
+      await http.post<void>(`${BASE_URL}/sequel/server-connection/test`, server);
+    },
     changeActiveServer: (context, server) => {
       context.commit("setActiveServer", server);
     }
