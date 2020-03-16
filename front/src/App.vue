@@ -80,8 +80,13 @@
       @close="showFormServerConnection = false"
     ></FormServerConnection>
 
-    <v-snackbar v-model="appSnackbar.show" :color="appSnackbar.color" :timeout="6000" bottom right>
+    <v-snackbar v-model="appSnackbar.show" :color="appSnackbar.color" :timeout="6000" vertical bottom right>
       {{ appSnackbar.message }}
+      <ul v-if="appSnackbar.details">
+        <li v-for="(detail, index) in appSnackbar.details" :key="index">
+          {{ detail }}
+        </li>
+      </ul>
       <v-btn text @click="appSnackbar.show = false">Close</v-btn>
     </v-snackbar>
   </v-app>
