@@ -28,7 +28,8 @@ export default new Vuex.Store({
     changeActiveServer: (context, server) => {
       context.commit("setActiveServer", server);
     },
-    displayAppSnackbar: (context, appSnackbar) => {
+    displayAppSnackbar: (context, appSnackbar: AppSnackbar) => {
+      appSnackbar.show = true;
       context.commit("setAppSnackbar", appSnackbar);
     }
   },

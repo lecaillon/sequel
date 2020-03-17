@@ -1,3 +1,7 @@
+import store from '@/store';
+import { ProblemDetails } from '@/models/problemDetails';
+import { AppSnackbar } from '@/models/appSnackbar';
+
 class Http {
     public async get<T>(url: string): Promise<T> {
         return await this.internalFetch(url, "GET");
@@ -9,21 +13,41 @@ class Http {
 
     private async internalFetch<T>(url: string, method: string, payload?: any): Promise<T> {
         const body = payload ? JSON.stringify(payload) : undefined;
-        const response: Response = await fetch(url, {
-            method, body, mode: "cors", headers: {
-                'Content-type': 'application/json'
-            }
-        });
+        let response: Response;
+
+        try {
+            response = await fetch(url, {
+                method, body, mode: "cors", headers: { 'Content-type': 'application/json' }
+            });
+        } catch (error) {
+            this.SendNotification(error);
+            throw new Error(error);
+        }
+
         if (response.ok) {
             if (response.headers.get('Content-Length') === "0") {
                 return undefined!;
             }
             return await response.json();
         }
-        else {
-            console.log("Error", response);
-            throw new Error(`${response.status}: ${response.statusText}`);
+
+        if (response.headers.get('Content-Length') === "0") {
+            this.SendNotification(`HTTP error ${response.status} : ${response.statusText}`);
+            throw new Error(`HTTP error ${response.status}. ${method} ${url} : ${response.statusText}`);
         }
+
+        const err = await response.json() as ProblemDetails;
+        const details = err.errors !== undefined ? Object.values(err.errors).map(x => String(x)) : [];
+        this.SendNotification(`Network error (${err.status}): ${err.title}`, details);
+        throw new Error(`HTTP error ${err.status}. ${method} ${url} : ${err.title} ${details.join(" ")}`);
+    }
+
+    private SendNotification(message: string, details?: string[]): void {
+        store.dispatch("displayAppSnackbar", {
+            message: message,
+            details: details,
+            color: "error"
+        } as AppSnackbar);
     }
 }
 
