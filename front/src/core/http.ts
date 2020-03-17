@@ -37,9 +37,10 @@ class Http {
         }
 
         const err = await response.json() as ProblemDetails;
+        const stackTrace = err.detail !== undefined ? err.detail : "";
         const details = err.errors !== undefined ? Object.values(err.errors).map(x => String(x)) : [];
         this.SendNotification(`Network error (${err.status}): ${err.title}`, details);
-        throw new Error(`HTTP error ${err.status}. ${method} ${url} : ${err.title} ${details.join(" ")}`);
+        throw new Error(`HTTP error ${err.status}. ${method} ${url} : ${err.title} ${details.join(" ")} ${stackTrace}`);
     }
 
     private SendNotification(message: string, details?: string[]): void {
