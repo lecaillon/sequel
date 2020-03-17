@@ -11,13 +11,6 @@ namespace Sequel.Controllers
     public class SequelController : ControllerBase
     {
         [HttpGet]
-        [Route("ping")]
-        public string Ping()
-        {
-            return "pong";
-        }
-
-        [HttpGet]
         [Route("server-connection")]
         public async Task<ActionResult<List<ServerConnection>>> GetAllServerConnection()
         {
@@ -26,17 +19,17 @@ namespace Sequel.Controllers
 
         [HttpPost]
         [Route("server-connection")]
-        public async Task<IActionResult> AddServerConnection(ServerConnection cnn)
+        public async Task<IActionResult> AddServerConnection(ServerConnection server)
         {
-            await Store<ServerConnection>.Add(cnn, unique: true);
+            await Store<ServerConnection>.Add(server, unique: true);
             return Ok();
         }
 
         [HttpPost]
         [Route("server-connection/test")]
-        public async Task<IActionResult> TestServerConnection(ServerConnection cnn)
+        public async Task<IActionResult> TestServerConnection(ServerConnection server)
         {
-            await Task.Delay(5000);
+            await server.Type.CreateConnection(server.ConnectionString).Validate();
             return Ok();
         }
     }
