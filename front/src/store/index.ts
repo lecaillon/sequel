@@ -21,9 +21,11 @@ export default new Vuex.Store({
     addServer: async (context, server) => {
       await http.post<void>(`${BASE_URL}/sequel/server-connection`, server);
       context.dispatch("fetchServers");
+      context.dispatch("displayAppSnackbar", { message: "New database connection added.", color: "success" } as AppSnackbar);
     },
     testServer: async (context, server) => {
       await http.post<void>(`${BASE_URL}/sequel/server-connection/test`, server);
+      context.dispatch("displayAppSnackbar", { message: "Database connection succeeded.", color: "success" } as AppSnackbar);
     },
     changeActiveServer: (context, server) => {
       context.commit("setActiveServer", server);
