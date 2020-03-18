@@ -1,5 +1,5 @@
 <template>
-  <v-dialog :value="show" persistent max-width="600px">
+  <v-dialog :value="show" @click:outside="close" max-width="600px">
     <v-card>
       <v-card-title>
         <span class="headline">Add new database connection</span>
@@ -36,7 +36,6 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn text @click.stop="close">Cancel</v-btn>
         <v-btn text :loading="testing" @click.stop="test">Test</v-btn>
         <v-btn text @click.stop="add">Save</v-btn>
       </v-card-actions>
@@ -75,7 +74,7 @@ export default Vue.extend({
           connectionString: this.connectionString,
           environment: this.environment
         } as ServerConnection)
-        .finally(() => this.$emit("close"));
+        .finally(() => this.close());
     },
     test() {
       this.testing = true;
