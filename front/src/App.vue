@@ -18,10 +18,10 @@
         <v-icon>mdi-wrench-outline</v-icon>
       </v-btn>
       <v-divider vertical inset />
-      <v-btn icon @click.stop="showFormServerConnection = true">
+      <v-btn icon @click.stop="openFormServerConnection(true)">
         <v-icon>mdi-server-plus</v-icon>
       </v-btn>
-      <SelectServerConnection style="max-width: 650px" />
+      <SelectServerConnection @edit="openFormServerConnection(false)" style="max-width: 650px" />
     </v-app-bar>
 
     <v-navigation-drawer
@@ -77,6 +77,10 @@
 
     <FormServerConnection
       :show="showFormServerConnection"
+      :name="editServer.name"
+      :type="editServer.type"
+      :connectionString="editServer.connectionString"
+      :environment="editServer.environment"
       @close="showFormServerConnection = false"
     ></FormServerConnection>
 
@@ -85,6 +89,7 @@
       :color="appSnackbar.color"
       :message="appSnackbar.message"
       :details="appSnackbar.details"
+      @close="closeAppSnackbar"
     ></AppSnackbar>
   </v-app>
 </template>
@@ -96,6 +101,7 @@ import store from "@/store";
 import FormServerConnection from "@/components/FormServerConnection.vue";
 import SelectServerConnection from "@/components/SelectServerConnection.vue";
 import AppSnackbar from "@/components/AppSnackbar.vue";
+import { ServerConnection } from "./models/serverConnection";
 
 export default Vue.extend({
   name: "App",
@@ -142,9 +148,28 @@ export default Vue.extend({
     openedNodes: [1, 11, 111],
     dbObjectSearch: null
   }),
+  methods: {
+    closeAppSnackbar() {
+      store.dispatch("hideAppSnackbar");
+    },
+    openFormServerConnection(newForm: boolean) {
+      if (newForm) {
+        store.dispatch("changeEditServer", {
+          name: "",
+          type: "",
+          connectionString: "",
+          environment: ""
+        } as ServerConnection);
+      }
+      this.showFormServerConnection = true;
+    }
+  },
   computed: {
     appSnackbar() {
       return store.state.appSnackbar;
+    },
+    editServer() {
+      return store.state.editServer;
     }
   }
 });

@@ -15,6 +15,12 @@
     <template v-slot:item="{ index, item }">
       <v-chip label small :color="getChipColor(item)">{{ item.environment }}</v-chip>
       <span class="ms-3">{{ item.name }}</span>
+      <v-spacer></v-spacer>
+      <v-list-item-action @click.stop>
+        <v-btn icon @click.stop.prevent="edit(item)">
+          <v-icon>mdi-pencil</v-icon>
+        </v-btn>
+      </v-list-item-action>
     </template>
   </v-autocomplete>
 </template>
@@ -33,6 +39,10 @@ export default Vue.extend({
     },
     getChipColor(server: ServerConnection) {
       return ColorByEnvironment[server.environment];
+    },
+    edit(server: ServerConnection) {
+      store.dispatch("changeEditServer", server);
+      this.$emit("edit");
     }
   },
   computed: {
