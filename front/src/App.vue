@@ -80,15 +80,12 @@
       @close="showFormServerConnection = false"
     ></FormServerConnection>
 
-    <v-snackbar v-model="appSnackbar.show" :color="appSnackbar.color" :timeout="6000" vertical bottom right>
-      {{ appSnackbar.message }}
-      <ul v-if="appSnackbar.details">
-        <li v-for="(detail, index) in appSnackbar.details" :key="index">
-          {{ detail }}
-        </li>
-      </ul>
-      <v-btn text @click="appSnackbar.show = false">Close</v-btn>
-    </v-snackbar>
+    <AppSnackbar
+      :show="appSnackbar.show"
+      :color="appSnackbar.color"
+      :message="appSnackbar.message"
+      :details="appSnackbar.details"
+    ></AppSnackbar>
   </v-app>
 </template>
 
@@ -98,6 +95,7 @@ import Vuetify from "vuetify";
 import store from "@/store";
 import FormServerConnection from "@/components/FormServerConnection.vue";
 import SelectServerConnection from "@/components/SelectServerConnection.vue";
+import AppSnackbar from "@/components/AppSnackbar.vue";
 
 export default Vue.extend({
   name: "App",
@@ -106,7 +104,8 @@ export default Vue.extend({
   }),
   components: {
     FormServerConnection,
-    SelectServerConnection
+    SelectServerConnection,
+    AppSnackbar
   },
   data: () => ({
     showDbExplorer: true,
