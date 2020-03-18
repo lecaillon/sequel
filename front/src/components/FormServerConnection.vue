@@ -53,6 +53,7 @@ export default Vue.extend({
   name: "FormServerConnection",
   props: {
     show: Boolean,
+    id: Number,
     name: String,
     type: String,
     connectionString: String,
@@ -68,6 +69,7 @@ export default Vue.extend({
     add() {
       store
         .dispatch("addServer", {
+          id: this.id,
           name: this.name,
           type: this.type,
           connectionString: this.connectionString,
@@ -77,13 +79,16 @@ export default Vue.extend({
     },
     test() {
       this.testing = true;
+      const server = {
+        id: this.id,
+        name: this.name,
+        type: this.type,
+        connectionString: this.connectionString,
+        environment: this.environment
+      } as ServerConnection;
+      store.dispatch("changeEditServer", server);
       store
-        .dispatch("testServer", {
-          name: this.name,
-          type: this.type,
-          connectionString: this.connectionString,
-          environment: this.environment
-        } as ServerConnection)
+        .dispatch("testServer", server)
         .finally(() => (this.testing = false));
     }
   }

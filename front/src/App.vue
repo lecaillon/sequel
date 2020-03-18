@@ -77,6 +77,7 @@
 
     <FormServerConnection
       :show="showFormServerConnection"
+      :id="editServer.id"
       :name="editServer.name"
       :type="editServer.type"
       :connectionString="editServer.connectionString"

@@ -21,7 +21,7 @@ namespace Sequel.Controllers
         [Route("server-connection")]
         public async Task<IActionResult> AddServerConnection(ServerConnection server)
         {
-            await Store<ServerConnection>.Add(server, unique: true);
+            await Store<ServerConnection>.Add(server);
             return Ok();
         }
 

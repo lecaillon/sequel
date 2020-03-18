@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Sequel.Models;
 
 namespace Sequel.Core
 {
@@ -18,17 +19,21 @@ namespace Sequel.Core
             return await DeserializeCollection(fs);
         }
 
-        public static async Task Add(T item, bool unique = false)
+        public static async Task Add<TIdentity>(TIdentity item) where TIdentity : Identity, T
         {
             Check.NotNull(item, nameof(item));
 
             using var fs = OpenFile();
             var list = await DeserializeCollection(fs);
-            if (unique && list.Any(item.Equals))
-            {
-                throw new Exception("Duplicate key: this item already exists.");
-            }
 
+            if (item.Id is null)
+            {
+                item.Id = list.Cast<Identity>()?.Max(x => x.Id) + 1 ?? 1;
+            }
+            else
+            {
+                list.Remove(item);
+            }
             list.Add(item);
             await SaveFile(fs, list);
         }
