@@ -10,7 +10,8 @@ namespace Sequel.Models
         public DBMS Type { get; set; }
         [Required]
         public string ConnectionString { get; set; } = default!;
-        public Env? Environment { get; set; }
+        [Required]
+        public Env Environment { get; set; }
     }
 
     public abstract class Identity
