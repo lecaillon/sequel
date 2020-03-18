@@ -8,24 +8,24 @@
         <v-container>
           <v-row>
             <v-col cols="12" sm="6">
-              <v-text-field label="Name*" v-model="server.name" required></v-text-field>
+              <v-text-field label="Name*" v-model="name" required></v-text-field>
             </v-col>
             <v-col cols="12" sm="6">
               <v-select
                 label="Type*"
-                v-model="server.type"
+                v-model="type"
                 :items="['PostgreSQL', 'SQLServer']"
                 required
                 clearable
               ></v-select>
             </v-col>
             <v-col cols="12">
-              <v-text-field label="Connection string*" v-model="server.connectionString" required></v-text-field>
+              <v-text-field label="Connection string*" v-model="connectionString" required></v-text-field>
             </v-col>
             <v-col cols="12" sm="6">
               <v-select
                 label="Environment"
-                v-model="server.environment"
+                v-model="environment"
                 :items="['Development', 'Testing', 'Staging', 'UAT', 'Demo', 'Production']"
                 clearable
               ></v-select>
@@ -52,10 +52,13 @@ import { ServerConnection } from "@/models/serverConnection";
 export default Vue.extend({
   name: "FormServerConnection",
   props: {
-    show: Boolean
+    show: Boolean,
+    name: String,
+    type: String,
+    connectionString: String,
+    environment: String
   },
   data: () => ({
-    server: {} as ServerConnection,
     testing: false
   }),
   methods: {
@@ -64,13 +67,23 @@ export default Vue.extend({
     },
     add() {
       store
-        .dispatch("addServer", this.server)
+        .dispatch("addServer", {
+          name: this.name,
+          type: this.type,
+          connectionString: this.connectionString,
+          environment: this.environment
+        } as ServerConnection)
         .finally(() => this.$emit("close"));
     },
     test() {
       this.testing = true;
       store
-        .dispatch("testServer", this.server)
+        .dispatch("testServer", {
+          name: this.name,
+          type: this.type,
+          connectionString: this.connectionString,
+          environment: this.environment
+        } as ServerConnection)
         .finally(() => (this.testing = false));
     }
   }
