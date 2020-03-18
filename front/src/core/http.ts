@@ -44,7 +44,7 @@ class Http {
     }
 
     private SendNotification(message: string, details?: string[]): void {
-        store.dispatch("displayAppSnackbar", {
+        store.dispatch("showAppSnackbar", {
             message: message,
             details: details,
             color: "error"
