@@ -11,6 +11,10 @@ class Http {
         return await this.internalFetch(url, "POST", body);
     }
 
+    public async delete<T>(url: string): Promise<T> {
+        return await this.internalFetch(url, "DELETE");
+    }
+
     private async internalFetch<T>(url: string, method: string, payload?: any): Promise<T> {
         const body = payload ? JSON.stringify(payload) : undefined;
         let response: Response;
