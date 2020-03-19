@@ -77,11 +77,7 @@
 
     <FormServerConnection
       :show="showFormServerConnection"
-      :id="editServer.id"
-      :name="editServer.name"
-      :type="editServer.type"
-      :connectionString="editServer.connectionString"
-      :environment="editServer.environment"
+      :server="editServer"
       @close="showFormServerConnection = false"
     ></FormServerConnection>
 

@@ -8,23 +8,23 @@
         <v-container>
           <v-row>
             <v-col cols="12" sm="6">
-              <v-text-field label="Name*" v-model="name"></v-text-field>
+              <v-text-field label="Name*" v-model="editServer.name"></v-text-field>
             </v-col>
             <v-col cols="12" sm="6">
               <v-select
                 label="Type*"
-                v-model="type"
+                v-model="editServer.type"
                 :items="['PostgreSQL', 'SQLServer']"
                 clearable
               ></v-select>
             </v-col>
             <v-col cols="12">
-              <v-text-field label="Connection string*" v-model="connectionString"></v-text-field>
+              <v-text-field label="Connection string*" v-model="editServer.connectionString"></v-text-field>
             </v-col>
             <v-col cols="12" sm="6">
               <v-select
                 label="Environment*"
-                v-model="environment"
+                v-model="editServer.environment"
                 :items="['Development', 'Testing', 'Staging', 'UAT', 'Demo', 'Production']"
                 clearable
               ></v-select>
@@ -52,47 +52,34 @@ export default Vue.extend({
   name: "FormServerConnection",
   props: {
     show: Boolean,
-    id: Number,
-    name: String,
-    type: String,
-    connectionString: String,
-    environment: String
+    server: Object
   },
   data: () => ({
-    testing: false
+    testing: false,
+    editServer: {} as ServerConnection
   }),
   methods: {
     close() {
       this.$emit("close");
     },
     del() {
-      store.dispatch("deleteServer", this.id).finally(() => this.close());
+      store
+        .dispatch("deleteServer", this.editServer.id)
+        .finally(() => this.close());
     },
     add() {
-      store
-        .dispatch("addServer", {
-          id: this.id,
-          name: this.name,
-          type: this.type,
-          connectionString: this.connectionString,
-          environment: this.environment
-        } as ServerConnection)
-        .finally(() => this.close());
+      store.dispatch("addServer", this.editServer).finally(() => this.close());
     },
     test() {
       this.testing = true;
-      const server = {
-        id: this.id,
-        name: this.name,
-        type: this.type,
-        connectionString: this.connectionString,
-        environment: this.environment
-      } as ServerConnection;
-      store.dispatch("changeEditServer", server);
+      store.dispatch("changeEditServer", this.editServer);
       store
-        .dispatch("testServer", server)
+        .dispatch("testServer", this.editServer)
         .finally(() => (this.testing = false));
     }
+  },
+  updated() {
+    this.editServer = this.server;
   }
 });
 </script>
