@@ -31,6 +31,11 @@ export default new Vuex.Store({
       context.dispatch("fetchServers");
       context.dispatch("showAppSnackbar", { message: "New database connection added.", color: "success" } as AppSnackbar);
     },
+    deleteServer: async (context, serverId) => {
+      await http.delete<void>(`${BASE_URL}/sequel/server-connection/${serverId}`);
+      context.dispatch("fetchServers");
+      context.dispatch("showAppSnackbar", { message: "Database connection deleted.", color: "success" } as AppSnackbar);
+    },
     testServer: async (context, server) => {
       await http.post<void>(`${BASE_URL}/sequel/server-connection/test`, server);
       context.dispatch("showAppSnackbar", { message: "Database connection succeeded.", color: "success" } as AppSnackbar);

@@ -25,6 +25,14 @@ namespace Sequel.Controllers
             return Ok();
         }
 
+        [HttpDelete]
+        [Route("server-connection/{id}")]
+        public async Task<IActionResult> DeleteServerConnection(int id)
+        {
+            await Store<ServerConnection>.Delete(id);
+            return Ok();
+        }
+
         [HttpPost]
         [Route("server-connection/test")]
         public async Task<IActionResult> TestServerConnection(ServerConnection server)

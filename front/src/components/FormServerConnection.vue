@@ -8,23 +8,22 @@
         <v-container>
           <v-row>
             <v-col cols="12" sm="6">
-              <v-text-field label="Name*" v-model="name" required></v-text-field>
+              <v-text-field label="Name*" v-model="name"></v-text-field>
             </v-col>
             <v-col cols="12" sm="6">
               <v-select
                 label="Type*"
                 v-model="type"
                 :items="['PostgreSQL', 'SQLServer']"
-                required
                 clearable
               ></v-select>
             </v-col>
             <v-col cols="12">
-              <v-text-field label="Connection string*" v-model="connectionString" required></v-text-field>
+              <v-text-field label="Connection string*" v-model="connectionString"></v-text-field>
             </v-col>
             <v-col cols="12" sm="6">
               <v-select
-                label="Environment"
+                label="Environment*"
                 v-model="environment"
                 :items="['Development', 'Testing', 'Staging', 'UAT', 'Demo', 'Production']"
                 clearable
@@ -36,7 +35,8 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn text :loading="testing" @click.stop="test">Test</v-btn>
+        <v-btn text @click.stop="test" :loading="testing">Test</v-btn>
+        <v-btn text @click.stop="del">Delete</v-btn>
         <v-btn text @click.stop="add">Save</v-btn>
       </v-card-actions>
     </v-card>
@@ -64,6 +64,9 @@ export default Vue.extend({
   methods: {
     close() {
       this.$emit("close");
+    },
+    del() {
+      store.dispatch("deleteServer", this.id).finally(() => this.close());
     },
     add() {
       store
