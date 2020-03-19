@@ -35,8 +35,8 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
+        <v-btn text color="error" @click.stop="del">Delete</v-btn>
         <v-btn text @click.stop="test" :loading="testing">Test</v-btn>
-        <v-btn text @click.stop="del">Delete</v-btn>
         <v-btn text @click.stop="add">Save</v-btn>
       </v-card-actions>
     </v-card>
