@@ -18,6 +18,12 @@ namespace Sequel.Models
     {
         public int? Id { get; set; }
 
+        public Identity WithId(int id)
+        {
+            Id = id;
+            return this;
+        }
+
         public override bool Equals(object? obj)
         {
             if (obj is null || obj.GetType() != GetType())

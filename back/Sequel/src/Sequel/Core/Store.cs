@@ -38,6 +38,16 @@ namespace Sequel.Core
             await SaveFile(fs, list);
         }
 
+        public static async Task Delete(int id)
+        {
+            using var fs = OpenFile();
+            var list = await DeserializeCollection(fs);
+            T item = new T();
+            (item as Identity)?.WithId(id);
+            list.Remove(item);
+            await SaveFile(fs, list);
+        }
+
         public static async Task<T> GetItem()
         {
             using var fs = OpenFile();
