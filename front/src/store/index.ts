@@ -1,9 +1,9 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import { http } from "@/core/http";
-import { BASE_URL } from "@/appsettings"
+import { BASE_URL } from "@/appsettings";
 import { ServerConnection } from "@/models/serverConnection";
-import { AppSnackbar } from '@/models/appSnackbar';
+import { AppSnackbar } from "@/models/appSnackbar";
 
 Vue.use(Vuex);
 
@@ -12,14 +12,14 @@ export default new Vuex.Store({
     appSnackbar: {} as AppSnackbar,
     servers: [] as ServerConnection[],
     activeServer: {} as ServerConnection,
-    editServer: {} as ServerConnection,
+    editServer: {} as ServerConnection
   },
   actions: {
     showAppSnackbar: (context, appSnackbar: AppSnackbar) => {
       appSnackbar.show = true;
       context.commit("setAppSnackbar", appSnackbar);
     },
-    hideAppSnackbar: (context) => {
+    hideAppSnackbar: context => {
       context.commit("setAppSnackbar", { show: false } as AppSnackbar);
     },
     fetchServers: async context => {
@@ -45,7 +45,7 @@ export default new Vuex.Store({
     },
     changeEditServer: (context, server) => {
       context.commit("setEditServer", server);
-    },
+    }
   },
   mutations: {
     setAppSnackbar(state, appSnackbar) {
@@ -59,7 +59,7 @@ export default new Vuex.Store({
     },
     setEditServer(state, server) {
       state.editServer = server;
-    },
+    }
   },
   modules: {}
 });
