@@ -55,8 +55,7 @@ export default Vue.extend({
     server: Object
   },
   data: () => ({
-    testing: false,
-    editServer: {} as ServerConnection
+    testing: false
   }),
   methods: {
     close() {
@@ -78,8 +77,10 @@ export default Vue.extend({
         .finally(() => (this.testing = false));
     }
   },
-  updated() {
-    this.editServer = this.server;
+  computed: {
+    editServer: function(): ServerConnection {
+      return { ...this.server };
+    }
   }
 });
 </script>
