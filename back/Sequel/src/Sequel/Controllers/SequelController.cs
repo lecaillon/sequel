@@ -37,7 +37,7 @@ namespace Sequel.Controllers
         [Route("server-connection/test")]
         public async Task<IActionResult> TestServerConnection(ServerConnection server)
         {
-            await server.Type.CreateConnection(server.ConnectionString).Validate();
+            await server.Validate();
             return Ok();
         }
     }
