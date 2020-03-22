@@ -1,7 +1,7 @@
 export interface ServerConnection {
-    id?: number,
-    name: string;
-    type: string;
-    connectionString: string;
-    environment: string;
+  id?: number;
+  name: string;
+  type: string;
+  connectionString: string;
+  environment: string;
 }

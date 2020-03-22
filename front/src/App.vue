@@ -1,7 +1,9 @@
 <template>
   <v-app>
     <v-app-bar app clipped-left clipped-right>
-      <v-app-bar-nav-icon @click.stop="showDbExplorer = !showDbExplorer"></v-app-bar-nav-icon>
+      <v-app-bar-nav-icon
+        @click.stop="showDbExplorer = !showDbExplorer"
+      ></v-app-bar-nav-icon>
       <v-toolbar-title>Sequel</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn icon>
@@ -21,7 +23,11 @@
       <v-btn icon @click.stop="openFormServerConnection(true)">
         <v-icon>mdi-server-plus</v-icon>
       </v-btn>
-      <SelectServerConnection @edit="openFormServerConnection(false)"  class="me-4" style="max-width: 500px" />
+      <SelectServerConnection
+        @edit="openFormServerConnection(false)"
+        class="me-4"
+        style="max-width: 500px"
+      />
       <SelectDatabase style="max-width: 350px" />
     </v-app-bar>
 
