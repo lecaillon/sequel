@@ -25,4 +25,11 @@ namespace Sequel
         Demo,
         Production
     }
+
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum NodeType
+    {
+        None,
+        Database,
+    }
 }

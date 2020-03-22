@@ -6,6 +6,7 @@ using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
 using Npgsql;
+using Sequel.Databases;
 using Sequel.Models;
 
 namespace Sequel.Core
@@ -27,6 +28,15 @@ namespace Sequel.Core
 
             await cnn.OpenAsync();
             await cnn.CloseAsync();
+        }
+
+        public static IDatabaseSystem GetDatabaseSystem(this ServerConnection server)
+        {
+            return server.Type switch
+            {
+                DBMS.PostgreSQL => new PostgreSQL(server),
+                _ => throw new NotSupportedException($"Unsupported database system {server.Type}.")
+            };
         }
 
         public static async Task<IEnumerable<string>> QueryForListOfString(this ServerConnection server, string sql)

@@ -7,7 +7,7 @@ using Sequel.Models;
 namespace Sequel.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("sequel")]
     public class SequelController : ControllerBase
     {
         [HttpGet]
@@ -39,6 +39,13 @@ namespace Sequel.Controllers
         {
             await server.Validate();
             return Ok();
+        }
+
+        [HttpPost]
+        [Route("databases")]
+        public async Task<ActionResult<IEnumerable<string>>> GetDatabases(ServerConnection server)
+        {
+            return Ok(await server.GetDatabaseSystem().LoadDatabases());
         }
     }
 }

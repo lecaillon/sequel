@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Sequel.Models
 {
@@ -12,6 +13,27 @@ namespace Sequel.Models
         public string ConnectionString { get; set; } = default!;
         [Required]
         public Env Environment { get; set; }
+    }
+
+
+    public class DatabaseObjectNode
+    {
+        [Required]
+        public NodeType Type { get; set; } = NodeType.None;
+        [Required]
+        public string Name { get; set; } = default!;
+        [Required]
+        public string Icon { get; set; } = default!;
+        public List<DatabaseObjectNode> Children { get; set; } = new List<DatabaseObjectNode>();
+    }
+
+    public class QueryExecutionContext
+    {
+        public ServerConnection Server { get; set; }
+        public string Database { get; set; }
+        public string Schema { get; set; }
+        public DatabaseObjectNode DatabaseObject { get; set; }
+        public string Sql { get; set; }
     }
 
     public abstract class Identity
