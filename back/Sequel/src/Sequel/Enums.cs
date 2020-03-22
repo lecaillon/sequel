@@ -27,10 +27,12 @@ namespace Sequel
     }
 
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum NodeType
+    public enum DatabaseObjectType
     {
-        None,
+        GroupLabel,
         Database,
         Schema,
+        Table,
+        Column
     }
 }

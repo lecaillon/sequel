@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Sequel.Core;
 using Sequel.Models;
+using static Sequel.DatabaseObjectType;
 
 namespace Sequel.Databases
 {
@@ -25,21 +28,30 @@ namespace Sequel.Databases
                 "ORDER BY datname");
         }
 
-        public async Task<IEnumerable<DatabaseObjectNode>> LoadDatabaseObjects(string database)
+        public async Task<IEnumerable<DatabaseObjectNode>> LoadDatabaseObjects(string database, DatabaseObjectNode? node)
         {
-            var nodes = new List<DatabaseObjectNode>
+            return (node) switch
             {
-                new DatabaseObjectNode(NodeType.Database, database, "mdi-database")
+                { Type: GroupLabel, Name: Label.Schemas } => await LoadSchemas(database),
+                { Type: Schema } => LoadSchemaGroupLabels(),
+                { Type: GroupLabel, Name: Label.Tables } => throw new NotImplementedException(),
+                _ => LoadDatabase(database)
             };
-
-            nodes[0].Children.Add(await LoadSchemas(database));
-
-            return nodes;
         }
 
-        private async Task<DatabaseObjectNode> LoadSchemas(string database)
+        private IEnumerable<DatabaseObjectNode> LoadDatabase(string database)
         {
-            var node = new DatabaseObjectNode(NodeType.Schema, "Schemas", "mdi-hexagon-multiple-outline");
+            return new List<DatabaseObjectNode>
+            {
+                new DatabaseObjectNode(Database, database, "mdi-database", new List<DatabaseObjectNode>
+                {
+                    new DatabaseObjectNode(Schema, "Schemas", "mdi-hexagon-multiple-outline")
+                })
+            };
+        }
+
+        private async Task<IEnumerable<DatabaseObjectNode>> LoadSchemas(string database)
+        {
             var schemas = await _server.QueryForListOfString(database, 
                 "SELECT schema_name " +
                 "FROM information_schema.schemata " +
@@ -47,12 +59,21 @@ namespace Sequel.Databases
                 "AND schema_name <> 'information_schema' " +
                 "ORDER BY schema_name");
 
-            foreach (var schema in schemas)
-            {
-                node.Children.Add(new DatabaseObjectNode(NodeType.Schema, schema, "mdi-hexagon-multiple-outline"));
-            }
+            return schemas.Select(schema => new DatabaseObjectNode(Schema, schema, "mdi-hexagon-multiple-outline"));
+        }
 
-            return node;
+        private IEnumerable<DatabaseObjectNode> LoadSchemaGroupLabels()
+        {
+            return new List<DatabaseObjectNode>
+            {
+                new DatabaseObjectNode(GroupLabel, Label.Tables, "mdi-table")
+            };
+        }
+
+        private static class Label
+        {
+            public const string Schemas = "Schemas";
+            public const string Tables = "Tables";
         }
     }
 }
