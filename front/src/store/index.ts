@@ -12,7 +12,9 @@ export default new Vuex.Store({
     appSnackbar: {} as AppSnackbar,
     servers: [] as ServerConnection[],
     activeServer: {} as ServerConnection,
-    editServer: {} as ServerConnection
+    editServer: {} as ServerConnection,
+    databases: [] as string[],
+    activeDatabase: {} as string
   },
   actions: {
     showAppSnackbar: (context, appSnackbar: AppSnackbar) => {
@@ -42,9 +44,22 @@ export default new Vuex.Store({
     },
     changeActiveServer: (context, server) => {
       context.commit("setActiveServer", server);
+      context.dispatch("fetchDatabases", server);
     },
     changeEditServer: (context, server) => {
       context.commit("setEditServer", server);
+    },
+    fetchDatabases: async context => {
+      if (context.state.activeServer === undefined) {
+        context.commit("setDatabases", []);
+      } else {
+        const databases = await http.post<string[]>(`${BASE_URL}/sequel/databases`, context.state.activeServer);
+        context.commit("setDatabases", databases);
+      }
+      context.commit("setActiveDatabase", {});
+    },
+    changeActiveDatabase: (context, database) => {
+      context.commit("setActiveDatabase", database);
     }
   },
   mutations: {
@@ -59,6 +74,12 @@ export default new Vuex.Store({
     },
     setEditServer(state, server) {
       state.editServer = server;
+    },
+    setDatabases(state, databases) {
+      state.databases = databases;
+    },
+    setActiveDatabase(state, database) {
+      state.activeDatabase = database;
     }
   },
   modules: {}

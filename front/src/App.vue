@@ -21,7 +21,8 @@
       <v-btn icon @click.stop="openFormServerConnection(true)">
         <v-icon>mdi-server-plus</v-icon>
       </v-btn>
-      <SelectServerConnection @edit="openFormServerConnection(false)" style="max-width: 650px" />
+      <SelectServerConnection @edit="openFormServerConnection(false)"  class="me-4" style="max-width: 500px" />
+      <SelectDatabase style="max-width: 350px" />
     </v-app-bar>
 
     <v-navigation-drawer
@@ -97,6 +98,7 @@ import Vuetify from "vuetify";
 import store from "@/store";
 import FormServerConnection from "@/components/FormServerConnection.vue";
 import SelectServerConnection from "@/components/SelectServerConnection.vue";
+import SelectDatabase from "@/components/SelectDatabase.vue";
 import AppSnackbar from "@/components/AppSnackbar.vue";
 import { ServerConnection } from "./models/serverConnection";
 
@@ -108,6 +110,7 @@ export default Vue.extend({
   components: {
     FormServerConnection,
     SelectServerConnection,
+    SelectDatabase,
     AppSnackbar
   },
   data: () => ({
