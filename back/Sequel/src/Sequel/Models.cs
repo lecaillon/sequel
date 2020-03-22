@@ -15,25 +15,34 @@ namespace Sequel.Models
         public Env Environment { get; set; }
     }
 
-
     public class DatabaseObjectNode
     {
+        public DatabaseObjectNode(NodeType type, string name, string icon, List<DatabaseObjectNode> children = null!)
+        {
+            Type = type;
+            Name = name;
+            Icon = icon;
+            Children = children ?? new List<DatabaseObjectNode>();
+        }
+
         [Required]
-        public NodeType Type { get; set; } = NodeType.None;
+        public NodeType Type { get; }
         [Required]
-        public string Name { get; set; } = default!;
+        public string Name { get; }
         [Required]
-        public string Icon { get; set; } = default!;
-        public List<DatabaseObjectNode> Children { get; set; } = new List<DatabaseObjectNode>();
+        public string Icon { get; }
+        public List<DatabaseObjectNode> Children { get; } = new List<DatabaseObjectNode>();
     }
 
     public class QueryExecutionContext
     {
-        public ServerConnection Server { get; set; }
-        public string Database { get; set; }
-        public string Schema { get; set; }
-        public DatabaseObjectNode DatabaseObject { get; set; }
-        public string Sql { get; set; }
+        [Required]
+        public ServerConnection Server { get; set; } = default!;
+        [Required]
+        public string Database { get; set; } = default!;
+        public string? Schema { get; set; }
+        public DatabaseObjectNode? DatabaseObject { get; set; }
+        public string? Sql { get; set; }
     }
 
     public abstract class Identity

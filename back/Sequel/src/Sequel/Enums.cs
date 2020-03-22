@@ -31,5 +31,6 @@ namespace Sequel
     {
         None,
         Database,
+        Schema,
     }
 }

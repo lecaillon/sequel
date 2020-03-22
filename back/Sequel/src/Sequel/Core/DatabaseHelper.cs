@@ -39,9 +39,9 @@ namespace Sequel.Core
             };
         }
 
-        public static async Task<IEnumerable<string>> QueryForListOfString(this ServerConnection server, string sql)
+        public static async Task<IEnumerable<string>> QueryForListOfString(this ServerConnection server, string? database, string sql)
         {
-            return await Execute(server, sql, cmd =>
+            return await Execute(server, database, sql, cmd =>
             {
                 var list = new List<string>();
                 using (var reader = cmd.ExecuteReader())
@@ -60,10 +60,19 @@ namespace Sequel.Core
             });
         }
 
-        private static async Task<T> Execute<T>(this ServerConnection server, string sql, Func<IDbCommand, T> query, Action<IDbCommand>? setupDbCommand = null)
+        public static async Task<IEnumerable<string>> QueryForListOfString(this ServerConnection server, string sql)
+        {
+            return await QueryForListOfString(server, null, sql);
+        }
+
+        private static async Task<T> Execute<T>(this ServerConnection server, string? database, string sql, Func<IDbCommand, T> query, Action<IDbCommand>? setupDbCommand = null)
         {
             using var cnn = server.CreateConnection();
             await cnn.OpenAsync();
+            if (database != null)
+            {
+                await cnn.ChangeDatabaseAsync(database);
+            }
 
             using var cmd = cnn.CreateCommand();
             cmd.CommandText = sql;

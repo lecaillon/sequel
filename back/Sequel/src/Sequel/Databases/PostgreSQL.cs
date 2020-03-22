@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Sequel.Core;
 using Sequel.Models;
@@ -26,9 +25,34 @@ namespace Sequel.Databases
                 "ORDER BY datname");
         }
 
-        public Task<IEnumerable<DatabaseObjectNode>> LoadDatabaseObjects(string database)
+        public async Task<IEnumerable<DatabaseObjectNode>> LoadDatabaseObjects(string database)
         {
-            throw new NotImplementedException();
+            var nodes = new List<DatabaseObjectNode>
+            {
+                new DatabaseObjectNode(NodeType.Database, database, "mdi-database")
+            };
+
+            nodes[0].Children.Add(await LoadSchemas(database));
+
+            return nodes;
+        }
+
+        private async Task<DatabaseObjectNode> LoadSchemas(string database)
+        {
+            var node = new DatabaseObjectNode(NodeType.Schema, "Schemas", "mdi-hexagon-multiple-outline");
+            var schemas = await _server.QueryForListOfString(database, 
+                "SELECT schema_name " +
+                "FROM information_schema.schemata " +
+                "WHERE schema_name NOT LIKE 'pg_%' " +
+                "AND schema_name <> 'information_schema' " +
+                "ORDER BY schema_name");
+
+            foreach (var schema in schemas)
+            {
+                node.Children.Add(new DatabaseObjectNode(NodeType.Schema, schema, "mdi-hexagon-multiple-outline"));
+            }
+
+            return node;
         }
     }
 }

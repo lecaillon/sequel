@@ -47,5 +47,12 @@ namespace Sequel.Controllers
         {
             return Ok(await server.GetDatabaseSystem().LoadDatabases());
         }
+
+        [HttpPost]
+        [Route("database-objects")]
+        public async Task<ActionResult<IEnumerable<DatabaseObjectNode>>> GetDatabaseObjects(QueryExecutionContext context)
+        {
+            return Ok(await context.Server.GetDatabaseSystem().LoadDatabaseObjects(context.Database));
+        }
     }
 }
