@@ -21,19 +21,19 @@ namespace Sequel.Models
 
         public DatabaseObjectNode(string name, DatabaseObjectType type, DatabaseObjectNode? parent, string icon, List<DatabaseObjectNode> children = null!)
         {
+            Id = parent is null ? name : $"{parent.Id}::{name}";
             Type = type;
             Name = name;
-            Path = parent is null ? name : $"{parent.Path}::{name}";
             Icon = icon;
             Children = children ?? new List<DatabaseObjectNode>();
         }
 
         [Required]
+        public string Id { get; set; } = default!;
+        [Required]
         public string Name { get; set; } = default!;
         [Required]
         public DatabaseObjectType Type { get; set; }
-        [Required]
-        public string Path { get; set; } = default!;
         [Required]
         public string Icon { get; set; } = default!;
         public List<DatabaseObjectNode> Children { get; } = new List<DatabaseObjectNode>();
