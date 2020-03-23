@@ -1,9 +1,7 @@
 <template>
   <v-app>
     <v-app-bar app clipped-left clipped-right>
-      <v-app-bar-nav-icon
-        @click.stop="showDbExplorer = !showDbExplorer"
-      ></v-app-bar-nav-icon>
+      <v-app-bar-nav-icon @click.stop="showDbExplorer = !showDbExplorer"></v-app-bar-nav-icon>
       <v-toolbar-title>Sequel</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn icon>
@@ -27,8 +25,8 @@
         @edit="openFormServerConnection(false)"
         class="me-4"
         style="max-width: 500px"
-      />
-      <SelectDatabase style="max-width: 350px" />
+      ></SelectServerConnection>
+      <SelectDatabase style="max-width: 350px"></SelectDatabase>
     </v-app-bar>
 
     <v-navigation-drawer
@@ -38,32 +36,7 @@
       width="300px"
       style="overflow: visible"
     >
-      <v-card class="mx-auto" style="overflow: visible">
-        <v-sheet>
-          <v-text-field
-            v-model="dbObjectSearch"
-            label="Filter elements"
-            flat
-            solo
-            hide-details
-            clearable
-          ></v-text-field>
-        </v-sheet>
-        <v-card-text style="padding: 10px 0 0 0">
-          <v-treeview
-            dense
-            open-on-click
-            :items="nodes"
-            :search="dbObjectSearch"
-            :filter="dbObjectSearch"
-            :open.sync="openedNodes"
-          >
-            <template v-slot:prepend="{ item }">
-              <v-icon small>{{ item.icon }}</v-icon>
-            </template>
-          </v-treeview>
-        </v-card-text>
-      </v-card>
+      <database-object-treeview></database-object-treeview>
     </v-navigation-drawer>
 
     <v-navigation-drawer app clipped right v-model="showDbProperty">
@@ -105,6 +78,7 @@ import store from "@/store";
 import FormServerConnection from "@/components/FormServerConnection.vue";
 import SelectServerConnection from "@/components/SelectServerConnection.vue";
 import SelectDatabase from "@/components/SelectDatabase.vue";
+import DatabaseObjectTreeview from "@/components/DatabaseObjectTreeview.vue";
 import AppSnackbar from "@/components/AppSnackbar.vue";
 import { ServerConnection } from "./models/serverConnection";
 
@@ -117,42 +91,13 @@ export default Vue.extend({
     FormServerConnection,
     SelectServerConnection,
     SelectDatabase,
+    DatabaseObjectTreeview,
     AppSnackbar
   },
   data: () => ({
     showDbExplorer: true,
     showDbProperty: false,
-    showFormServerConnection: false,
-    nodes: [
-      {
-        id: 1,
-        name: "database1",
-        icon: "mdi-database",
-        children: [
-          {
-            id: 11,
-            name: "schema1",
-            icon: "mdi-hexagon-multiple-outline",
-            children: [
-              {
-                id: 111,
-                name: "table1",
-                icon: "mdi-table",
-                children: [
-                  {
-                    id: 1111,
-                    name: "column1",
-                    icon: "mdi-table-column"
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      }
-    ],
-    openedNodes: [1, 11, 111],
-    dbObjectSearch: null
+    showFormServerConnection: false
   }),
   methods: {
     closeAppSnackbar() {

@@ -3,6 +3,8 @@ import Vuex from "vuex";
 import { http } from "@/core/http";
 import { BASE_URL } from "@/appsettings";
 import { ServerConnection } from "@/models/serverConnection";
+import { DatabaseObjectNode } from "@/models/databaseObjectNode";
+import { QueryExecutionContext } from "@/models/queryExecutionContext";
 import { AppSnackbar } from "@/models/appSnackbar";
 
 Vue.use(Vuex);
@@ -14,7 +16,9 @@ export default new Vuex.Store({
     activeServer: {} as ServerConnection,
     editServer: {} as ServerConnection,
     databases: [] as string[],
-    activeDatabase: {} as string
+    activeDatabase: {} as string,
+    nodes: [] as DatabaseObjectNode[],
+    activeNode: {} as DatabaseObjectNode
   },
   actions: {
     showAppSnackbar: (context, appSnackbar: AppSnackbar) => {
@@ -56,10 +60,19 @@ export default new Vuex.Store({
         const databases = await http.post<string[]>(`${BASE_URL}/sequel/databases`, context.state.activeServer);
         context.commit("setDatabases", databases);
       }
-      context.commit("setActiveDatabase", {});
+      context.dispatch("changeActiveDatabase");
     },
-    changeActiveDatabase: (context, database) => {
+    changeActiveDatabase: async (context, database) => {
       context.commit("setActiveDatabase", database);
+      if (context.state.activeDatabase === undefined) {
+        context.dispatch("updateDatabaseObjectTreeview", []);
+      } else {
+        const nodes = await http.post<DatabaseObjectNode[]>(`${BASE_URL}/sequel/database-objects`, { server: context.state.activeServer, database } as QueryExecutionContext);
+        context.dispatch("updateDatabaseObjectTreeview", nodes);
+      }
+    },
+    updateDatabaseObjectTreeview: (context, nodes) => {
+      context.commit("setNodes", nodes);
     }
   },
   mutations: {
@@ -80,6 +93,9 @@ export default new Vuex.Store({
     },
     setActiveDatabase(state, database) {
       state.activeDatabase = database;
+    },
+    setNodes(state, nodes) {
+      state.nodes = nodes;
     }
   },
   modules: {}
