@@ -19,7 +19,7 @@ namespace Sequel.Models
     {
         public DatabaseObjectNode() { }
 
-        public DatabaseObjectNode(DatabaseObjectType type, string name, string icon, /*string path,*/ List<DatabaseObjectNode> children = null!)
+        public DatabaseObjectNode(string name, DatabaseObjectType type, string icon, /*string path,*/ List<DatabaseObjectNode> children = null!)
         {
             Type = type;
             Name = name;
@@ -28,9 +28,9 @@ namespace Sequel.Models
         }
 
         [Required]
-        public DatabaseObjectType Type { get; set; }
-        [Required]
         public string Name { get; set; } = default!;
+        [Required]
+        public DatabaseObjectType Type { get; set; }
         [Required]
         public string Icon { get; set; } = default!;
         [Required]

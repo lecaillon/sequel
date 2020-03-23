@@ -43,9 +43,9 @@ namespace Sequel.Databases
         {
             return new List<DatabaseObjectNode>
             {
-                new DatabaseObjectNode(Database, database, "mdi-database", new List<DatabaseObjectNode>
+                new DatabaseObjectNode(database, Database, "mdi-database", new List<DatabaseObjectNode>
                 {
-                    new DatabaseObjectNode(Schema, "Schemas", "mdi-hexagon-multiple-outline")
+                    new DatabaseObjectNode("Schemas", Schema, "mdi-hexagon-multiple-outline")
                 })
             };
         }
@@ -59,14 +59,14 @@ namespace Sequel.Databases
                 "AND schema_name <> 'information_schema' " +
                 "ORDER BY schema_name");
 
-            return schemas.Select(schema => new DatabaseObjectNode(Schema, schema, "mdi-hexagon-multiple-outline"));
+            return schemas.Select(schema => new DatabaseObjectNode(schema, Schema, "mdi-hexagon-multiple-outline"));
         }
 
         private IEnumerable<DatabaseObjectNode> LoadSchemaGroupLabels()
         {
             return new List<DatabaseObjectNode>
             {
-                new DatabaseObjectNode(GroupLabel, Label.Tables, "mdi-table")
+                new DatabaseObjectNode(Label.Tables, GroupLabel, "mdi-table")
             };
         }
 
