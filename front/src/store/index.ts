@@ -73,6 +73,9 @@ export default new Vuex.Store({
     },
     updateDatabaseObjectTreeview: (context, nodes) => {
       context.commit("setNodes", nodes);
+    },
+    changeActiveNode: (context, node) => {
+      context.commit("setActiveNode", node);
     }
   },
   mutations: {
@@ -96,6 +99,9 @@ export default new Vuex.Store({
     },
     setNodes(state, nodes) {
       state.nodes = nodes;
+    },
+    setActiveNode(state, node) {
+      state.activeNode = node;
     }
   },
   modules: {}
