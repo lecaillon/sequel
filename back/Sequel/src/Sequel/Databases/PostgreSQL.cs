@@ -28,12 +28,12 @@ namespace Sequel.Databases
                 "ORDER BY datname");
         }
 
-        public async Task<IEnumerable<DatabaseObjectNode>> LoadDatabaseObjects(string database, DatabaseObjectNode? node)
+        public async Task<IEnumerable<DatabaseObjectNode>> LoadDatabaseObjects(string database, DatabaseObjectNode? parent)
         {
-            return (node) switch
+            return (parent) switch
             {
-                { Type: GroupLabel, Name: Label.Schemas } => await LoadSchemas(database),
-                { Type: Schema } => LoadSchemaGroupLabels(),
+                { Type: GroupLabel, Name: Label.Schemas } => await LoadSchemas(database, parent),
+                { Type: Schema } => LoadSchemaGroupLabels(parent),
                 { Type: GroupLabel, Name: Label.Tables } => throw new NotImplementedException(),
                 _ => LoadDatabase(database)
             };
@@ -41,16 +41,13 @@ namespace Sequel.Databases
 
         private IEnumerable<DatabaseObjectNode> LoadDatabase(string database)
         {
-            return new List<DatabaseObjectNode>
-            {
-                new DatabaseObjectNode(database, Database, "mdi-database", new List<DatabaseObjectNode>
-                {
-                    new DatabaseObjectNode("Schemas", Schema, "mdi-hexagon-multiple-outline")
-                })
-            };
+            var rootNode = new DatabaseObjectNode(database, Database, parent: null, "mdi-database");
+            rootNode.Children.Add(new DatabaseObjectNode(Label.Schemas, Schema, rootNode, "mdi-hexagon-multiple-outline"));
+
+            return new List<DatabaseObjectNode> { rootNode };
         }
 
-        private async Task<IEnumerable<DatabaseObjectNode>> LoadSchemas(string database)
+        private async Task<IEnumerable<DatabaseObjectNode>> LoadSchemas(string database, DatabaseObjectNode? root)
         {
             var schemas = await _server.QueryForListOfString(database, 
                 "SELECT schema_name " +
@@ -59,14 +56,14 @@ namespace Sequel.Databases
                 "AND schema_name <> 'information_schema' " +
                 "ORDER BY schema_name");
 
-            return schemas.Select(schema => new DatabaseObjectNode(schema, Schema, "mdi-hexagon-multiple-outline"));
+            return schemas.Select(schema => new DatabaseObjectNode(schema, Schema, root, "mdi-hexagon-multiple-outline"));
         }
 
-        private IEnumerable<DatabaseObjectNode> LoadSchemaGroupLabels()
+        private IEnumerable<DatabaseObjectNode> LoadSchemaGroupLabels(DatabaseObjectNode? root)
         {
             return new List<DatabaseObjectNode>
             {
-                new DatabaseObjectNode(Label.Tables, GroupLabel, "mdi-table")
+                new DatabaseObjectNode(Label.Tables, GroupLabel, root, "mdi-table")
             };
         }
 

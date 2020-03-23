@@ -15,6 +15,7 @@
         dense
         open-on-click
         :items="nodes"
+        :item-key="path"
         :search="dbObjectSearch"
         :open.sync="openedNodes"
       >
