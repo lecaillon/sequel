@@ -66,15 +66,16 @@ export default new Vuex.Store({
       context.commit("setActiveDatabase", database);
       context.dispatch("fetchDatabaseObjectNodes");
     },
-    fetchDatabaseObjectNodes: async context => {
+    fetchDatabaseObjectNodes: async (context, parent: DatabaseObjectNode) => {
       if (context.state.activeDatabase === undefined) {
-        context.commit("setNodes", []);
+        context.commit("clearNodes");
       } else {
         const nodes = await http.post<DatabaseObjectNode[]>(`${BASE_URL}/sequel/database-objects`, {
           server: context.state.activeServer,
-          database: context.state.activeDatabase
+          database: context.state.activeDatabase,
+          databaseObject: parent === undefined ? null : parent
         } as QueryExecutionContext);
-        context.commit("setNodes", nodes);
+        context.commit("pushNodes", { parent, nodes });
       }
     },
     changeActiveNode: (context, node) => {
@@ -100,8 +101,15 @@ export default new Vuex.Store({
     setActiveDatabase(state, database) {
       state.activeDatabase = database;
     },
-    setNodes(state, nodes) {
-      state.nodes = nodes;
+    clearNodes(state) {
+      state.nodes = [];
+    },
+    pushNodes(state, { parent, nodes }) {
+      if (parent === undefined) {
+        state.nodes = nodes;
+      } else {
+        (parent as DatabaseObjectNode).children.push(...nodes);
+      }
     },
     setActiveNode(state, node) {
       state.activeNode = node;

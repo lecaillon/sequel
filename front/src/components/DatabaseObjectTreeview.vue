@@ -16,6 +16,7 @@
         dense
         return-object
         :items="nodes"
+        :load-children="fetchNodes"
         :search="dbObjectSearch"
         :open.sync="openedNodes"
         @update:active="selected"
@@ -42,6 +43,9 @@ export default Vue.extend({
   methods: {
     selected(nodes: DatabaseObjectNode[]) {
       store.dispatch("changeActiveNode", nodes.length == 0 ? {} : nodes[0]);
+    },
+    async fetchNodes(parent: DatabaseObjectNode) {
+      await store.dispatch("fetchDatabaseObjectNodes", parent);
     }
   },
   computed: {
