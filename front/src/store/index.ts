@@ -62,17 +62,20 @@ export default new Vuex.Store({
       }
       context.dispatch("changeActiveDatabase");
     },
-    changeActiveDatabase: async (context, database) => {
+    changeActiveDatabase: (context, database) => {
       context.commit("setActiveDatabase", database);
-      if (context.state.activeDatabase === undefined) {
-        context.dispatch("updateDatabaseObjectTreeview", []);
-      } else {
-        const nodes = await http.post<DatabaseObjectNode[]>(`${BASE_URL}/sequel/database-objects`, { server: context.state.activeServer, database } as QueryExecutionContext);
-        context.dispatch("updateDatabaseObjectTreeview", nodes);
-      }
+      context.dispatch("fetchDatabaseObjectNodes");
     },
-    updateDatabaseObjectTreeview: (context, nodes) => {
-      context.commit("setNodes", nodes);
+    fetchDatabaseObjectNodes: async context => {
+      if (context.state.activeDatabase === undefined) {
+        context.commit("setNodes", []);
+      } else {
+        const nodes = await http.post<DatabaseObjectNode[]>(`${BASE_URL}/sequel/database-objects`, {
+          server: context.state.activeServer,
+          database: context.state.activeDatabase
+        } as QueryExecutionContext);
+        context.commit("setNodes", nodes);
+      }
     },
     changeActiveNode: (context, node) => {
       context.commit("setActiveNode", node);
