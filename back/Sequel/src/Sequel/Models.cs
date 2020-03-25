@@ -17,11 +17,13 @@ namespace Sequel.Models
 
     public class DatabaseObjectNode
     {
+        public const string PathSeparator = "::";
+
         public DatabaseObjectNode() { }
 
         public DatabaseObjectNode(string name, DatabaseObjectType type, DatabaseObjectNode? parent, string icon, List<DatabaseObjectNode> children = null!)
         {
-            Id = parent is null ? name : $"{parent.Id}::{name}";
+            Id = parent is null ? name : $"{parent.Id}{PathSeparator}{name}";
             Type = type;
             Name = name;
             Icon = icon;

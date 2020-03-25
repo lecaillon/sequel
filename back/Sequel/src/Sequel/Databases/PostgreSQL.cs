@@ -34,20 +34,21 @@ namespace Sequel.Databases
             {
                 { Type: GroupLabel, Name: Label.Schemas } => await LoadSchemas(database, parent),
                 { Type: Schema } => LoadSchemaGroupLabels(parent),
-                { Type: GroupLabel, Name: Label.Tables } => throw new NotImplementedException(),
-                _ => LoadDatabase(database)
+                { Type: GroupLabel, Name: Label.Tables } => await LoadTables(database, parent),
+                null => LoadDatabase(database),
+                _ => new List<DatabaseObjectNode>()
             };
         }
 
         private IEnumerable<DatabaseObjectNode> LoadDatabase(string database)
         {
             var rootNode = new DatabaseObjectNode(database, Database, parent: null, "mdi-database");
-            rootNode.Children.Add(new DatabaseObjectNode(Label.Schemas, Schema, rootNode, "mdi-hexagon-multiple-outline"));
+            rootNode.Children.Add(new DatabaseObjectNode(Label.Schemas, GroupLabel, rootNode, "mdi-hexagon-multiple-outline"));
 
             return new List<DatabaseObjectNode> { rootNode };
         }
 
-        private async Task<IEnumerable<DatabaseObjectNode>> LoadSchemas(string database, DatabaseObjectNode? root)
+        private async Task<IEnumerable<DatabaseObjectNode>> LoadSchemas(string database, DatabaseObjectNode root)
         {
             var schemas = await _server.QueryForListOfString(database, 
                 "SELECT schema_name " +
@@ -59,13 +60,29 @@ namespace Sequel.Databases
             return schemas.Select(schema => new DatabaseObjectNode(schema, Schema, root, "mdi-hexagon-multiple-outline"));
         }
 
-        private IEnumerable<DatabaseObjectNode> LoadSchemaGroupLabels(DatabaseObjectNode? root)
+        private IEnumerable<DatabaseObjectNode> LoadSchemaGroupLabels(DatabaseObjectNode root)
         {
             return new List<DatabaseObjectNode>
             {
                 new DatabaseObjectNode(Label.Tables, GroupLabel, root, "mdi-table")
             };
         }
+
+        private async Task<IEnumerable<DatabaseObjectNode>> LoadTables(string database, DatabaseObjectNode root)
+        {
+            var tables = await _server.QueryForListOfString(database,
+                "SELECT t.table_name " +
+                "FROM information_schema.tables t " +
+                "LEFT JOIN pg_depend dep ON dep.objid = (quote_ident(t.table_schema)||'.'||quote_ident(t.table_name))::regclass::oid AND dep.deptype = 'e' " +
+               $"WHERE table_schema = '{GetSchema(root)}' " +
+                "AND table_type='BASE TABLE' " +
+                "AND dep.objid IS NULL " +
+                "AND NOT (SELECT EXISTS (SELECT inhrelid FROM pg_catalog.pg_inherits WHERE inhrelid = (quote_ident(t.table_schema)||'.'||quote_ident(t.table_name))::regclass::oid))");
+
+            return tables.Select(table => new DatabaseObjectNode(table, Table, root, "mdi-table"));
+        }
+
+        private static string GetSchema(DatabaseObjectNode node) => node.Id.Split(DatabaseObjectNode.PathSeparator)[2];
 
         private static class Label
         {
