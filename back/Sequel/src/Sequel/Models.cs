@@ -21,13 +21,19 @@ namespace Sequel.Models
 
         public DatabaseObjectNode() { }
 
-        public DatabaseObjectNode(string name, DatabaseObjectType type, DatabaseObjectNode? parent, string icon, List<DatabaseObjectNode> children = null!)
+        public DatabaseObjectNode(string name,
+                                  DatabaseObjectType type,
+                                  DatabaseObjectNode? parent,
+                                  string icon,
+                                  List<DatabaseObjectNode> children = null!,
+                                  Dictionary<string, object> details = null!)
         {
             Id = parent is null ? name : $"{parent.Id}{PathSeparator}{name}";
             Type = type;
             Name = name;
             Icon = icon;
             Children = children ?? new List<DatabaseObjectNode>();
+            Details = details ?? new Dictionary<string, object>();
         }
 
         [Required]
@@ -39,6 +45,7 @@ namespace Sequel.Models
         [Required]
         public string Icon { get; set; } = default!;
         public List<DatabaseObjectNode> Children { get; } = new List<DatabaseObjectNode>();
+        public Dictionary<string, object> Details { get; } = new Dictionary<string, object>();
     }
 
     public class QueryExecutionContext

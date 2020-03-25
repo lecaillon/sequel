@@ -4,4 +4,5 @@ export interface DatabaseObjectNode {
     type: string;
     icon: string;
     children: DatabaseObjectNode[];
+    details: Map<string, Object>;
 }
