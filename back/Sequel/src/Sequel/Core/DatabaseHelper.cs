@@ -60,10 +60,39 @@ namespace Sequel.Core
             });
         }
 
-        public static async Task<IEnumerable<string>> QueryForListOfString(this ServerConnection server, string sql)
+        public static async Task<IEnumerable<string>> QueryForListOfString(this ServerConnection server, string sql) 
+            => await QueryForListOfString(server, null, sql);
+
+        public static async Task<long> QueryForLong(this ServerConnection server, string? database, string sql)
         {
-            return await QueryForListOfString(server, null, sql);
+            return await Execute(server, database, sql, cmd =>
+            {
+                return Convert.ToInt64(cmd.ExecuteScalar());
+            });
         }
+
+        public static async Task<long> QueryForLong(this ServerConnection server, string sql) 
+            => await QueryForLong(server, null, sql);
+
+        public static async Task<IEnumerable<T>> QueryForList<T>(this ServerConnection server, string? database, string sql, Func<IDataReader, T> map)
+        {
+            return await Execute(server, database, sql, cmd =>
+            {
+                var list = new List<T>();
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        list.Add(map(reader));
+                    }
+                }
+
+                return list;
+            });
+        }
+
+        public static async Task<IEnumerable<T>> QueryForList<T>(this ServerConnection server, string sql, Func<IDataReader, T> map)
+            => await QueryForList(server, null, sql, map);
 
         private static async Task<T> Execute<T>(this ServerConnection server, string? database, string sql, Func<IDbCommand, T> query, Action<IDbCommand>? setupDbCommand = null)
         {
