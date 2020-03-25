@@ -33,6 +33,7 @@ namespace Sequel
         Database,
         Schema,
         Table,
-        Column
+        Function,
+        Column,
     }
 }
