@@ -7,11 +7,11 @@
       <v-btn icon>
         <v-icon>mdi-play-circle-outline</v-icon>
       </v-btn>
-      <v-btn icon>
+      <v-btn icon @click.stop="showMonaco('1')">
         <v-icon>mdi-tab-plus</v-icon>
       </v-btn>
       <v-divider vertical inset />
-      <v-btn icon>
+      <v-btn icon @click.stop="showMonaco('2')">
         <v-icon>mdi-database-refresh</v-icon>
       </v-btn>
       <v-btn icon @click.stop="showDbProperty = !showDbProperty">
@@ -52,12 +52,10 @@
           </v-tabs>
           <v-tabs-items v-model="activeTab">
             <v-tab-item>
-              <v-sheet id="monaco-1" flat height="100">
-              </v-sheet>
+              <v-sheet id="monaco-1" flat height="100"></v-sheet>
             </v-tab-item>
             <v-tab-item>
-              <v-sheet id="monaco-2" flat>
-              </v-sheet>
+              <v-sheet id="monaco-2" flat height="100"></v-sheet>
             </v-tab-item>
           </v-tabs-items>
         </v-sheet>
@@ -92,6 +90,7 @@ import SelectDatabase from "@/components/SelectDatabase.vue";
 import DatabaseObjectTreeview from "@/components/DatabaseObjectTreeview.vue";
 import AppSnackbar from "@/components/AppSnackbar.vue";
 import { ServerConnection } from "./models/serverConnection";
+import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 export default Vue.extend({
   name: "App",
@@ -106,6 +105,7 @@ export default Vue.extend({
     AppSnackbar
   },
   data: () => ({
+    editor: {} as monaco.editor.IStandaloneCodeEditor,
     activeTab: null,
     showDbExplorer: true,
     showDbProperty: false,
@@ -125,6 +125,16 @@ export default Vue.extend({
         } as ServerConnection);
       }
       this.showFormServerConnection = true;
+    },
+    showMonaco(id: string) {
+      this.editor = monaco.editor.create(
+        document.getElementById("monaco-" + id)!,
+        {
+          value: "SELECT * FROM TABLE1",
+          language: "sql",
+          theme: "vs-dark"
+        }
+      );
     }
   },
   computed: {
