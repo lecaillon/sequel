@@ -44,7 +44,24 @@
     </v-navigation-drawer>
 
     <v-content>
-      <v-container fluid></v-container>
+      <v-container fluid class="pa-0">
+        <v-sheet flat>
+          <v-tabs v-model="activeTab">
+            <v-tab>Item One</v-tab>
+            <v-tab>Item Two</v-tab>
+          </v-tabs>
+          <v-tabs-items v-model="activeTab">
+            <v-tab-item>
+              <v-sheet id="monaco-1" flat height="100">
+              </v-sheet>
+            </v-tab-item>
+            <v-tab-item>
+              <v-sheet id="monaco-2" flat>
+              </v-sheet>
+            </v-tab-item>
+          </v-tabs-items>
+        </v-sheet>
+      </v-container>
     </v-content>
 
     <v-footer app></v-footer>
@@ -89,6 +106,7 @@ export default Vue.extend({
     AppSnackbar
   },
   data: () => ({
+    activeTab: null,
     showDbExplorer: true,
     showDbProperty: false,
     showFormServerConnection: false
