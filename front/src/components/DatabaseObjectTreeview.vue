@@ -1,10 +1,11 @@
 <template>
-  <v-card class="mx-auto" style="overflow: visible">
+  <v-card class="mx-auto" style="overflow: visible" flat tile>
     <v-sheet>
       <v-text-field
         v-model="dbObjectSearch"
-        label="Filter elements"
+        label="Filter items"
         flat
+        dense
         solo
         hide-details
         clearable
