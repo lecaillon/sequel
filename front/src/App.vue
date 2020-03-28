@@ -11,7 +11,7 @@
         <v-icon>mdi-tab-plus</v-icon>
       </v-btn>
       <v-divider vertical inset />
-      <v-btn icon @click.stop="showMonaco('2')">
+      <v-btn icon @click.stop="resize()">
         <v-icon>mdi-database-refresh</v-icon>
       </v-btn>
       <v-btn icon @click.stop="showDbProperty = !showDbProperty">
@@ -44,21 +44,26 @@
     </v-navigation-drawer>
 
     <v-content>
-      <v-container fluid class="pa-0">
-        <v-sheet flat>
-          <v-tabs v-model="activeTab">
-            <v-tab>Item One</v-tab>
-            <v-tab>Item Two</v-tab>
-          </v-tabs>
-          <v-tabs-items v-model="activeTab">
-            <v-tab-item>
-              <v-sheet id="monaco-1" flat height="100"></v-sheet>
+      <v-container fluid class="pa-0" fill-height>
+        <v-tabs v-model="activeTab">
+          <v-tab>Item One</v-tab>
+          <v-tab>Item Two</v-tab>
+        </v-tabs>
+
+        <v-container fluid class="pa-0" style="height:60%">
+          <v-tabs-items v-model="activeTab" class="pt-2" style="height: 100%">
+            <v-tab-item style="height: 100%">
+              <v-sheet tile id="monaco-1" style="height:100%"></v-sheet>
             </v-tab-item>
-            <v-tab-item>
-              <v-sheet id="monaco-2" flat height="100"></v-sheet>
+            <v-tab-item style="height: 100%">
+              <v-sheet tile id="monaco-2" style="height:100%"></v-sheet>
             </v-tab-item>
           </v-tabs-items>
-        </v-sheet>
+        </v-container>
+
+        <v-container fluid class="pa-0" style="height:40%">
+          <v-sheet tile style="height:100%;background-color:grey"></v-sheet>
+        </v-container>
       </v-container>
     </v-content>
 
@@ -135,6 +140,9 @@ export default Vue.extend({
           theme: "vs-dark"
         }
       );
+    },
+    resize() {
+      this.editor.layout();
     }
   },
   computed: {
