@@ -49,20 +49,17 @@
           <v-tab>Item One</v-tab>
           <v-tab>Item Two</v-tab>
         </v-tabs>
-
-        <v-container fluid class="pa-0" style="height:60%">
-          <v-tabs-items v-model="activeTab" class="pt-2" style="height: 100%">
+        <v-container fluid class="pa-0" style="height:100%">
+          <v-tabs-items class="pt-2" v-model="activeTab" style="height: 100%">
             <v-tab-item style="height: 100%">
-              <v-sheet tile id="monaco-1" style="height:100%"></v-sheet>
-            </v-tab-item>
-            <v-tab-item style="height: 100%">
-              <v-sheet tile id="monaco-2" style="height:100%"></v-sheet>
+              <v-container fluid class="pa-0" style="height:60%">
+                <v-sheet tile id="monaco-1" style="height:100%"></v-sheet>
+              </v-container>
+              <v-container fluid class="pa-0" style="height:40%">
+                <v-sheet tile style="height:100%;background-color:grey"></v-sheet>
+              </v-container>
             </v-tab-item>
           </v-tabs-items>
-        </v-container>
-
-        <v-container fluid class="pa-0" style="height:40%">
-          <v-sheet tile style="height:100%;background-color:grey"></v-sheet>
         </v-container>
       </v-container>
     </v-content>
