@@ -54,7 +54,6 @@ namespace Sequel.Models
         public ServerConnection Server { get; set; } = default!;
         [Required]
         public string Database { get; set; } = default!;
-        public string? Schema { get; set; }
         public DatabaseObjectNode? DatabaseObject { get; set; }
         public string? Sql { get; set; }
     }
