@@ -7,7 +7,7 @@
       <v-btn icon>
         <v-icon>mdi-play-circle-outline</v-icon>
       </v-btn>
-      <v-btn icon>
+      <v-btn icon @click.stop="openNewQueryTab()">
         <v-icon>mdi-tab-plus</v-icon>
       </v-btn>
       <v-divider vertical inset />
@@ -21,12 +21,12 @@
       <v-btn icon @click.stop="openFormServerConnection(true)">
         <v-icon>mdi-server-plus</v-icon>
       </v-btn>
-      <SelectServerConnection
+      <select-server-connection
         @edit="openFormServerConnection(false)"
         class="me-4"
         style="max-width: 500px"
-      ></SelectServerConnection>
-      <SelectDatabase style="max-width: 350px"></SelectDatabase>
+      ></select-server-connection>
+      <select-database style="max-width: 350px"></select-database>
     </v-app-bar>
 
     <v-navigation-drawer app clipped v-model="showDbExplorer" width="300" style="overflow: visible">
@@ -44,24 +44,24 @@
     </v-navigation-drawer>
 
     <v-content>
-      <DatabaseQueryManager></DatabaseQueryManager>
+      <database-query-manager></database-query-manager>
     </v-content>
 
     <v-footer app></v-footer>
 
-    <FormServerConnection
+    <form-server-connection
       :show="showFormServerConnection"
       :server="editServer"
       @close="showFormServerConnection = false"
-    ></FormServerConnection>
+    ></form-server-connection>
 
-    <AppSnackbar
+    <app-snackbar
       :show="appSnackbar.show"
       :color="appSnackbar.color"
       :message="appSnackbar.message"
       :details="appSnackbar.details"
       @close="closeAppSnackbar"
-    ></AppSnackbar>
+    ></app-snackbar>
   </v-app>
 </template>
 
@@ -109,6 +109,9 @@ export default Vue.extend({
         } as ServerConnection);
       }
       this.showFormServerConnection = true;
+    },
+    openNewQueryTab() {
+      store.dispatch("openNewQueryTab");
     }
   },
   computed: {

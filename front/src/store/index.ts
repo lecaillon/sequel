@@ -20,7 +20,7 @@ export default new Vuex.Store({
     activeDatabase: {} as string,
     nodes: [] as DatabaseObjectNode[],
     activeNode: {} as DatabaseObjectNode,
-    activeQueryTab: {},
+    activeQueryTab: {} as number,
     queryTabs: [] as QueryTabContent[]
   },
   actions: {
@@ -83,6 +83,14 @@ export default new Vuex.Store({
     },
     changeActiveNode: (context, node) => {
       context.commit("setActiveNode", node);
+    },
+    openNewQueryTab: context => {
+      const index = context.state.queryTabs.length;
+      context.commit("pushQueryTab", { id: index, name: `query${index}` } as QueryTabContent);
+      context.dispatch("changeActiveQueryTab", index);
+    },
+    changeActiveQueryTab: (context, activeTab) => {
+      context.commit("setActiveQueryTab", activeTab);
     }
   },
   mutations: {
@@ -116,6 +124,12 @@ export default new Vuex.Store({
     },
     setActiveNode(state, node) {
       state.activeNode = node;
+    },
+    pushQueryTab(state, queryTab) {
+      state.queryTabs.push(queryTab);
+    },
+    setActiveQueryTab(state, activeTab) {
+      state.activeQueryTab = activeTab;
     }
   },
   modules: {}
