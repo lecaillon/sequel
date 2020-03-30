@@ -7,11 +7,11 @@
       <v-btn icon>
         <v-icon>mdi-play-circle-outline</v-icon>
       </v-btn>
-      <v-btn icon @click.stop="showMonaco('1')">
+      <v-btn icon>
         <v-icon>mdi-tab-plus</v-icon>
       </v-btn>
       <v-divider vertical inset />
-      <v-btn icon @click.stop="resize()">
+      <v-btn icon>
         <v-icon>mdi-database-refresh</v-icon>
       </v-btn>
       <v-btn icon @click.stop="showDbProperty = !showDbProperty">
@@ -44,24 +44,7 @@
     </v-navigation-drawer>
 
     <v-content>
-      <v-container fluid class="pa-0" fill-height>
-        <v-tabs v-model="activeTab">
-          <v-tab>Item One</v-tab>
-          <v-tab>Item Two</v-tab>
-        </v-tabs>
-        <v-container fluid class="pa-0" style="height:100%">
-          <v-tabs-items class="pt-2" v-model="activeTab" style="height: 100%">
-            <v-tab-item style="height: 100%">
-              <v-container fluid class="pa-0" style="height:60%">
-                <v-sheet tile id="monaco-1" style="height:100%"></v-sheet>
-              </v-container>
-              <v-container fluid class="pa-0" style="height:40%">
-                <v-sheet tile style="height:100%;background-color:grey"></v-sheet>
-              </v-container>
-            </v-tab-item>
-          </v-tabs-items>
-        </v-container>
-      </v-container>
+      <DatabaseQueryManager></DatabaseQueryManager>
     </v-content>
 
     <v-footer app></v-footer>
@@ -90,9 +73,9 @@ import FormServerConnection from "@/components/FormServerConnection.vue";
 import SelectServerConnection from "@/components/SelectServerConnection.vue";
 import SelectDatabase from "@/components/SelectDatabase.vue";
 import DatabaseObjectTreeview from "@/components/DatabaseObjectTreeview.vue";
+import DatabaseQueryManager from "@/components/DatabaseQueryManager.vue";
 import AppSnackbar from "@/components/AppSnackbar.vue";
 import { ServerConnection } from "./models/serverConnection";
-import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 export default Vue.extend({
   name: "App",
@@ -104,11 +87,10 @@ export default Vue.extend({
     SelectServerConnection,
     SelectDatabase,
     DatabaseObjectTreeview,
+    DatabaseQueryManager,
     AppSnackbar
   },
   data: () => ({
-    editor: {} as monaco.editor.IStandaloneCodeEditor,
-    activeTab: null,
     showDbExplorer: true,
     showDbProperty: false,
     showFormServerConnection: false
@@ -127,19 +109,6 @@ export default Vue.extend({
         } as ServerConnection);
       }
       this.showFormServerConnection = true;
-    },
-    showMonaco(id: string) {
-      this.editor = monaco.editor.create(
-        document.getElementById("monaco-" + id)!,
-        {
-          value: "SELECT * FROM TABLE1",
-          language: "sql",
-          theme: "vs-dark"
-        }
-      );
-    },
-    resize() {
-      this.editor.layout();
     }
   },
   computed: {

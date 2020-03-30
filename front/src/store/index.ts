@@ -6,6 +6,7 @@ import { ServerConnection } from "@/models/serverConnection";
 import { DatabaseObjectNode } from "@/models/databaseObjectNode";
 import { QueryExecutionContext } from "@/models/queryExecutionContext";
 import { AppSnackbar } from "@/models/appSnackbar";
+import { QueryTabContent } from "@/models/queryTabContent";
 
 Vue.use(Vuex);
 
@@ -18,7 +19,9 @@ export default new Vuex.Store({
     databases: [] as string[],
     activeDatabase: {} as string,
     nodes: [] as DatabaseObjectNode[],
-    activeNode: {} as DatabaseObjectNode
+    activeNode: {} as DatabaseObjectNode,
+    activeQueryTab: {},
+    queryTabs: [] as QueryTabContent[]
   },
   actions: {
     showAppSnackbar: (context, appSnackbar: AppSnackbar) => {
