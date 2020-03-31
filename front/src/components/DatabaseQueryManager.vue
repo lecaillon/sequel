@@ -2,8 +2,7 @@
   <v-container fluid class="pa-0" fill-height>
     <v-tabs :value="activeTab" @change="selected">
       <v-tab v-for="(tab, index) in queryTabs" :key="tab.name">
-        {{ tab.name }}
-        <v-icon show="false" @click="closeTab(index)" small class="ml-1">mdi-close</v-icon>
+        <query-tab :name="tab.name" :index="index" @close="closeTab"></query-tab>
       </v-tab>
     </v-tabs>
     <v-container fluid class="pa-0" style="height:100%">
@@ -25,12 +24,13 @@
 import Vue from "vue";
 import store from "@/store";
 import QueryEditor from "@/components/QueryEditor.vue";
-import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
+import QueryTab from "@/components/QueryTab.vue";
 
 export default Vue.extend({
   name: "DatabaseQueryManager",
   components: {
-    QueryEditor
+    QueryEditor,
+    QueryTab
   },
   methods: {
     selected(activeTab: number) {
