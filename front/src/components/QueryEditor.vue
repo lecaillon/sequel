@@ -23,6 +23,9 @@ export default Vue.extend({
         theme: "vs-dark"
       }
     );
+  },
+  beforeDestroy() {
+    this.editor.dispose();
   }
 });
 </script>
