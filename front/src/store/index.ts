@@ -85,12 +85,13 @@ export default new Vuex.Store({
       context.commit("setActiveNode", node);
     },
     openNewQueryTab: context => {
+      const id = Math.max(...context.state.queryTabs.map(x => x.id), 0) + 1;
       const index = context.state.queryTabs.length;
-      context.commit("pushQueryTab", { id: index, name: `query${index}` } as QueryTabContent);
+      context.commit("pushQueryTab", { id, name: `query${id}` } as QueryTabContent);
       context.dispatch("changeActiveQueryTab", index);
     },
-    changeActiveQueryTab: (context, activeTab) => {
-      context.commit("setActiveQueryTab", activeTab);
+    changeActiveQueryTab: (context, index) => {
+      context.commit("setActiveQueryTab", index);
     }
   },
   mutations: {
@@ -128,8 +129,8 @@ export default new Vuex.Store({
     pushQueryTab(state, queryTab) {
       state.queryTabs.push(queryTab);
     },
-    setActiveQueryTab(state, activeTab) {
-      state.activeQueryTab = activeTab;
+    setActiveQueryTab(state, index) {
+      state.activeQueryTab = index;
     }
   },
   modules: {}
