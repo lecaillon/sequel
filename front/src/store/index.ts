@@ -90,6 +90,9 @@ export default new Vuex.Store({
       context.commit("pushQueryTab", { id, name: `query${id}` } as QueryTabContent);
       context.dispatch("changeActiveQueryTab", index);
     },
+    closeQueryTab: (context, index) => {
+      context.commit("removeQueryTab", index);
+    },
     changeActiveQueryTab: (context, index) => {
       context.commit("setActiveQueryTab", index);
     }
@@ -128,6 +131,9 @@ export default new Vuex.Store({
     },
     pushQueryTab(state, queryTab) {
       state.queryTabs.push(queryTab);
+    },
+    removeQueryTab(state, index) {
+      state.queryTabs.splice(index, 1);
     },
     setActiveQueryTab(state, index) {
       state.activeQueryTab = index;

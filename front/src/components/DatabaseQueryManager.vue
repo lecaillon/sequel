@@ -1,7 +1,10 @@
 <template>
   <v-container fluid class="pa-0" fill-height>
     <v-tabs :value="activeTab" @change="selected">
-      <v-tab v-for="tab in queryTabs" :key="tab.name">{{ tab.name }}</v-tab>
+      <v-tab v-for="(tab, index) in queryTabs" :key="tab.name">
+        {{ tab.name }}
+        <v-icon show="false" @click="closeTab(index)" small class="ml-1">mdi-close</v-icon>
+      </v-tab>
     </v-tabs>
     <v-container fluid class="pa-0" style="height:100%">
       <v-tabs-items class="pt-2" v-model="activeTab" style="height: 100%">
@@ -32,6 +35,9 @@ export default Vue.extend({
   methods: {
     selected(activeTab: number) {
       store.dispatch("changeActiveQueryTab", activeTab);
+    },
+    closeTab(activeTab: number) {
+      store.dispatch("closeQueryTab", activeTab);
     }
   },
   computed: {
