@@ -1,12 +1,12 @@
 <template>
   <v-container
-    :name="name"
+    :title="title"
     :index="index"
     @mouseover="mouseOver"
     @mouseleave="mouseleave"
-    class="d-flex pa-0"
+    class="d-flex pa-0 subtitle-2"
   >
-    {{ name }}
+    {{ title }}
     <v-icon
       v-bind:style="{ visibility: btnClose }"
       @click="$emit('close', index)"
@@ -22,7 +22,7 @@ import Vue from "vue";
 export default Vue.extend({
   name: "QueryTab",
   props: {
-    name: String,
+    title: String,
     index: Number
   },
   data: () => ({

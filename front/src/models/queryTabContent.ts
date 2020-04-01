@@ -1,7 +1,8 @@
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 export interface QueryTabContent {
-    id: number,
-    name: string,
+    id: string,
+    num: number,
+    title: string,
     editor: monaco.editor.IStandaloneCodeEditor
 }

@@ -9,7 +9,7 @@ import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 export default Vue.extend({
   name: "QueryEditor",
   props: {
-    editorId: Number
+    editorId: String
   },
   data: () => ({
     editor: {} as monaco.editor.IStandaloneCodeEditor
@@ -18,7 +18,7 @@ export default Vue.extend({
     this.editor = monaco.editor.create(
       document.getElementById("editor-" + this.editorId)!,
       {
-        value: "SELECT * FROM TABLE" + this.editorId,
+        value: "SELECT * FROM TABLE_" + this.editorId,
         language: "sql",
         theme: "vs-dark"
       }

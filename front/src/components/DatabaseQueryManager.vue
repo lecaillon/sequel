@@ -1,13 +1,13 @@
 <template>
   <v-container fluid class="pa-0" fill-height>
     <v-tabs :value="activeTab" @change="selected">
-      <v-tab v-for="(tab, index) in queryTabs" :key="tab.name">
-        <query-tab :name="tab.name" :index="index" @close="closeTab"></query-tab>
+      <v-tab v-for="(tab, index) in queryTabs" :key="tab.id">
+        <query-tab :title="tab.title" :index="index" @close="closeTab"></query-tab>
       </v-tab>
     </v-tabs>
     <v-container fluid class="pa-0" style="height:100%">
       <v-tabs-items class="pt-2" v-model="activeTab" style="height: 100%">
-        <v-tab-item v-for="tab in queryTabs" :key="tab.name" style="height: 100%">
+        <v-tab-item v-for="tab in queryTabs" :key="tab.id" style="height: 100%">
           <v-container fluid class="pa-0" style="height:60%">
             <query-editor :editorId="tab.id"></query-editor>
           </v-container>

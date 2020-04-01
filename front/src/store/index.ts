@@ -7,6 +7,7 @@ import { DatabaseObjectNode } from "@/models/databaseObjectNode";
 import { QueryExecutionContext } from "@/models/queryExecutionContext";
 import { AppSnackbar } from "@/models/appSnackbar";
 import { QueryTabContent } from "@/models/queryTabContent";
+import { v4 as uuidv4 } from "uuid";
 
 Vue.use(Vuex);
 
@@ -85,9 +86,9 @@ export default new Vuex.Store({
       context.commit("setActiveNode", node);
     },
     openNewQueryTab: context => {
-      const id = Math.max(...context.state.queryTabs.map(x => x.id), 0) + 1;
+      const num = Math.max(...context.state.queryTabs.map(x => x.num), 0) + 1;
       const index = context.state.queryTabs.length;
-      context.commit("pushQueryTab", { id, name: `query${id}` } as QueryTabContent);
+      context.commit("pushQueryTab", { id: uuidv4(), num, title: `query${num}` } as QueryTabContent);
       context.dispatch("changeActiveQueryTab", index);
     },
     closeQueryTab: (context, index) => {
