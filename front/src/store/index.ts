@@ -24,6 +24,9 @@ export default new Vuex.Store({
     activeQueryTab: {} as number,
     queryTabs: [] as QueryTabContent[]
   },
+  getters: {
+    activeEditor: state => state.queryTabs[state.activeQueryTab].editor
+  },
   actions: {
     showAppSnackbar: (context, appSnackbar: AppSnackbar) => {
       appSnackbar.show = true;
@@ -96,6 +99,9 @@ export default new Vuex.Store({
     },
     changeActiveQueryTab: (context, index) => {
       context.commit("setActiveQueryTab", index);
+    },
+    updateQueryTabContent: (context, tab: QueryTabContent) => {
+      context.commit("mergeQueryTabContent", tab);
     }
   },
   mutations: {
@@ -138,6 +144,12 @@ export default new Vuex.Store({
     },
     setActiveQueryTab(state, index) {
       state.activeQueryTab = index;
+    },
+    mergeQueryTabContent(state, tab: QueryTabContent) {
+      const tabToUpdate = state.queryTabs.find(x => x.id === tab.id);
+      if (tabToUpdate) {
+        tabToUpdate.editor = tab.editor;
+      }
     }
   },
   modules: {}

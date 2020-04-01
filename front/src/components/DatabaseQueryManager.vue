@@ -9,7 +9,7 @@
       <v-tabs-items class="pt-2" v-model="activeTab" style="height: 100%">
         <v-tab-item v-for="tab in queryTabs" :key="tab.id" style="height: 100%">
           <v-container fluid class="pa-0" style="height:60%">
-            <query-editor :editorId="tab.id"></query-editor>
+            <query-editor :editorId="tab.id" @created="editorCreated"></query-editor>
           </v-container>
           <v-container fluid class="pa-0" style="height:40%">
             <v-sheet tile style="height:100%"></v-sheet>
@@ -25,6 +25,8 @@ import Vue from "vue";
 import store from "@/store";
 import QueryEditor from "@/components/QueryEditor.vue";
 import QueryTab from "@/components/QueryTab.vue";
+import { QueryTabContent } from "@/models/queryTabContent";
+import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 export default Vue.extend({
   name: "DatabaseQueryManager",
@@ -38,6 +40,12 @@ export default Vue.extend({
     },
     closeTab(activeTab: number) {
       store.dispatch("closeQueryTab", activeTab);
+    },
+    editorCreated(id: string, editor: monaco.editor.IStandaloneCodeEditor) {
+      store.dispatch("updateQueryTabContent", {
+        id,
+        editor
+      } as QueryTabContent);
     }
   },
   computed: {

@@ -23,6 +23,7 @@ export default Vue.extend({
         theme: "vs-dark"
       }
     );
+    this.$emit("created", this.editorId, this.editor);
   },
   beforeDestroy() {
     this.editor.dispose();

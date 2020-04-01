@@ -4,7 +4,7 @@
       <v-app-bar-nav-icon @click.stop="showDbExplorer = !showDbExplorer"></v-app-bar-nav-icon>
       <v-toolbar-title>Sequel</v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn icon>
+      <v-btn icon @click.stop="runQuery()">
         <v-icon>mdi-play-circle-outline</v-icon>
       </v-btn>
       <v-btn icon @click.stop="openNewQueryTab()">
@@ -112,6 +112,9 @@ export default Vue.extend({
     },
     openNewQueryTab() {
       store.dispatch("openNewQueryTab");
+    },
+    runQuery() {
+     console.log(store.getters.activeEditor.getValue())
     }
   },
   computed: {
