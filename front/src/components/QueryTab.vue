@@ -3,7 +3,7 @@
     :title="title"
     :index="index"
     @mouseover="mouseOver"
-    @mouseleave="mouseleave"
+    @mouseleave="mouseLeave"
     class="d-flex pa-0 subtitle-2"
   >
     {{ title }}
@@ -32,7 +32,7 @@ export default Vue.extend({
     mouseOver() {
       this.btnClose = "visible";
     },
-    mouseleave() {
+    mouseLeave() {
       this.btnClose = "hidden";
     }
   }
