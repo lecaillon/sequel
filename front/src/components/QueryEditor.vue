@@ -18,9 +18,15 @@ export default Vue.extend({
     this.editor = monaco.editor.create(
       document.getElementById("editor-" + this.editorId)!,
       {
-        value: "SELECT * FROM TABLE_" + this.editorId,
+        value: "",
         language: "sql",
-        theme: "vs-dark"
+        theme: "vs-dark",
+        mouseWheelZoom: true,
+        scrollBeyondLastLine: false,
+        automaticLayout: false,
+        find: {
+          addExtraSpaceOnTop: false
+        }
       }
     );
     this.$emit("created", this.editorId, this.editor);
