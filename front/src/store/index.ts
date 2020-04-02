@@ -39,25 +39,25 @@ export default new Vuex.Store({
       const servers = await http.get<ServerConnection[]>(`${BASE_URL}/sequel/server-connection`);
       context.commit("setServers", servers);
     },
-    addServer: async (context, server) => {
+    addServer: async (context, server: ServerConnection) => {
       await http.post<void>(`${BASE_URL}/sequel/server-connection`, server);
       context.dispatch("fetchServers");
       context.dispatch("showAppSnackbar", { message: "New database connection added.", color: "success" } as AppSnackbar);
     },
-    deleteServer: async (context, serverId) => {
+    deleteServer: async (context, serverId: number) => {
       await http.delete<void>(`${BASE_URL}/sequel/server-connection/${serverId}`);
       context.dispatch("fetchServers");
       context.dispatch("showAppSnackbar", { message: "Database connection deleted.", color: "success" } as AppSnackbar);
     },
-    testServer: async (context, server) => {
+    testServer: async (context, server: ServerConnection) => {
       await http.post<void>(`${BASE_URL}/sequel/server-connection/test`, server);
       context.dispatch("showAppSnackbar", { message: "Database connection succeeded.", color: "success" } as AppSnackbar);
     },
-    changeActiveServer: (context, server) => {
+    changeActiveServer: (context, server: ServerConnection) => {
       context.commit("setActiveServer", server);
       context.dispatch("fetchDatabases", server);
     },
-    changeEditServer: (context, server) => {
+    changeEditServer: (context, server: ServerConnection) => {
       context.commit("setEditServer", server);
     },
     fetchDatabases: async context => {
@@ -69,7 +69,7 @@ export default new Vuex.Store({
       }
       context.dispatch("changeActiveDatabase");
     },
-    changeActiveDatabase: (context, database) => {
+    changeActiveDatabase: (context, database: string) => {
       context.commit("setActiveDatabase", database);
       context.dispatch("fetchDatabaseObjectNodes");
     },
@@ -85,7 +85,7 @@ export default new Vuex.Store({
         context.commit("pushNodes", { parent, nodes });
       }
     },
-    changeActiveNode: (context, node) => {
+    changeActiveNode: (context, node: DatabaseObjectNode) => {
       context.commit("setActiveNode", node);
     },
     openNewQueryTab: context => {
@@ -94,10 +94,10 @@ export default new Vuex.Store({
       context.commit("pushQueryTab", { id: uuidv4(), num, title: `query${num}` } as QueryTabContent);
       context.dispatch("changeActiveQueryTab", index);
     },
-    closeQueryTab: (context, index) => {
+    closeQueryTab: (context, index: number) => {
       context.commit("removeQueryTab", index);
     },
-    changeActiveQueryTab: (context, index) => {
+    changeActiveQueryTab: (context, index: number) => {
       context.commit("setActiveQueryTab", index);
     },
     updateQueryTabContent: (context, tab: QueryTabContent) => {
@@ -105,22 +105,22 @@ export default new Vuex.Store({
     }
   },
   mutations: {
-    setAppSnackbar(state, appSnackbar) {
+    setAppSnackbar(state, appSnackbar: AppSnackbar) {
       state.appSnackbar = appSnackbar;
     },
-    setServers(state, servers) {
+    setServers(state, servers: ServerConnection[]) {
       state.servers = servers;
     },
-    setActiveServer(state, server) {
+    setActiveServer(state, server: ServerConnection) {
       state.activeServer = server;
     },
-    setEditServer(state, server) {
+    setEditServer(state, server: ServerConnection) {
       state.editServer = server;
     },
-    setDatabases(state, databases) {
+    setDatabases(state, databases: string[]) {
       state.databases = databases;
     },
-    setActiveDatabase(state, database) {
+    setActiveDatabase(state, database: string) {
       state.activeDatabase = database;
     },
     clearNodes(state) {
@@ -133,16 +133,16 @@ export default new Vuex.Store({
         (parent as DatabaseObjectNode).children.push(...nodes);
       }
     },
-    setActiveNode(state, node) {
+    setActiveNode(state, node: DatabaseObjectNode) {
       state.activeNode = node;
     },
-    pushQueryTab(state, queryTab) {
+    pushQueryTab(state, queryTab: QueryTabContent) {
       state.queryTabs.push(queryTab);
     },
-    removeQueryTab(state, index) {
+    removeQueryTab(state, index: number) {
       state.queryTabs.splice(index, 1);
     },
-    setActiveQueryTab(state, index) {
+    setActiveQueryTab(state, index: number) {
       state.activeQueryTab = index;
     },
     mergeQueryTabContent(state, tab: QueryTabContent) {
@@ -151,6 +151,5 @@ export default new Vuex.Store({
         tabToUpdate.editor = tab.editor;
       }
     }
-  },
-  modules: {}
+  }
 });
