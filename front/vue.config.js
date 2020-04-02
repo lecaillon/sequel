@@ -38,7 +38,7 @@ module.exports = {
           '!rename',
           '!smartSelect',
           'snippets',
-          '!suggest',
+          'suggest',
           '!toggleHighContrast',
           '!toggleTabFocusMode',
           '!transpose',
