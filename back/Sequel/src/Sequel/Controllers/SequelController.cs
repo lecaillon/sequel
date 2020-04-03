@@ -11,14 +11,14 @@ namespace Sequel.Controllers
     public class SequelController : ControllerBase
     {
         [HttpGet]
-        [Route("server-connection")]
+        [Route("server-connections")]
         public async Task<ActionResult<List<ServerConnection>>> GetAllServerConnection()
         {
             return Ok(await Store<ServerConnection>.GetCollection());
         }
 
         [HttpPost]
-        [Route("server-connection")]
+        [Route("server-connections")]
         public async Task<IActionResult> AddServerConnection(ServerConnection server)
         {
             await Store<ServerConnection>.Add(server);
@@ -26,7 +26,7 @@ namespace Sequel.Controllers
         }
 
         [HttpDelete]
-        [Route("server-connection/{id}")]
+        [Route("server-connections/{id}")]
         public async Task<IActionResult> DeleteServerConnection(int id)
         {
             await Store<ServerConnection>.Delete(id);
@@ -34,7 +34,7 @@ namespace Sequel.Controllers
         }
 
         [HttpPost]
-        [Route("server-connection/test")]
+        [Route("server-connections/test")]
         public async Task<IActionResult> TestServerConnection(ServerConnection server)
         {
             await server.Validate();
