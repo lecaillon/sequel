@@ -17,6 +17,8 @@
 <script lang="ts">
 import Vue from "vue";
 import { AgGridVue } from "ag-grid-vue";
+import "ag-grid-community/dist/styles/ag-grid.css";
+import "ag-grid-community/dist/styles/ag-theme-alpine-dark.css";
 
 export default Vue.extend({
   name: "DataGrid",
@@ -45,9 +47,6 @@ export default Vue.extend({
 </script>
 
 <style lang="scss">
-@import "../../node_modules/ag-grid-community/dist/styles/ag-grid.css";
-@import "../../node_modules/ag-grid-community/dist/styles/ag-theme-alpine-dark.css";
-
 .ag-root-wrapper {
   border-width: 1px 0 0 0 !important;
   border-radius: 0px !important;

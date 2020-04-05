@@ -25,7 +25,7 @@ import Vue from "vue";
 import store from "@/store";
 import QueryTab from "@/components/QueryTab.vue";
 import QueryEditor from "@/components/QueryEditor.vue";
-import DataGrid from "@/components/DataGrid.vue"
+import DataGrid from "@/components/DataGrid.vue";
 import { QueryTabContent } from "@/models/queryTabContent";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
