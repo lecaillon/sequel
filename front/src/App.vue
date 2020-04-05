@@ -5,7 +5,7 @@
       <v-toolbar-title>Sequel</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn icon @click.stop="executeQuery()">
-        <v-icon>mdi-play-circle-outline</v-icon>
+        <v-icon>mdi-play</v-icon>
       </v-btn>
       <v-btn icon @click.stop="openNewQueryTab()">
         <v-icon>mdi-tab-plus</v-icon>
