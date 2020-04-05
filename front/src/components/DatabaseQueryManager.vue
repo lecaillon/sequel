@@ -8,10 +8,10 @@
     <v-container fluid class="pa-0" style="height:100%">
       <v-tabs-items class="pt-3" v-model="activeTab" style="height: 100%">
         <v-tab-item v-for="tab in queryTabs" :key="tab.id" style="height: 100%">
-          <v-container fluid class="pa-0" style="height:55%">
+          <v-container fluid class="pa-0" style="height:50%">
             <query-editor :editorId="tab.id" @created="editorCreated"></query-editor>
           </v-container>
-          <v-container fluid class="pa-0" style="height:39%">
+          <v-container fluid class="pa-0" style="height:calc(50% - 48px)">
             <data-grid :columns="tab.grid.columns" :rows="tab.grid.rows"></data-grid>
           </v-container>
         </v-tab-item>
