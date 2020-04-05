@@ -105,10 +105,14 @@ export default new Vuex.Store({
       context.commit("mergeQueryTabContent", tab);
     },
     executeQuery: async (context, tab: QueryTabContent) => {
+      const sql = tab.editor?.getSelection()?.isEmpty()
+        ? tab.editor?.getValue()
+        : tab.editor?.getModel()?.getValueInRange(tab.editor!.getSelection()!);
+
       const response = await http.post<QueryResponseContext>(`${BASE_URL}/sequel/execute-query`, {
         server: context.state.activeServer,
         database: context.state.activeDatabase,
-        sql: tab.editor?.getValue(),
+        sql: sql,
         id: tab.id
       } as QueryExecutionContext);
       context.commit("mergeQueryTabContent", { id: response.id, grid: { columns: response.columns, rows: response.rows } } as QueryTabContent);
