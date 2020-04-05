@@ -43,7 +43,7 @@ module.exports = {
           '!toggleTabFocusMode',
           '!transpose',
           'wordHighlighter',
-          '!wordOperations',
+          'wordOperations',
           '!wordPartOperations']
       })
     ]
