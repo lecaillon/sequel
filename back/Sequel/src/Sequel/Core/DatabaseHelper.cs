@@ -1,12 +1,10 @@
 ﻿#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Dynamic;
-using System.Linq;
 using System.Threading.Tasks;
 using Npgsql;
 using Sequel.Databases;
@@ -25,12 +23,12 @@ namespace Sequel.Core
             };
         }
 
-        public static async Task Validate(this ServerConnection server)
+        public static async Task ValidateAsync(this ServerConnection server)
         {
-            using var cnn = server.CreateConnection();
+            using var dbConnection = server.CreateConnection();
 
-            await cnn.OpenAsync();
-            await cnn.CloseAsync();
+            await dbConnection.OpenAsync();
+            await dbConnection.CloseAsync();
         }
 
         public static IDatabaseSystem GetDatabaseSystem(this ServerConnection server)
@@ -42,15 +40,15 @@ namespace Sequel.Core
             };
         }
 
-        public static async Task<IEnumerable<string>> QueryForListOfString(this ServerConnection server, string? database, string sql)
+        public static async Task<IEnumerable<string>> QueryStringListAsync(this ServerConnection server, string? database, string sql)
         {
-            return await Execute(server, database, sql, cmd =>
+            return await ExecuteAsync(server, database, sql, async dbCommand =>
             {
                 var list = new List<string>();
-                using var reader = cmd.ExecuteReader();
-                while (reader.Read())
+                using var dataReader = await dbCommand.ExecuteReaderAsync();
+                while (await dataReader.ReadAsync())
                 {
-                    string? item = reader[0].ToString();
+                    string? item = dataReader[0].ToString();
                     if (item != null)
                     {
                         list.Add(item);
@@ -61,59 +59,59 @@ namespace Sequel.Core
             });
         }
 
-        public static async Task<IEnumerable<string>> QueryForListOfString(this ServerConnection server, string sql) 
-            => await QueryForListOfString(server, null, sql);
+        public static async Task<IEnumerable<string>> QueryStringListAsync(this ServerConnection server, string sql) 
+            => await QueryStringListAsync(server, null, sql);
 
-        public static async Task<long> QueryForLong(this ServerConnection server, string? database, string sql)
+        public static async Task<long> QueryForLongAsync(this ServerConnection server, string? database, string sql)
         {
-            return await Execute(server, database, sql, cmd =>
+            return await ExecuteAsync(server, database, sql, async dbCommand =>
             {
-                return Convert.ToInt64(cmd.ExecuteScalar());
+                return Convert.ToInt64(await dbCommand.ExecuteScalarAsync());
             });
         }
 
-        public static async Task<long> QueryForLong(this ServerConnection server, string sql) 
-            => await QueryForLong(server, null, sql);
+        public static async Task<long> QueryForLongAsync(this ServerConnection server, string sql) 
+            => await QueryForLongAsync(server, null, sql);
 
-        public static async Task<IEnumerable<T>> QueryForList<T>(this ServerConnection server, string? database, string sql, Func<IDataReader, T> map)
+        public static async Task<IEnumerable<T>> QueryListAsync<T>(this ServerConnection server, string? database, string sql, Func<IDataReader, T> map)
         {
-            return await Execute(server, database, sql, cmd =>
+            return await ExecuteAsync(server, database, sql, async dbCommand =>
             {
                 var list = new List<T>();
-                using var reader = cmd.ExecuteReader();
-                while (reader.Read())
+                using var dataReader = await dbCommand.ExecuteReaderAsync();
+                while (await dataReader.ReadAsync())
                 {
-                    list.Add(map(reader));
+                    list.Add(map(dataReader));
                 }
 
                 return list;
             });
         }
 
-        public static async Task<IEnumerable<T>> QueryForList<T>(this ServerConnection server, string sql, Func<IDataReader, T> map)
-            => await QueryForList(server, null, sql, map);
+        public static async Task<IEnumerable<T>> QueryListAsync<T>(this ServerConnection server, string sql, Func<IDataReader, T> map)
+            => await QueryListAsync(server, null, sql, map);
 
-        public static async Task<QueryResponseContext> ExecuteQuery(this QueryExecutionContext context)
+        public static async Task<QueryResponseContext> ExecuteQueryAsync(this QueryExecutionContext context)
         {
-            return await Execute(context.Server, context.Database, context.Sql!, cmd =>
+            return await ExecuteAsync(context.Server, context.Database, context.Sql!, async dbCommand =>
             {
                 var response = new QueryResponseContext(context.Id!);
 
                 try
                 {
-                    using var reader = cmd.ExecuteReader();
-                    for (int i = 0; i < reader.FieldCount; i++)
+                    using var dataReader = await dbCommand.ExecuteReaderAsync();
+                    for (int i = 0; i < dataReader.FieldCount; i++)
                     {
-                        response.Columns.Add(new ColumnDefinition(reader.GetName(i), reader.GetDataTypeName(i)));
+                        response.Columns.Add(new ColumnDefinition(dataReader.GetName(i), dataReader.GetDataTypeName(i)));
                     }
 
-                    while (reader.Read())
+                    while (await dataReader.ReadAsync())
                     {
                         var dataRow = new ExpandoObject() as IDictionary<string, object?>;
-                        for (int i = 0; i < reader.FieldCount; i++)
+                        for (int i = 0; i < dataReader.FieldCount; i++)
                         {
-                            var value = reader[i];
-                            dataRow.Add(reader.GetName(i), value is DBNull ? null : value);
+                            var value = dataReader[i];
+                            dataRow.Add(dataReader.GetName(i), value is DBNull ? null : value);
                         }
                         response.Rows.Add(dataRow);
                     }
@@ -128,7 +126,7 @@ namespace Sequel.Core
             });
         }
 
-        private static async Task<T> Execute<T>(this ServerConnection server, string? database, string sql, Func<IDbCommand, T> query, Action<IDbCommand>? setupDbCommand = null)
+        private static async Task<T> ExecuteAsync<T>(this ServerConnection server, string? database, string sql, Func<DbCommand, Task<T>> query, Action<IDbCommand>? setupDbCommand = null)
         {
             using var cnn = server.CreateConnection();
             await cnn.OpenAsync();
@@ -141,7 +139,7 @@ namespace Sequel.Core
             cmd.CommandText = sql;
             setupDbCommand?.Invoke(cmd);
 
-            return query(cmd);
+            return await query(cmd);
         }
     }
 }

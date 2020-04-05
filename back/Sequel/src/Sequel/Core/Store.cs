@@ -13,18 +13,18 @@ namespace Sequel.Core
         private static readonly string RootDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "sequel");
         private static readonly string FilePath = Path.Combine(RootDirectory, typeof(T).Name.ToLower() + ".json");
         
-        public static async Task<List<T>> GetCollection()
+        public static async Task<List<T>> GetListAsync()
         {
             using var fs = OpenFile();
-            return await DeserializeCollection(fs);
+            return await DeserializeListAsync(fs);
         }
 
         public static async Task Add<TIdentity>(TIdentity item) where TIdentity : Identity, T
         {
             Check.NotNull(item, nameof(item));
 
-            using var fs = OpenFile();
-            var list = await DeserializeCollection(fs);
+            using var stream = OpenFile();
+            var list = await DeserializeListAsync(stream);
 
             if (item.Id is null)
             {
@@ -35,23 +35,23 @@ namespace Sequel.Core
                 list.Remove(item);
             }
             list.Add(item);
-            await SaveFile(fs, list);
+            await SaveFileAsync(stream, list);
         }
 
         public static async Task Delete(int id)
         {
-            using var fs = OpenFile();
-            var list = await DeserializeCollection(fs);
+            using var stream = OpenFile();
+            var list = await DeserializeListAsync(stream);
             T item = new T();
             (item as Identity)?.WithId(id);
             list.Remove(item);
-            await SaveFile(fs, list);
+            await SaveFileAsync(stream, list);
         }
 
         public static async Task<T> GetItem()
         {
-            using var fs = OpenFile();
-            return await DeserializeItem(fs);
+            using var stream = OpenFile();
+            return await DeserializeItemAsync(stream);
         }
 
         public static async Task Save(T item)
@@ -59,7 +59,7 @@ namespace Sequel.Core
             Check.NotNull(item, nameof(item));
 
             using var fs = OpenFile();
-            await SaveFile(fs, item);
+            await SaveFileAsync(fs, item);
         }
 
         private static FileStream OpenFile()
@@ -68,22 +68,22 @@ namespace Sequel.Core
             return File.Open(FilePath, FileMode.OpenOrCreate);
         }
 
-        private static async Task<List<T>> DeserializeCollection(FileStream fs)
-            => fs.Length > 0 ? await JsonSerializer.DeserializeAsync<List<T>>(fs) : new List<T>();
+        private static async Task<List<T>> DeserializeListAsync(FileStream stream)
+            => stream.Length > 0 ? await JsonSerializer.DeserializeAsync<List<T>>(stream) : new List<T>();
 
-        private static async Task<T> DeserializeItem(FileStream fs)
-            => fs.Length > 0 ? await JsonSerializer.DeserializeAsync<T>(fs) : new T();
+        private static async Task<T> DeserializeItemAsync(FileStream stream)
+            => stream.Length > 0 ? await JsonSerializer.DeserializeAsync<T>(stream) : new T();
 
-        private static async Task SaveFile(FileStream fs, T value)
+        private static async Task SaveFileAsync(FileStream stream, T value)
         {
-            fs.SetLength(0);
-            await JsonSerializer.SerializeAsync(fs, value);
+            stream.SetLength(0);
+            await JsonSerializer.SerializeAsync(stream, value);
         }
 
-        private static async Task SaveFile(FileStream fs, List<T> value)
+        private static async Task SaveFileAsync(FileStream stream, List<T> value)
         {
-            fs.SetLength(0);
-            await JsonSerializer.SerializeAsync(fs, value);
+            stream.SetLength(0);
+            await JsonSerializer.SerializeAsync(stream, value);
         }
     }
 }

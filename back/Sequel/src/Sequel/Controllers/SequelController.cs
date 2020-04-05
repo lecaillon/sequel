@@ -15,7 +15,7 @@ namespace Sequel.Controllers
         [Route("server-connections")]
         public async Task<ActionResult<List<ServerConnection>>> GetAllServerConnection()
         {
-            return Ok(await Store<ServerConnection>.GetCollection());
+            return Ok(await Store<ServerConnection>.GetListAsync());
         }
 
         [HttpPost]
@@ -38,7 +38,7 @@ namespace Sequel.Controllers
         [Route("server-connections/test")]
         public async Task<IActionResult> TestServerConnection(ServerConnection server)
         {
-            await server.Validate();
+            await server.ValidateAsync();
             return Ok();
         }
 
@@ -46,14 +46,14 @@ namespace Sequel.Controllers
         [Route("databases")]
         public async Task<ActionResult<IEnumerable<string>>> GetDatabases(ServerConnection server)
         {
-            return Ok(await server.GetDatabaseSystem().LoadDatabases());
+            return Ok(await server.GetDatabaseSystem().LoadDatabasesAsync());
         }
 
         [HttpPost]
         [Route("database-objects")]
         public async Task<ActionResult<IEnumerable<DatabaseObjectNode>>> GetDatabaseObjects(QueryExecutionContext context)
         {
-            return Ok(await context.Server.GetDatabaseSystem().LoadDatabaseObjects(context.Database, context.DatabaseObject));
+            return Ok(await context.Server.GetDatabaseSystem().LoadDatabaseObjectsAsync(context.Database, context.DatabaseObject));
         }
 
         [HttpPost]
@@ -76,7 +76,7 @@ namespace Sequel.Controllers
                 });
             }
 
-            return Ok(await context.ExecuteQuery());
+            return Ok(await context.ExecuteQueryAsync());
         }
     }
 }

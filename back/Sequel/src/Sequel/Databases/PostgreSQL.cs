@@ -18,18 +18,18 @@ namespace Sequel.Databases
 
         public DBMS Type => _server.Type;
 
-        public async Task<long> GetVersion() => await _server.QueryForLong("SHOW server_version_num");
+        public async Task<long> GetVersion() => await _server.QueryForLongAsync("SHOW server_version_num");
 
-        public async Task<IEnumerable<string>> LoadDatabases()
+        public async Task<IEnumerable<string>> LoadDatabasesAsync()
         {
-            return await _server.QueryForListOfString(
+            return await _server.QueryStringListAsync(
                 "SELECT datname " +
                 "FROM pg_database " +
                 "WHERE datistemplate = false " +
                 "ORDER BY datname");
         }
 
-        public async Task<IEnumerable<DatabaseObjectNode>> LoadDatabaseObjects(string database, DatabaseObjectNode? parent)
+        public async Task<IEnumerable<DatabaseObjectNode>> LoadDatabaseObjectsAsync(string database, DatabaseObjectNode? parent)
         {
             return (parent) switch
             {
@@ -54,7 +54,7 @@ namespace Sequel.Databases
 
         private async Task<IEnumerable<DatabaseObjectNode>> LoadSchemas(string database, DatabaseObjectNode parent)
         {
-            var schemas = await _server.QueryForListOfString(database, 
+            var schemas = await _server.QueryStringListAsync(database, 
                 "SELECT schema_name " +
                 "FROM information_schema.schemata " +
                 "WHERE schema_name NOT LIKE 'pg_%' " +
@@ -75,7 +75,7 @@ namespace Sequel.Databases
 
         private async Task<IEnumerable<DatabaseObjectNode>> LoadTables(string database, DatabaseObjectNode parent)
         {
-            var tables = await _server.QueryForListOfString(database,
+            var tables = await _server.QueryStringListAsync(database,
                 "SELECT t.table_name " +
                 "FROM information_schema.tables t " +
                 "LEFT JOIN pg_depend dep ON dep.objid = (quote_ident(t.table_schema)||'.'||quote_ident(t.table_name))::regclass::oid AND dep.deptype = 'e' " +
@@ -103,7 +103,7 @@ namespace Sequel.Databases
                $"WHERE table_schema = '{GetSchema(parent)}' " +
                $"AND table_name = '{GetTable(parent)}'";
 
-            return (await _server.QueryForList(database, sql, reader => new { Name = reader.GetString(0), Type = reader.GetString(1) }))
+            return (await _server.QueryListAsync(database, sql, reader => new { Name = reader.GetString(0), Type = reader.GetString(1) }))
                 .Select(x => new DatabaseObjectNode(x.Name, Column, parent, "mdi-table-column", details: new Dictionary<string, object> { ["type"] = x.Type }));
 
         }
@@ -131,7 +131,7 @@ namespace Sequel.Databases
                      $"AND pg_proc.prokind = 'f'";
             }
 
-            return (await _server.QueryForList(database, sql, reader => new { Name = reader.GetString(0), Args = reader.GetString(1) }))
+            return (await _server.QueryListAsync(database, sql, reader => new { Name = reader.GetString(0), Args = reader.GetString(1) }))
                 .Select(x => new DatabaseObjectNode(x.Name, Function, parent, "mdi-function", details: new Dictionary<string, object> { ["args"] = x.Args }));
         }
 

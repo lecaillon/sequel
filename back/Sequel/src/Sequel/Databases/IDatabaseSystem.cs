@@ -8,7 +8,7 @@ namespace Sequel.Databases
     {
         public DBMS Type { get; }
 
-        public Task<IEnumerable<string>> LoadDatabases();
-        public Task<IEnumerable<DatabaseObjectNode>> LoadDatabaseObjects(string database, DatabaseObjectNode? node);
+        public Task<IEnumerable<string>> LoadDatabasesAsync();
+        public Task<IEnumerable<DatabaseObjectNode>> LoadDatabaseObjectsAsync(string database, DatabaseObjectNode? node);
     }
 }
