@@ -89,7 +89,7 @@ namespace Sequel.Models
         public bool Sortable { get; set; } = true;
         public bool Filter { get; set; } = true;
         public bool Editable { get; set; } = true;
-
+        public bool Resizable { get; set; } = true;
     }
 
     public abstract class Identity

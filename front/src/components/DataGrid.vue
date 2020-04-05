@@ -2,6 +2,7 @@
   <ag-grid-vue
     style="height:100%"
     class="ag-theme-alpine-dark"
+    :gridOptions="gridOptions"
     :columnDefs="columns"
     :rowData="rows"
     enableCellTextSelection
@@ -9,6 +10,7 @@
     multiSortKey="ctrl"
     stopEditingWhenGridLosesFocus
     preventDefaultOnContextMenu
+    @modelUpdated="onModelUpdated"
   ></ag-grid-vue>
 </template>
 
@@ -24,6 +26,20 @@ export default Vue.extend({
   },
   components: {
     AgGridVue
+  },
+  data: () => ({
+    gridOptions: {},
+    gridApi: {},
+    gridColumnApi: {}
+  }),
+  methods: {
+    onModelUpdated() {
+      this.gridColumnApi.autoSizeAllColumns();
+    }
+  },
+  mounted() {
+    this.gridApi = this.gridOptions.api;
+    this.gridColumnApi = this.gridOptions.columnApi;
   }
 });
 </script>
