@@ -29,6 +29,7 @@ export default Vue.extend({
         }
       }
     );
+    this.editor.focus();
     this.$emit("created", this.editorId, this.editor);
   },
   beforeDestroy() {
