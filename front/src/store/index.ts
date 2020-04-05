@@ -5,6 +5,7 @@ import { BASE_URL } from "@/appsettings";
 import { ServerConnection } from "@/models/serverConnection";
 import { DatabaseObjectNode } from "@/models/databaseObjectNode";
 import { QueryExecutionContext } from "@/models/queryExecutionContext";
+import { QueryResponseContext } from "@/models/queryResponseContext";
 import { AppSnackbar } from "@/models/appSnackbar";
 import { QueryTabContent } from "@/models/queryTabContent";
 import { v4 as uuidv4 } from "uuid";
@@ -21,11 +22,11 @@ export default new Vuex.Store({
     activeDatabase: {} as string,
     nodes: [] as DatabaseObjectNode[],
     activeNode: {} as DatabaseObjectNode,
-    activeQueryTab: {} as number,
+    activeQueryTabIndex: {} as number,
     queryTabs: [] as QueryTabContent[]
   },
   getters: {
-    activeEditor: state => state.queryTabs[state.activeQueryTab].editor
+    activeQueryTab: state => state.queryTabs[state.activeQueryTabIndex]
   },
   actions: {
     showAppSnackbar: (context, appSnackbar: AppSnackbar) => {
@@ -91,17 +92,26 @@ export default new Vuex.Store({
     openNewQueryTab: context => {
       const num = Math.max(...context.state.queryTabs.map(x => x.num), 0) + 1;
       const index = context.state.queryTabs.length;
-      context.commit("pushQueryTab", { id: uuidv4(), num, title: `query${num}` } as QueryTabContent);
+      context.commit("pushQueryTab", { id: uuidv4(), num, title: `query${num}`, grid: { columns: new Array<any>(), rows: new Array<any>() } } as QueryTabContent);
       context.dispatch("changeActiveQueryTab", index);
     },
     closeQueryTab: (context, index: number) => {
       context.commit("removeQueryTab", index);
     },
     changeActiveQueryTab: (context, index: number) => {
-      context.commit("setActiveQueryTab", index);
+      context.commit("setActiveQueryTabIndex", index);
     },
     updateQueryTabContent: (context, tab: QueryTabContent) => {
       context.commit("mergeQueryTabContent", tab);
+    },
+    executeQuery: async (context, tab: QueryTabContent) => {
+      const response = await http.post<QueryResponseContext>(`${BASE_URL}/sequel/execute-query`, {
+        server: context.state.activeServer,
+        database: context.state.activeDatabase,
+        sql: tab.editor?.getValue(),
+        id: tab.id
+      } as QueryExecutionContext);
+      context.commit("mergeQueryTabContent", { id: response.id, grid: { columns: response.columns, rows: response.rows } } as QueryTabContent);
     }
   },
   mutations: {
@@ -142,13 +152,18 @@ export default new Vuex.Store({
     removeQueryTab(state, index: number) {
       state.queryTabs.splice(index, 1);
     },
-    setActiveQueryTab(state, index: number) {
-      state.activeQueryTab = index;
+    setActiveQueryTabIndex(state, index: number) {
+      state.activeQueryTabIndex = index;
     },
     mergeQueryTabContent(state, tab: QueryTabContent) {
       const tabToUpdate = state.queryTabs.find(x => x.id === tab.id);
       if (tabToUpdate) {
-        tabToUpdate.editor = tab.editor;
+        if (tab.editor) {
+          tabToUpdate.editor = tab.editor;
+        }
+        if (tab.grid) {
+          tabToUpdate.grid = tab.grid;
+        }
       }
     }
   }

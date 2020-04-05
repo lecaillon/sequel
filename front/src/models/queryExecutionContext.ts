@@ -4,6 +4,7 @@ import { DatabaseObjectNode } from "./databaseObjectNode";
 export interface QueryExecutionContext {
     server: ServerConnection;
     database: string;
-    databaseObject: DatabaseObjectNode;
-    sql: string;
+    databaseObject?: DatabaseObjectNode;
+    sql?: string;
+    id?: string;
 }
