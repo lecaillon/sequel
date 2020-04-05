@@ -56,6 +56,40 @@ namespace Sequel.Models
         public string Database { get; set; } = default!;
         public DatabaseObjectNode? DatabaseObject { get; set; }
         public string? Sql { get; set; }
+        public string? Id { get; set; }
+    }
+
+    public class QueryResponseContext
+    {
+        public QueryResponseContext(string id)
+        {
+            Id = Check.NotNullOrEmpty(id, nameof(id));
+        }
+
+        public string Id { get; }
+        public bool Success { get; set; } = true;
+        public string Error { get; set; } = "";
+        public string Elapsed { get; set; } = "";
+        public List<ColumnDefinition> Columns { get; } = new List<ColumnDefinition>();
+        public List<object> Rows { get; } = new List<object>();
+        public int RowCount => Rows.Count;
+    }
+
+    public class ColumnDefinition
+    {
+        public ColumnDefinition(string headerName, string type)
+        {
+            HeaderName = Check.NotNullOrEmpty(headerName, nameof(headerName));
+            Type = Check.NotNullOrEmpty(type, nameof(type));
+        }
+
+        public string HeaderName { get; }
+        public string Field => HeaderName;
+        public string Type { get; }
+        public bool Sortable { get; set; } = true;
+        public bool Filter { get; set; } = true;
+        public bool Editable { get; set; } = true;
+
     }
 
     public abstract class Identity
