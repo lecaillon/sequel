@@ -1,4 +1,4 @@
-export const BASE_URL = "http://localhost:3010";
+export const BASE_URL = "http://localhost:8123";
 export const ColorByEnvironment: Record<string, string> = {
   Development: "green",
   Testing: "lime",
