@@ -77,19 +77,26 @@ namespace Sequel.Models
 
     public class ColumnDefinition
     {
-        public ColumnDefinition(string headerName, string type)
+        public ColumnDefinition(string colId, string sqlType)
         {
-            HeaderName = Check.NotNullOrEmpty(headerName, nameof(headerName));
-            Type = Check.NotNullOrEmpty(type, nameof(type));
+            ColId = Check.NotNullOrEmpty(colId, nameof(colId));
+            SqlType = Check.NotNullOrEmpty(sqlType, nameof(sqlType));
         }
 
-        public string HeaderName { get; }
+        public string ColId { get; }
+        public string HeaderName => ColId;
         public string Field => HeaderName;
-        public string Type { get; }
+        public string SqlType { get; }
         public bool Sortable { get; set; } = true;
         public bool Filter { get; set; } = true;
         public bool Editable { get; set; } = true;
         public bool Resizable { get; set; } = true;
+        public int? Width => SqlType switch
+        {
+            "jsonb" => 200,
+            "uuid" => 150,
+            _ => null
+        };
     }
 
     public abstract class Identity

@@ -2,7 +2,7 @@
   <ag-grid-vue
     style="height:100%"
     class="ag-theme-alpine-dark"
-    rowHeight= "35"
+    rowHeight="30"
     :gridOptions="gridOptions"
     :columnDefs="columns"
     :rowData="rows"
@@ -37,7 +37,9 @@ export default Vue.extend({
   }),
   methods: {
     onModelUpdated() {
-      this.gridColumnApi.autoSizeAllColumns();
+      this.gridColumnApi.autoSizeColumns(
+        this.columns.filter(x => x.width === null).map(x => x.colId)
+      );
     }
   },
   mounted() {
