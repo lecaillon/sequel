@@ -4,7 +4,7 @@
     :index="index"
     @mouseover="mouseOver"
     @mouseleave="mouseLeave"
-    class="d-flex pa-0 subtitle-2"
+    class="d-flex pa-0 body-2"
   >
     {{ title }}
     <v-icon

@@ -29,7 +29,7 @@
       <select-database style="max-width: 400px"></select-database>
     </v-app-bar>
 
-    <v-navigation-drawer app clipped v-model="showDbExplorer" width="350" style="overflow: visible">
+    <v-navigation-drawer app clipped v-model="showDbExplorer" width="375" style="overflow: visible;background-color: #1E1E1E">
       <database-object-treeview />
     </v-navigation-drawer>
 
