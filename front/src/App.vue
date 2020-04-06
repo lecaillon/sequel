@@ -24,12 +24,12 @@
       <select-server-connection
         @edit="openFormServerConnection(false)"
         class="me-4"
-        style="max-width: 500px"
+        style="max-width: 450px"
       ></select-server-connection>
-      <select-database style="max-width: 350px"></select-database>
+      <select-database style="max-width: 400px"></select-database>
     </v-app-bar>
 
-    <v-navigation-drawer app clipped v-model="showDbExplorer" width="300" style="overflow: visible">
+    <v-navigation-drawer app clipped v-model="showDbExplorer" width="350" style="overflow: visible">
       <database-object-treeview />
     </v-navigation-drawer>
 

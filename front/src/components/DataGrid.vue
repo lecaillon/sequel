@@ -2,6 +2,7 @@
   <ag-grid-vue
     style="height:100%"
     class="ag-theme-alpine-dark"
+    rowHeight= "35"
     :gridOptions="gridOptions"
     :columnDefs="columns"
     :rowData="rows"
