@@ -4,23 +4,49 @@
       <v-app-bar-nav-icon @click.stop="showDbExplorer = !showDbExplorer"></v-app-bar-nav-icon>
       <v-toolbar-title>Sequel</v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn icon @click.stop="executeQuery()">
-        <v-icon>mdi-play</v-icon>
-      </v-btn>
-      <v-btn icon @click.stop="openNewQueryTab()">
-        <v-icon>mdi-tab-plus</v-icon>
-      </v-btn>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <v-btn icon v-on="on" @click.stop="executeQuery()">
+            <v-icon>mdi-play</v-icon>
+          </v-btn>
+        </template>
+        <span>Execute</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <v-btn icon v-on="on" @click.stop="openNewQueryTab()">
+            <v-icon>mdi-tab-plus</v-icon>
+          </v-btn>
+        </template>
+        <span>Open new tab</span>
+      </v-tooltip>
+
       <v-divider vertical inset />
-      <v-btn icon>
-        <v-icon>mdi-database-refresh</v-icon>
-      </v-btn>
-      <v-btn icon @click.stop="showDbProperty = !showDbProperty">
-        <v-icon>mdi-wrench-outline</v-icon>
-      </v-btn>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <v-btn v-on="on" icon>
+            <v-icon>mdi-database-refresh</v-icon>
+          </v-btn>
+        </template>
+        <span>Todo: Refresh database tree node</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <v-btn icon v-on="on" @click.stop="showDbProperty = !showDbProperty">
+            <v-icon>mdi-wrench-outline</v-icon>
+          </v-btn>
+        </template>
+        <span>Todo: Show database property panel</span>
+      </v-tooltip>
       <v-divider vertical inset />
-      <v-btn icon @click.stop="openFormServerConnection(true)">
-        <v-icon>mdi-server-plus</v-icon>
-      </v-btn>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <v-btn icon v-on="on" @click.stop="openFormServerConnection(true)">
+            <v-icon>mdi-server-plus</v-icon>
+          </v-btn>
+        </template>
+        <span>Add new server</span>
+      </v-tooltip>
       <select-server-connection
         @edit="openFormServerConnection(false)"
         class="me-4"
@@ -29,7 +55,13 @@
       <select-database style="max-width: 400px"></select-database>
     </v-app-bar>
 
-    <v-navigation-drawer app clipped v-model="showDbExplorer" width="375" style="overflow: visible;background-color: #1E1E1E">
+    <v-navigation-drawer
+      app
+      clipped
+      v-model="showDbExplorer"
+      width="375"
+      style="overflow: visible;background-color: #1E1E1E"
+    >
       <database-object-treeview />
     </v-navigation-drawer>
 
