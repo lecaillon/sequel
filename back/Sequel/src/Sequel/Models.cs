@@ -69,7 +69,7 @@ namespace Sequel.Models
         public string Id { get; }
         public bool Success { get; set; } = true;
         public string Error { get; set; } = "";
-        public string Elapsed { get; set; } = "";
+        public long Elapsed { get; set; } = 0;
         public List<ColumnDefinition> Columns { get; } = new List<ColumnDefinition>();
         public List<object> Rows { get; } = new List<object>();
         public int RowCount => Rows.Count;

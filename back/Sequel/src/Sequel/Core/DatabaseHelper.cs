@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Dynamic;
 using System.Threading.Tasks;
 using Npgsql;
@@ -96,10 +97,14 @@ namespace Sequel.Core
             return await ExecuteAsync(context.Server, context.Database, context.Sql!, async dbCommand =>
             {
                 var response = new QueryResponseContext(context.Id!);
+                var sw = new Stopwatch();
 
                 try
                 {
+                    sw.Start();
                     using var dataReader = await dbCommand.ExecuteReaderAsync();
+                    sw.Stop();
+
                     for (int i = 0; i < dataReader.FieldCount; i++)
                     {
                         response.Columns.Add(new ColumnDefinition(dataReader.GetName(i), dataReader.GetDataTypeName(i)));
@@ -118,8 +123,13 @@ namespace Sequel.Core
                 }
                 catch (Exception ex)
                 {
+                    sw.Stop();
                     response.Success = false;
                     response.Error = ex.Message;
+                }
+                finally
+                {
+                    response.Elapsed = sw.ElapsedMilliseconds;
                 }
 
                 return response;
