@@ -116,6 +116,12 @@ export default new Vuex.Store({
         id: tab.id
       } as QueryExecutionContext);
       context.commit("mergeQueryTabContent", { id: response.id, grid: { columns: response.columns, rows: response.rows } } as QueryTabContent);
+      if (response.success) {
+        context.dispatch("showAppSnackbar", { message: `${response.rowCount} rows returned in ${response.elapsed} ms.`, color: "success" } as AppSnackbar);
+      }
+      else {
+        context.dispatch("showAppSnackbar", { message: response.error, color: "error" } as AppSnackbar);
+      }
     }
   },
   mutations: {
