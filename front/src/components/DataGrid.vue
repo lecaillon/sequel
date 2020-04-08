@@ -6,6 +6,8 @@
     :gridOptions="gridOptions"
     :columnDefs="columns"
     :rowData="rows"
+    :frameworkComponents="frameworkComponents"
+    :loadingOverlayComponent="loadingOverlayComponent"
     enableCellTextSelection
     rowSelection="multiple"
     multiSortKey="ctrl"
@@ -20,12 +22,14 @@ import Vue from "vue";
 import { AgGridVue } from "ag-grid-vue";
 import "ag-grid-community/dist/styles/ag-grid.css";
 import "ag-grid-community/dist/styles/ag-theme-alpine-dark.css";
+import DatagridLoader from "@/components/DatagridLoader.vue";
 
 export default Vue.extend({
   name: "DataGrid",
   props: {
     columns: Array,
-    rows: Array
+    rows: Array,
+    loading: Boolean
   },
   components: {
     AgGridVue
@@ -33,13 +37,26 @@ export default Vue.extend({
   data: () => ({
     gridOptions: {},
     gridApi: {},
-    gridColumnApi: {}
+    gridColumnApi: {},
+    frameworkComponents: {
+      customLoadingOverlay: DatagridLoader
+    },
+    loadingOverlayComponent: "customLoadingOverlay"
   }),
   methods: {
     onModelUpdated() {
       this.gridColumnApi.autoSizeColumns(
         this.columns.filter(x => x.width === null).map(x => x.colId)
       );
+    }
+  },
+  watch: {
+    loading: function(val) {
+      if (val) {
+        this.gridApi.showLoadingOverlay();
+      } else {
+        this.gridApi.hideOverlay();
+      }
     }
   },
   mounted() {

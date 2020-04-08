@@ -92,7 +92,7 @@ export default new Vuex.Store({
     openNewQueryTab: context => {
       const num = Math.max(...context.state.queryTabs.map(x => x.num), 0) + 1;
       const index = context.state.queryTabs.length;
-      context.commit("pushQueryTab", { id: uuidv4(), num, title: `query${num}`, grid: { columns: new Array<any>(), rows: new Array<any>() } } as QueryTabContent);
+      context.commit("pushQueryTab", { id: uuidv4(), num, title: `query${num}`, grid: { columns: new Array<any>(), rows: new Array<any>() }, loading: false } as QueryTabContent);
       context.dispatch("changeActiveQueryTab", index);
     },
     closeQueryTab: (context, index: number) => {
@@ -105,22 +105,28 @@ export default new Vuex.Store({
       context.commit("mergeQueryTabContent", tab);
     },
     executeQuery: async (context, tab: QueryTabContent) => {
+      context.commit("mergeQueryTabContent", { id: tab.id, loading: true } as QueryTabContent);
       const sql = tab.editor?.getSelection()?.isEmpty()
         ? tab.editor?.getValue()
         : tab.editor?.getModel()?.getValueInRange(tab.editor!.getSelection()!);
 
-      const response = await http.post<QueryResponseContext>(`${BASE_URL}/sequel/execute-query`, {
-        server: context.state.activeServer,
-        database: context.state.activeDatabase,
-        sql: sql,
-        id: tab.id
-      } as QueryExecutionContext);
-      context.commit("mergeQueryTabContent", { id: response.id, grid: { columns: response.columns, rows: response.rows } } as QueryTabContent);
-      if (response.success) {
-        context.dispatch("showAppSnackbar", { message: `${response.rowCount} rows returned in ${response.elapsed} ms.`, color: "success" } as AppSnackbar);
+      try {
+        const response = await http.post<QueryResponseContext>(`${BASE_URL}/sequel/execute-query`, {
+          server: context.state.activeServer,
+          database: context.state.activeDatabase,
+          sql: sql,
+          id: tab.id
+        } as QueryExecutionContext);
+        context.commit("mergeQueryTabContent", { id: response.id, grid: { columns: response.columns, rows: response.rows }, loading: false } as QueryTabContent);
+        if (response.success) {
+          context.dispatch("showAppSnackbar", { message: `${response.rowCount} rows returned in ${response.elapsed} ms.`, color: "success" } as AppSnackbar);
+        }
+        else {
+          context.dispatch("showAppSnackbar", { message: response.error, color: "error" } as AppSnackbar);
+        }
       }
-      else {
-        context.dispatch("showAppSnackbar", { message: response.error, color: "error" } as AppSnackbar);
+      catch {
+        context.commit("mergeQueryTabContent", { id: tab.id, grid: { columns: new Array<any>(), rows: new Array<any>() }, loading: false } as QueryTabContent);
       }
     }
   },
@@ -173,6 +179,9 @@ export default new Vuex.Store({
         }
         if (tab.grid) {
           tabToUpdate.grid = tab.grid;
+        }
+        if (tab.loading !== undefined) {
+          tabToUpdate.loading = tab.loading;
         }
       }
     }

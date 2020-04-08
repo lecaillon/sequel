@@ -12,7 +12,11 @@
             <query-editor :editorId="tab.id" @created="editorCreated"></query-editor>
           </v-container>
           <v-container fluid class="pa-0" style="height:calc(55% - 48px)">
-            <data-grid :columns="tab.grid.columns" :rows="tab.grid.rows"></data-grid>
+            <data-grid
+              :columns="tab.grid.columns"
+              :rows="tab.grid.rows"
+              :loading="tab.loading"
+            ></data-grid>
           </v-container>
         </v-tab-item>
       </v-tabs-items>

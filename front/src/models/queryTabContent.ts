@@ -6,5 +6,6 @@ export interface QueryTabContent {
     num: number,
     title: string,
     editor?: monaco.editor.IStandaloneCodeEditor,
-    grid: QueryResponseContext
+    grid: QueryResponseContext,
+    loading: boolean
 }
