@@ -7,7 +7,7 @@
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
           <v-btn icon v-on="on" @click.stop="executeQuery()">
-            <v-icon>mdi-play</v-icon>
+            <v-icon color="green">mdi-play</v-icon>
           </v-btn>
         </template>
         <span>Execute</span>
@@ -15,7 +15,7 @@
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
           <v-btn icon v-on="on" @click.stop="openNewQueryTab()">
-            <v-icon>mdi-tab-plus</v-icon>
+            <v-icon color="primary">mdi-tab-plus</v-icon>
           </v-btn>
         </template>
         <span>Open new tab</span>
@@ -25,7 +25,7 @@
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
           <v-btn v-on="on" icon>
-            <v-icon>mdi-database-refresh</v-icon>
+            <v-icon color="grey lighten-2">mdi-database-refresh</v-icon>
           </v-btn>
         </template>
         <span>Todo: Refresh database tree node</span>
@@ -33,7 +33,7 @@
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
           <v-btn icon v-on="on" @click.stop="showDbProperty = !showDbProperty">
-            <v-icon>mdi-wrench-outline</v-icon>
+            <v-icon color="grey lighten-2">mdi-wrench-outline</v-icon>
           </v-btn>
         </template>
         <span>Todo: Show database property panel</span>
@@ -42,7 +42,7 @@
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
           <v-btn icon v-on="on" @click.stop="openFormServerConnection(true)">
-            <v-icon>mdi-server-plus</v-icon>
+            <v-icon color="primary">mdi-server-plus</v-icon>
           </v-btn>
         </template>
         <span>Add new server</span>

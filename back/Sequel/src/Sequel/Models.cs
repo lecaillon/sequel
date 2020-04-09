@@ -25,6 +25,7 @@ namespace Sequel.Models
                                   DatabaseObjectType type,
                                   DatabaseObjectNode? parent,
                                   string icon,
+                                  string color,
                                   List<DatabaseObjectNode> children = null!,
                                   Dictionary<string, object> details = null!)
         {
@@ -32,6 +33,7 @@ namespace Sequel.Models
             Type = type;
             Name = name;
             Icon = icon;
+            Color = color;
             Children = children ?? new List<DatabaseObjectNode>();
             Details = details ?? new Dictionary<string, object>();
         }
@@ -44,6 +46,8 @@ namespace Sequel.Models
         public DatabaseObjectType Type { get; set; }
         [Required]
         public string Icon { get; set; } = default!;
+        [Required]
+        public string Color { get; set; } = default!;
         public List<DatabaseObjectNode> Children { get; } = new List<DatabaseObjectNode>();
         public Dictionary<string, object> Details { get; } = new Dictionary<string, object>();
     }

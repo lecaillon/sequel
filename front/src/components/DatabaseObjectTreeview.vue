@@ -23,7 +23,7 @@
         @update:active="selected"
       >
         <template v-slot:prepend="{ item }">
-          <v-icon small>{{ item.icon }}</v-icon>
+          <v-icon :color="item.color" small>{{ item.icon }}</v-icon>
         </template>
       </v-treeview>
     </v-card-text>

@@ -3,6 +3,7 @@ export interface DatabaseObjectNode {
     name: string;
     type: string;
     icon: string;
+    color: string;
     children: DatabaseObjectNode[];
     details: Map<string, Object>;
 }
