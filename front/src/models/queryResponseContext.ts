@@ -1,9 +1,11 @@
+import { DataGridColumnDefinition } from "./dataGridColumnDefinition";
+
 export interface QueryResponseContext {
     id: string,
     success: boolean,
     error: string,
     elapsed: number,
-    columns: Array<any>,
+    columns: Array<DataGridColumnDefinition>,
     rows: Array<any>,
     rowCount: number
 }

@@ -20,6 +20,8 @@
 <script lang="ts">
 import Vue from "vue";
 import { AgGridVue } from "ag-grid-vue";
+import { GridOptions, GridApi, ColumnApi } from "ag-grid-community";
+import { DataGridColumnDefinition } from "@/models/dataGridColumnDefinition";
 import "ag-grid-community/dist/styles/ag-grid.css";
 import "ag-grid-community/dist/styles/ag-theme-alpine-dark.css";
 import DatagridLoader from "@/components/DatagridLoader.vue";
@@ -35,9 +37,9 @@ export default Vue.extend({
     AgGridVue
   },
   data: () => ({
-    gridOptions: {},
-    gridApi: {},
-    gridColumnApi: {},
+    gridOptions: {} as GridOptions,
+    gridApi: {} as GridApi,
+    gridColumnApi: {} as ColumnApi,
     frameworkComponents: {
       customLoadingOverlay: DatagridLoader
     },
@@ -46,7 +48,9 @@ export default Vue.extend({
   methods: {
     onModelUpdated() {
       this.gridColumnApi.autoSizeColumns(
-        this.columns.filter(x => x.width === null).map(x => x.colId)
+        (this.columns as Array<DataGridColumnDefinition>)
+          .filter(x => x.width === null)
+          .map(x => x.colId)
       );
     }
   },
@@ -60,8 +64,8 @@ export default Vue.extend({
     }
   },
   mounted() {
-    this.gridApi = this.gridOptions.api;
-    this.gridColumnApi = this.gridOptions.columnApi;
+    this.gridApi = this.gridOptions.api!;
+    this.gridColumnApi = this.gridOptions.columnApi!;
   }
 });
 </script>
