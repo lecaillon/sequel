@@ -151,6 +151,7 @@ export default new Vuex.Store({
     },
     clearNodes(state) {
       state.nodes = [];
+      state.activeNode = {} as DatabaseObjectNode;
     },
     pushNodes(state, { parent, nodes }) {
       if (parent === undefined) {

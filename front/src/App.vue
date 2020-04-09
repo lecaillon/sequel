@@ -6,7 +6,12 @@
       <v-spacer></v-spacer>
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
-          <v-btn icon v-on="on" @click.stop="executeQuery()">
+          <v-btn
+            icon
+            :disabled="!hasActiveTab || !hasActiveDatabase"
+            v-on="on"
+            @click.stop="executeQuery()"
+          >
             <v-icon color="green">mdi-play</v-icon>
           </v-btn>
         </template>
@@ -24,7 +29,7 @@
       <v-divider vertical inset />
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
-          <v-btn v-on="on" icon>
+          <v-btn icon :disabled="!hasActiveNode" v-on="on">
             <v-icon color="grey lighten-2">mdi-database-refresh</v-icon>
           </v-btn>
         </template>
@@ -32,7 +37,7 @@
       </v-tooltip>
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
-          <v-btn icon v-on="on" @click.stop="showDbProperty = !showDbProperty">
+          <v-btn icon :disabled="!hasActiveNode" v-on="on" @click.stop="showDbProperty = !showDbProperty">
             <v-icon color="grey lighten-2">mdi-wrench-outline</v-icon>
           </v-btn>
         </template>
@@ -155,6 +160,15 @@ export default Vue.extend({
     },
     editServer() {
       return store.state.editServer;
+    },
+    hasActiveTab() {
+      return store.state.activeQueryTabIndex >= 0;
+    },
+    hasActiveDatabase() {
+      return store.state.activeDatabase?.length > 0;
+    },
+    hasActiveNode() {
+      return Object.keys(store.state.activeNode).length > 0;
     }
   }
 });
