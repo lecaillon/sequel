@@ -8,7 +8,7 @@
         <template v-slot:activator="{ on }">
           <v-btn
             icon
-            :disabled="!hasActiveTab || !hasActiveDatabase"
+            :disabled="!hasActiveTab || !hasActiveDatabase || hasLoadingActiveTab"
             v-on="on"
             @click.stop="executeQuery()"
           >
@@ -37,7 +37,12 @@
       </v-tooltip>
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
-          <v-btn icon :disabled="!hasActiveNode" v-on="on" @click.stop="showDbProperty = !showDbProperty">
+          <v-btn
+            icon
+            :disabled="!hasActiveNode"
+            v-on="on"
+            @click.stop="showDbProperty = !showDbProperty"
+          >
             <v-icon color="grey lighten-2">mdi-wrench-outline</v-icon>
           </v-btn>
         </template>
@@ -113,6 +118,7 @@ import DatabaseObjectTreeview from "@/components/DatabaseObjectTreeview.vue";
 import DatabaseQueryManager from "@/components/DatabaseQueryManager.vue";
 import AppSnackbar from "@/components/AppSnackbar.vue";
 import { ServerConnection } from "./models/serverConnection";
+import { QueryTabContent } from "./models/queryTabContent";
 
 export default Vue.extend({
   name: "App",
@@ -133,9 +139,6 @@ export default Vue.extend({
     showFormServerConnection: false
   }),
   methods: {
-    closeAppSnackbar() {
-      store.dispatch("hideAppSnackbar");
-    },
     openFormServerConnection(newForm: boolean) {
       if (newForm) {
         store.dispatch("changeEditServer", {
@@ -147,29 +150,23 @@ export default Vue.extend({
       }
       this.showFormServerConnection = true;
     },
-    openNewQueryTab() {
-      store.dispatch("openNewQueryTab");
-    },
-    executeQuery() {
-      store.dispatch("executeQuery", store.getters.activeQueryTab);
-    }
+    closeAppSnackbar: () => store.dispatch("hideAppSnackbar"),
+    openNewQueryTab: () => store.dispatch("openNewQueryTab"),
+    executeQuery: () =>
+      store.dispatch(
+        "executeQuery",
+        store.getters.activeQueryTab as QueryTabContent
+      )
   },
   computed: {
-    appSnackbar() {
-      return store.state.appSnackbar;
-    },
-    editServer() {
-      return store.state.editServer;
-    },
-    hasActiveTab() {
-      return store.state.activeQueryTabIndex >= 0;
-    },
-    hasActiveDatabase() {
-      return store.state.activeDatabase?.length > 0;
-    },
-    hasActiveNode() {
-      return Object.keys(store.state.activeNode).length > 0;
-    }
+    appSnackbar: () => store.state.appSnackbar,
+    editServer: () => store.state.editServer,
+    hasActiveTab: () => store.state.activeQueryTabIndex >= 0,
+    hasLoadingActiveTab: () =>
+      store.state.activeQueryTabIndex >= 0 &&
+      (store.getters.activeQueryTab as QueryTabContent).loading,
+    hasActiveDatabase: () => store.state.activeDatabase?.length > 0,
+    hasActiveNode: () => Object.keys(store.state.activeNode).length > 0
   }
 });
 </script>
