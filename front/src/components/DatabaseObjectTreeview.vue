@@ -56,3 +56,9 @@ export default Vue.extend({
   }
 });
 </script>
+
+<style>
+.v-icon.v-icon::after {
+  height: 0%;
+}
+</style>
