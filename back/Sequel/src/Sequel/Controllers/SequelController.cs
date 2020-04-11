@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -76,7 +77,24 @@ namespace Sequel.Controllers
                 });
             }
 
-            return Ok(await context.ExecuteQueryAsync());
+            return Ok(await QueryManager.ExecuteQueryAsync(context));
+        }
+
+        [HttpPost]
+        [Route("cancel-query")]
+        public IActionResult CancelQuery(JsonElement queryId)
+        {
+            if (queryId.ValueKind != JsonValueKind.String || string.IsNullOrEmpty(queryId.ToString()))
+            {
+                ModelState.AddModelError(nameof(queryId), $"The {nameof(queryId)} field is required.");
+                return BadRequest(new ValidationProblemDetails(ModelState)
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                });
+            }
+
+            QueryManager.Cancel(queryId.ToString());
+            return Ok();
         }
     }
 }

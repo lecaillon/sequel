@@ -36,4 +36,12 @@ namespace Sequel
         Function,
         Column,
     }
+
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum QueryResponseStatus
+    {
+        Succeeded,
+        Canceled,
+        Failed,
+    }
 }

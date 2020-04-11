@@ -6,6 +6,7 @@ using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Dynamic;
+using System.Threading;
 using System.Threading.Tasks;
 using Npgsql;
 using Sequel.Databases;
@@ -43,7 +44,7 @@ namespace Sequel.Core
 
         public static async Task<IEnumerable<string>> QueryStringListAsync(this ServerConnection server, string? database, string sql)
         {
-            return await ExecuteAsync(server, database, sql, async dbCommand =>
+            return await ExecuteAsync(server, database, sql, async (dbCommand, ct) =>
             {
                 var list = new List<string>();
                 using var dataReader = await dbCommand.ExecuteReaderAsync();
@@ -65,7 +66,7 @@ namespace Sequel.Core
 
         public static async Task<long> QueryForLongAsync(this ServerConnection server, string? database, string sql)
         {
-            return await ExecuteAsync(server, database, sql, async dbCommand =>
+            return await ExecuteAsync(server, database, sql, async (dbCommand, ct) =>
             {
                 return Convert.ToInt64(await dbCommand.ExecuteScalarAsync());
             });
@@ -76,7 +77,7 @@ namespace Sequel.Core
 
         public static async Task<IEnumerable<T>> QueryListAsync<T>(this ServerConnection server, string? database, string sql, Func<IDataReader, T> map)
         {
-            return await ExecuteAsync(server, database, sql, async dbCommand =>
+            return await ExecuteAsync(server, database, sql, async (dbCommand, ct) =>
             {
                 var list = new List<T>();
                 using var dataReader = await dbCommand.ExecuteReaderAsync();
@@ -92,9 +93,9 @@ namespace Sequel.Core
         public static async Task<IEnumerable<T>> QueryListAsync<T>(this ServerConnection server, string sql, Func<IDataReader, T> map)
             => await QueryListAsync(server, null, sql, map);
 
-        public static async Task<QueryResponseContext> ExecuteQueryAsync(this QueryExecutionContext context)
+        public static async Task<QueryResponseContext> ExecuteQueryAsync(this QueryExecutionContext context, CancellationToken cancellationToken)
         {
-            return await ExecuteAsync(context.Server, context.Database, context.Sql!, async dbCommand =>
+            return await ExecuteAsync(context.Server, context.Database, context.Sql!, async (dbCommand, ct) =>
             {
                 var response = new QueryResponseContext(context.Id!);
                 var sw = new Stopwatch();
@@ -102,7 +103,7 @@ namespace Sequel.Core
                 try
                 {
                     sw.Start();
-                    using var dataReader = await dbCommand.ExecuteReaderAsync();
+                    using var dataReader = await dbCommand.ExecuteReaderAsync(ct);
 
                     do
                     {
@@ -114,7 +115,7 @@ namespace Sequel.Core
                             response.Columns.Add(new ColumnDefinition(dataReader.GetName(i), dataReader.GetDataTypeName(i)));
                         }
 
-                        while (await dataReader.ReadAsync())
+                        while (await dataReader.ReadAsync(ct))
                         {
                             var dataRow = new ExpandoObject() as IDictionary<string, object?>;
                             for (int i = 0; i < dataReader.FieldCount; i++)
@@ -124,13 +125,17 @@ namespace Sequel.Core
                             }
                             response.Rows.Add(dataRow);
                         }
-                    } while (await dataReader.NextResultAsync());
+                    } while (await dataReader.NextResultAsync(ct));
 
                     response.RecordsAffected = dataReader.RecordsAffected;
                 }
+                catch (TaskCanceledException)
+                {
+                    response.Status = QueryResponseStatus.Canceled;
+                }
                 catch (Exception ex)
                 {
-                    response.Success = false;
+                    response.Status = QueryResponseStatus.Failed;
                     response.Error = ex.Message;
                 }
                 finally
@@ -139,23 +144,28 @@ namespace Sequel.Core
                 }
 
                 return response;
-            });
+            }, ct: cancellationToken);
         }
 
-        private static async Task<T> ExecuteAsync<T>(this ServerConnection server, string? database, string sql, Func<DbCommand, Task<T>> query, Action<IDbCommand>? setupDbCommand = null)
+        private static async Task<T> ExecuteAsync<T>(this ServerConnection server,
+                                                     string? database,
+                                                     string sql,
+                                                     Func<DbCommand, CancellationToken, Task<T>> query,                                                     
+                                                     Action<IDbCommand>? setupDbCommand = null,
+                                                     CancellationToken ct = default)
         {
             using var cnn = server.CreateConnection();
-            await cnn.OpenAsync();
+            await cnn.OpenAsync(ct);
             if (database != null)
             {
-                await cnn.ChangeDatabaseAsync(database);
+                await cnn.ChangeDatabaseAsync(database, ct);
             }
 
-            using var cmd = cnn.CreateCommand();
-            cmd.CommandText = sql;
-            setupDbCommand?.Invoke(cmd);
+            using var dbCommand = cnn.CreateCommand();
+            dbCommand.CommandText = sql;
+            setupDbCommand?.Invoke(dbCommand);
 
-            return await query(cmd);
+            return await query(dbCommand, ct);
         }
     }
 }

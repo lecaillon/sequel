@@ -19,6 +19,19 @@
       </v-tooltip>
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
+          <v-btn
+            icon
+            :disabled="!hasActiveTab || !hasActiveDatabase || !hasLoadingActiveTab"
+            v-on="on"
+            @click.stop="cancelQuery()"
+          >
+            <v-icon color="red">mdi-stop</v-icon>
+          </v-btn>
+        </template>
+        <span>Cancel</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
           <v-btn icon v-on="on" @click.stop="openNewQueryTab()">
             <v-icon color="primary">mdi-tab-plus</v-icon>
           </v-btn>
@@ -155,6 +168,11 @@ export default Vue.extend({
     executeQuery: () =>
       store.dispatch(
         "executeQuery",
+        store.getters.activeQueryTab as QueryTabContent
+      ),
+    cancelQuery: () =>
+      store.dispatch(
+        "cancelQuery",
         store.getters.activeQueryTab as QueryTabContent
       )
   },
