@@ -118,15 +118,11 @@ export default new Vuex.Store({
           id: tab.id
         } as QueryExecutionContext);
         context.commit("mergeQueryTabContent", { id: response.id, grid: { columns: response.columns, rows: response.rows }, loading: false } as QueryTabContent);
-        if (response.success) {
-          context.dispatch("showAppSnackbar", { message: `${response.rowCount} rows returned in ${response.elapsed} ms.`, color: "success" } as AppSnackbar);
-        }
-        else {
-          context.dispatch("showAppSnackbar", { message: response.error, color: "error" } as AppSnackbar);
-        }
+        context.dispatch("showAppSnackbar", { message: response.message, color: response.success ? "success" : "error" } as AppSnackbar);
       }
-      catch {
+      catch (Error) {
         context.commit("mergeQueryTabContent", { id: tab.id, grid: { columns: new Array<any>(), rows: new Array<any>() }, loading: false } as QueryTabContent);
+        context.dispatch("showAppSnackbar", { message: Error.message, color: "error" } as AppSnackbar);
       }
     }
   },
