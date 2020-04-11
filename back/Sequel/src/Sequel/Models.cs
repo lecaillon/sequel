@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Sequel.Models
@@ -72,11 +73,28 @@ namespace Sequel.Models
 
         public string Id { get; }
         public bool Success { get; set; } = true;
-        public string Error { get; set; } = "";
+        public string? Error { get; set; }
+        public string Message => Error ?? GetSuccessMessage();
         public long Elapsed { get; set; } = 0;
+        public int RecordsAffected { get; set; } = 0;
         public List<ColumnDefinition> Columns { get; } = new List<ColumnDefinition>();
         public List<object> Rows { get; } = new List<object>();
         public int RowCount => Rows.Count;
+
+        private string GetSuccessMessage()
+        {
+            string msg = "";
+            if (RecordsAffected >= 0)
+            {
+                msg = $"{RecordsAffected} record(s) affected";
+            }
+            if (Columns.Count > 0)
+            {
+                msg += $"{(msg.Length == 0 ? "" : " and ")}{RowCount} row(s) returned";
+            }
+
+            return msg + $" in {Elapsed} ms";
+        }
     }
 
     public class ColumnDefinition

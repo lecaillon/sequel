@@ -60,7 +60,7 @@ namespace Sequel.Core
             });
         }
 
-        public static async Task<IEnumerable<string>> QueryStringListAsync(this ServerConnection server, string sql) 
+        public static async Task<IEnumerable<string>> QueryStringListAsync(this ServerConnection server, string sql)
             => await QueryStringListAsync(server, null, sql);
 
         public static async Task<long> QueryForLongAsync(this ServerConnection server, string? database, string sql)
@@ -71,7 +71,7 @@ namespace Sequel.Core
             });
         }
 
-        public static async Task<long> QueryForLongAsync(this ServerConnection server, string sql) 
+        public static async Task<long> QueryForLongAsync(this ServerConnection server, string sql)
             => await QueryForLongAsync(server, null, sql);
 
         public static async Task<IEnumerable<T>> QueryListAsync<T>(this ServerConnection server, string? database, string sql, Func<IDataReader, T> map)
@@ -103,27 +103,33 @@ namespace Sequel.Core
                 {
                     sw.Start();
                     using var dataReader = await dbCommand.ExecuteReaderAsync();
-                    sw.Stop();
 
-                    for (int i = 0; i < dataReader.FieldCount; i++)
+                    do
                     {
-                        response.Columns.Add(new ColumnDefinition(dataReader.GetName(i), dataReader.GetDataTypeName(i)));
-                    }
+                        response.Columns.Clear();
+                        response.Rows.Clear();
 
-                    while (await dataReader.ReadAsync())
-                    {
-                        var dataRow = new ExpandoObject() as IDictionary<string, object?>;
                         for (int i = 0; i < dataReader.FieldCount; i++)
                         {
-                            var value = dataReader[i];
-                            dataRow.Add(dataReader.GetName(i), value is DBNull ? null : value);
+                            response.Columns.Add(new ColumnDefinition(dataReader.GetName(i), dataReader.GetDataTypeName(i)));
                         }
-                        response.Rows.Add(dataRow);
-                    }
+
+                        while (await dataReader.ReadAsync())
+                        {
+                            var dataRow = new ExpandoObject() as IDictionary<string, object?>;
+                            for (int i = 0; i < dataReader.FieldCount; i++)
+                            {
+                                var value = dataReader[i];
+                                dataRow.Add(dataReader.GetName(i), value is DBNull ? null : value);
+                            }
+                            response.Rows.Add(dataRow);
+                        }
+                    } while (await dataReader.NextResultAsync());
+
+                    response.RecordsAffected = dataReader.RecordsAffected;
                 }
                 catch (Exception ex)
                 {
-                    sw.Stop();
                     response.Success = false;
                     response.Error = ex.Message;
                 }
