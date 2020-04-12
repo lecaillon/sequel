@@ -27,6 +27,7 @@ export default new Vuex.Store({
   },
   getters: {
     activeQueryTab: state => state.queryTabs[state.activeQueryTabIndex],
+    getQueryTabById: state => (id: string) => state.queryTabs.find(x => x.id === id),
     hasActiveTab: state => state.activeQueryTabIndex >= 0,
     hasActiveDatabase: state => state.activeDatabase?.length > 0,
     hasActiveTabLoading: (state, getters) => getters.hasActiveTab && (getters.activeQueryTab as QueryTabContent)?.loading,
@@ -127,7 +128,6 @@ export default new Vuex.Store({
       }
       catch (Error) {
         context.commit("mergeQueryTabContent", { id: tab.id, grid: { columns: new Array<any>(), rows: new Array<any>() }, loading: false } as QueryTabContent);
-        context.dispatch("showAppSnackbar", { message: Error.message, color: "error" } as AppSnackbar);
       }
     },
     cancelQuery: async (context, tab: QueryTabContent) => {
