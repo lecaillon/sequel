@@ -32,7 +32,7 @@ module.exports = {
           '!links',
           'multicursor',
           '!parameterHints',
-          '!quickCommand',
+          'quickCommand',
           '!quickOutline',
           '!referenceSearch',
           '!rename',
