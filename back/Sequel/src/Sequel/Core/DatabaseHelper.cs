@@ -144,7 +144,7 @@ namespace Sequel.Core
                 }
 
                 return response;
-            }, ct: cancellationToken);
+            }, dbCommand => dbCommand.CommandTimeout = 0, cancellationToken);
         }
 
         private static async Task<T> ExecuteAsync<T>(this ServerConnection server,

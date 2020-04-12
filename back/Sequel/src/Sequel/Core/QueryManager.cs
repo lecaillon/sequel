@@ -16,9 +16,9 @@ namespace Sequel.Core
             var cancellationToken = CreateToken(queryId);
 
             try
-			{
+            {
                 return await context.ExecuteQueryAsync(cancellationToken);
-			}
+            }
             finally
             {
                 ReleaseToken(queryId);
