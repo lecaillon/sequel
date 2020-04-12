@@ -6,7 +6,7 @@
       </v-tab>
     </v-tabs>
     <v-container fluid class="pa-0" style="height:100%">
-      <v-tabs-items class="pt-3" v-model="activeTab" style="height: 100%">
+      <v-tabs-items class="pt-3" :value="activeTab" style="height: 100%">
         <v-tab-item v-for="tab in queryTabs" :key="tab.id" style="height: 100%">
           <v-container fluid class="pa-0" style="height:45%">
             <query-editor

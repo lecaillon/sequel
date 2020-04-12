@@ -105,7 +105,9 @@ export default new Vuex.Store({
       context.commit("removeQueryTab", index);
     },
     changeActiveQueryTab: (context, index: number) => {
-      context.commit("setActiveQueryTabIndex", index);
+      if (index !== undefined) {
+        context.commit("setActiveQueryTabIndex", index);
+      }
     },
     updateQueryTabContent: (context, tab: QueryTabContent) => {
       context.commit("mergeQueryTabContent", tab);
@@ -171,6 +173,7 @@ export default new Vuex.Store({
       state.queryTabs.push(queryTab);
     },
     removeQueryTab(state, index: number) {
+      state.activeQueryTabIndex = -1; // force refresh of the tab content
       state.queryTabs.splice(index, 1);
     },
     setActiveQueryTabIndex(state, index: number) {
