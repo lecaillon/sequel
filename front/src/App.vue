@@ -6,12 +6,7 @@
       <v-spacer></v-spacer>
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
-          <v-btn
-            icon
-            :disabled="!hasActiveTab || !hasActiveDatabase || hasLoadingActiveTab"
-            v-on="on"
-            @click.stop="executeQuery()"
-          >
+          <v-btn icon :disabled="!canExecuteQuery" v-on="on" @click.stop="executeQuery()">
             <v-icon color="green">mdi-play</v-icon>
           </v-btn>
         </template>
@@ -19,12 +14,7 @@
       </v-tooltip>
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
-          <v-btn
-            icon
-            :disabled="!hasActiveTab || !hasActiveDatabase || !hasLoadingActiveTab"
-            v-on="on"
-            @click.stop="cancelQuery()"
-          >
+          <v-btn icon :disabled="!hasActiveTabLoading" v-on="on" @click.stop="cancelQuery()">
             <v-icon color="red">mdi-stop</v-icon>
           </v-btn>
         </template>
@@ -179,12 +169,9 @@ export default Vue.extend({
   computed: {
     appSnackbar: () => store.state.appSnackbar,
     editServer: () => store.state.editServer,
-    hasActiveTab: () => store.state.activeQueryTabIndex >= 0,
-    hasLoadingActiveTab: () =>
-      store.state.activeQueryTabIndex >= 0 &&
-      (store.getters.activeQueryTab as QueryTabContent).loading,
-    hasActiveDatabase: () => store.state.activeDatabase?.length > 0,
-    hasActiveNode: () => Object.keys(store.state.activeNode).length > 0
+    hasActiveTabLoading: () => store.getters.hasActiveTabLoading,
+    hasActiveNode: () => store.getters.hasActiveNode,
+    canExecuteQuery: () => store.getters.canExecuteQuery
   }
 });
 </script>

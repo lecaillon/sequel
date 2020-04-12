@@ -26,7 +26,12 @@ export default new Vuex.Store({
     queryTabs: [] as QueryTabContent[]
   },
   getters: {
-    activeQueryTab: state => state.queryTabs[state.activeQueryTabIndex]
+    activeQueryTab: state => state.queryTabs[state.activeQueryTabIndex],
+    hasActiveTab: state => state.activeQueryTabIndex >= 0,
+    hasActiveDatabase: state => state.activeDatabase?.length > 0,
+    hasActiveTabLoading: (state, getters) => getters.hasActiveTab && (getters.activeQueryTab as QueryTabContent)?.loading,
+    hasActiveNode: state => Object.keys(state.activeNode).length > 0,
+    canExecuteQuery: (state, getters) => getters.hasActiveTab && getters.hasActiveDatabase && !getters.hasActiveTabLoading,
   },
   actions: {
     showAppSnackbar: (context, appSnackbar: AppSnackbar) => {
