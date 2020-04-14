@@ -122,6 +122,7 @@ import DatabaseQueryManager from "@/components/DatabaseQueryManager.vue";
 import AppSnackbar from "@/components/AppSnackbar.vue";
 import { ServerConnection } from "./models/serverConnection";
 import { QueryTabContent } from "./models/queryTabContent";
+import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 export default Vue.extend({
   name: "App",
@@ -139,7 +140,8 @@ export default Vue.extend({
   data: () => ({
     showDbExplorer: true,
     showDbProperty: false,
-    showFormServerConnection: false
+    showFormServerConnection: false,
+    snippetProvider: {} as monaco.IDisposable
   }),
   methods: {
     openFormServerConnection(newForm: boolean) {
@@ -172,6 +174,43 @@ export default Vue.extend({
     hasActiveTabLoading: () => store.getters.hasActiveTabLoading,
     hasActiveNode: () => store.getters.hasActiveNode,
     canExecuteQuery: () => store.getters.canExecuteQuery
+  },
+  mounted() {
+    this.snippetProvider = monaco.languages.registerCompletionItemProvider(
+      "sql",
+      {
+        provideCompletionItems: (model, position) => {
+          const word = model.getWordUntilPosition(position);
+          const range = {
+            startLineNumber: position.lineNumber,
+            endLineNumber: position.lineNumber,
+            startColumn: word.startColumn,
+            endColumn: word.endColumn
+          };
+          return {
+            suggestions: [
+              {
+                label: "s*",
+                kind: monaco.languages.CompletionItemKind.Snippet,
+                insertText: "SELECT * FROM ",
+                detail: "A snippet to quickly write: SELECT * FROM",
+                range: range
+              },
+              {
+                label: "sc*",
+                kind: monaco.languages.CompletionItemKind.Snippet,
+                insertText: "SELECT COUNT(*) FROM ",
+                detail: "A snippet to quickly write: SELECT COUNT(*) FROM",
+                range: range
+              }
+            ] as monaco.languages.CompletionItem[]
+          };
+        }
+      }
+    );
+  },
+  beforeDestroy() {
+    this.snippetProvider.dispose();
   }
 });
 </script>
