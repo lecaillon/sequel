@@ -138,6 +138,22 @@ namespace Sequel.Models
         };
     }
 
+    public class CompletionItem
+    {
+        public CompletionItem(string label, CompletionItemKind kind, string? insertText = null, string? detail = null)
+        {
+            Label = label;
+            Kind = kind;
+            InsertText = insertText ?? label;
+            Detail = detail;
+        }
+
+        public string Label { get; set; }
+        public CompletionItemKind Kind { get; set; }
+        public string InsertText { get; set; }
+        public string? Detail { get; set; }
+    }
+
     public abstract class Identity
     {
         public int? Id { get; set; }

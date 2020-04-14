@@ -9,6 +9,7 @@ namespace Sequel.Databases
         public DBMS Type { get; }
 
         public Task<IEnumerable<string>> LoadDatabasesAsync();
-        public Task<IEnumerable<DatabaseObjectNode>> LoadDatabaseObjectsAsync(string database, DatabaseObjectNode? node);
+        public Task<IEnumerable<DatabaseObjectNode>> LoadDatabaseObjectNodesAsync(string database, DatabaseObjectNode? node);
+        public Task<IEnumerable<CompletionItem>> LoadIntellisenseAsync(string database);
     }
 }

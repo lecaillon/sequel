@@ -9,6 +9,7 @@ import { QueryResponseContext } from "@/models/queryResponseContext";
 import { AppSnackbar } from "@/models/appSnackbar";
 import { QueryTabContent } from "@/models/queryTabContent";
 import { v4 as uuidv4 } from "uuid";
+import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 Vue.use(Vuex);
 
@@ -23,7 +24,8 @@ export default new Vuex.Store({
     nodes: [] as DatabaseObjectNode[],
     activeNode: {} as DatabaseObjectNode,
     activeQueryTabIndex: {} as number,
-    queryTabs: [] as QueryTabContent[]
+    queryTabs: [] as QueryTabContent[],
+    intellisense: [] as monaco.languages.CompletionItem[]
   },
   getters: {
     activeQueryTab: state => state.queryTabs[state.activeQueryTabIndex],
@@ -79,6 +81,16 @@ export default new Vuex.Store({
     changeActiveDatabase: (context, database: string) => {
       context.commit("setActiveDatabase", database);
       context.dispatch("fetchDatabaseObjectNodes");
+      context.dispatch("fetchIntellisense");
+    },
+    fetchIntellisense: async context => {
+      if (context.state.activeDatabase !== undefined) {
+        const intellisense = await http.post<monaco.languages.CompletionItem[]>(`${BASE_URL}/sequel/intellisense`, {
+          server: context.state.activeServer,
+          database: context.state.activeDatabase,
+        } as QueryExecutionContext);
+        context.commit("setIntellisense", intellisense);
+      }
     },
     fetchDatabaseObjectNodes: async (context, parent: DatabaseObjectNode) => {
       if (context.state.activeDatabase === undefined) {
@@ -154,6 +166,9 @@ export default new Vuex.Store({
     },
     setActiveDatabase(state, database: string) {
       state.activeDatabase = database;
+    },
+    setIntellisense(state, intellisense: monaco.languages.CompletionItem[]) {
+      state.intellisense = intellisense;
     },
     clearNodes(state) {
       state.nodes = [];

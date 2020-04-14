@@ -141,7 +141,8 @@ export default Vue.extend({
     showDbExplorer: true,
     showDbProperty: false,
     showFormServerConnection: false,
-    snippetProvider: {} as monaco.IDisposable
+    snippetProvider: {} as monaco.IDisposable,
+    intellisenseProvider: {} as monaco.IDisposable
   }),
   methods: {
     openFormServerConnection(newForm: boolean) {
@@ -176,6 +177,25 @@ export default Vue.extend({
     canExecuteQuery: () => store.getters.canExecuteQuery
   },
   mounted() {
+    this.intellisenseProvider = monaco.languages.registerCompletionItemProvider(
+      "sql",
+      {
+        provideCompletionItems: (model, position) => {
+          const word = model.getWordUntilPosition(position);
+          const range = {
+            startLineNumber: position.lineNumber,
+            endLineNumber: position.lineNumber,
+            startColumn: word.startColumn,
+            endColumn: word.endColumn
+          };
+          const intellisense = Array.from(store.state.intellisense);
+          intellisense.forEach(x => (x.range = range));
+          return {
+            suggestions: intellisense
+          };
+        }
+      }
+    );
     this.snippetProvider = monaco.languages.registerCompletionItemProvider(
       "sql",
       {
@@ -211,6 +231,7 @@ export default Vue.extend({
   },
   beforeDestroy() {
     this.snippetProvider.dispose();
+    this.intellisenseProvider.dispose();
   }
 });
 </script>

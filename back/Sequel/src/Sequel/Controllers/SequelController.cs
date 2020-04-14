@@ -54,7 +54,7 @@ namespace Sequel.Controllers
         [Route("database-objects")]
         public async Task<ActionResult<IEnumerable<DatabaseObjectNode>>> GetDatabaseObjects(QueryExecutionContext context)
         {
-            return Ok(await context.Server.GetDatabaseSystem().LoadDatabaseObjectsAsync(context.Database, context.DatabaseObject));
+            return Ok(await context.Server.GetDatabaseSystem().LoadDatabaseObjectNodesAsync(context.Database, context.DatabaseObject));
         }
 
         [HttpPost]
@@ -95,6 +95,13 @@ namespace Sequel.Controllers
 
             QueryManager.Cancel(queryId.ToString());
             return Ok();
+        }
+
+        [HttpPost]
+        [Route("intellisense")]
+        public async Task<ActionResult<IEnumerable<CompletionItem>>> Intellisense(QueryExecutionContext context)
+        {
+            return Ok(await context.Server.GetDatabaseSystem().LoadIntellisenseAsync(context.Database));
         }
     }
 }
