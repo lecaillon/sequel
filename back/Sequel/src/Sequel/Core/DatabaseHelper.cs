@@ -107,12 +107,17 @@ namespace Sequel.Core
 
                     do
                     {
+                        var columnNames = new List<string>();
                         response.Columns.Clear();
                         response.Rows.Clear();
 
                         for (int i = 0; i < dataReader.FieldCount; i++)
                         {
-                            response.Columns.Add(new ColumnDefinition(dataReader.GetName(i), dataReader.GetDataTypeName(i)));
+                            columnNames.Add(columnNames.Contains(dataReader.GetName(i))
+                                ? dataReader.GetName(i) + (i + 1)
+                                : dataReader.GetName(i));
+
+                            response.Columns.Add(new ColumnDefinition(columnNames[i], dataReader.GetDataTypeName(i)));
                         }
 
                         while (await dataReader.ReadAsync(ct))
@@ -121,7 +126,7 @@ namespace Sequel.Core
                             for (int i = 0; i < dataReader.FieldCount; i++)
                             {
                                 var value = dataReader[i];
-                                dataRow.Add(dataReader.GetName(i), value is DBNull ? null : value);
+                                dataRow.Add(columnNames[i], value is DBNull ? null : value);
                             }
                             response.Rows.Add(dataRow);
                         }
