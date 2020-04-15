@@ -16,7 +16,13 @@
             ></query-editor>
           </v-container>
           <v-container fluid class="pa-0" style="height:calc(55% - 48px)">
-            <data-grid :columns="tab.grid.columns" :rows="tab.grid.rows" :loading="tab.loading"></data-grid>
+            <data-grid
+              :gridId="tab.id"
+              :columns="tab.response.columns"
+              :rows="tab.response.rows"
+              :loading="tab.loading"
+              @created="gridCreated"
+            ></data-grid>
           </v-container>
         </v-tab-item>
       </v-tabs-items>
@@ -31,6 +37,7 @@ import QueryTab from "@/components/QueryTab.vue";
 import QueryEditor from "@/components/QueryEditor.vue";
 import DataGrid from "@/components/DataGrid.vue";
 import { QueryTabContent } from "@/models/queryTabContent";
+import { GridApi } from "ag-grid-community";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 export default Vue.extend({
@@ -51,6 +58,12 @@ export default Vue.extend({
       store.dispatch("updateQueryTabContent", {
         id,
         editor
+      } as QueryTabContent);
+    },
+    gridCreated(id: string, grid: GridApi) {
+      store.dispatch("updateQueryTabContent", {
+        id,
+        grid
       } as QueryTabContent);
     },
     editorKeyPressedF5(id: string) {

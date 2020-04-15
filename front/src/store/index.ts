@@ -33,6 +33,7 @@ export default new Vuex.Store({
     hasActiveTab: state => state.activeQueryTabIndex >= 0,
     hasActiveDatabase: state => state.activeDatabase?.length > 0,
     hasActiveTabLoading: (state, getters) => getters.hasActiveTab && (getters.activeQueryTab as QueryTabContent)?.loading,
+    hasActiveGrid: (state, getters) => getters.hasActiveTab && (getters.activeQueryTab as QueryTabContent).response.columns.length > 0,
     hasActiveNode: state => Object.keys(state.activeNode).length > 0,
     canExecuteQuery: (state, getters) => getters.hasActiveTab && getters.hasActiveDatabase && !getters.hasActiveTabLoading,
   },
@@ -110,7 +111,7 @@ export default new Vuex.Store({
     openNewQueryTab: context => {
       const num = Math.max(...context.state.queryTabs.map(x => x.num), 0) + 1;
       const index = context.state.queryTabs.length;
-      context.commit("pushQueryTab", { id: uuidv4(), num, title: `query${num}`, grid: { columns: new Array<any>(), rows: new Array<any>() }, loading: false } as QueryTabContent);
+      context.commit("pushQueryTab", { id: uuidv4(), num, title: `query${num}`, response: { columns: new Array<any>(), rows: new Array<any>() }, loading: false } as QueryTabContent);
       context.dispatch("changeActiveQueryTab", index);
     },
     closeQueryTab: (context, index: number) => {
@@ -137,11 +138,11 @@ export default new Vuex.Store({
           sql: sql,
           id: tab.id
         } as QueryExecutionContext);
-        context.commit("mergeQueryTabContent", { id: response.id, grid: { columns: response.columns, rows: response.rows }, loading: false } as QueryTabContent);
+        context.commit("mergeQueryTabContent", { id: response.id, response: { columns: response.columns, rows: response.rows }, loading: false } as QueryTabContent);
         context.dispatch("showAppSnackbar", { message: response.message, color: response.color } as AppSnackbar);
       }
       catch (Error) {
-        context.commit("mergeQueryTabContent", { id: tab.id, grid: { columns: new Array<any>(), rows: new Array<any>() }, loading: false } as QueryTabContent);
+        context.commit("mergeQueryTabContent", { id: tab.id, response: { columns: new Array<any>(), rows: new Array<any>() }, loading: false } as QueryTabContent);
       }
     },
     cancelQuery: async (context, tab: QueryTabContent) => {
@@ -200,11 +201,14 @@ export default new Vuex.Store({
         if (tab.editor) {
           tabToUpdate.editor = tab.editor;
         }
-        if (tab.grid) {
-          tabToUpdate.grid = tab.grid;
+        if (tab.response) {
+          tabToUpdate.response = tab.response;
         }
         if (tab.loading !== undefined) {
           tabToUpdate.loading = tab.loading;
+        }
+        if (tab.grid) {
+          tabToUpdate.grid = tab.grid;
         }
       }
     }

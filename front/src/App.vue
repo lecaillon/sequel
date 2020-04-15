@@ -51,6 +51,14 @@
         </template>
         <span>Todo: Show database property panel</span>
       </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <v-btn icon :disabled="!canExportData" v-on="on" @click.stop="exportDataAsCsv()">
+            <v-icon color="grey lighten-2">mdi-file-download-outline</v-icon>
+          </v-btn>
+        </template>
+        <span>Export data to CSV</span>
+      </v-tooltip>
       <v-divider vertical inset />
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
@@ -122,6 +130,7 @@ import DatabaseQueryManager from "@/components/DatabaseQueryManager.vue";
 import AppSnackbar from "@/components/AppSnackbar.vue";
 import { ServerConnection } from "./models/serverConnection";
 import { QueryTabContent } from "./models/queryTabContent";
+import { CsvExportParams } from "ag-grid-community";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 export default Vue.extend({
@@ -167,14 +176,19 @@ export default Vue.extend({
       store.dispatch(
         "cancelQuery",
         store.getters.activeQueryTab as QueryTabContent
-      )
+      ),
+    exportDataAsCsv: () =>
+      (store.getters.activeQueryTab as QueryTabContent).grid?.exportDataAsCsv({
+        allColumns: true
+      } as CsvExportParams)
   },
   computed: {
     appSnackbar: () => store.state.appSnackbar,
     editServer: () => store.state.editServer,
     hasActiveTabLoading: () => store.getters.hasActiveTabLoading,
     hasActiveNode: () => store.getters.hasActiveNode,
-    canExecuteQuery: () => store.getters.canExecuteQuery
+    canExecuteQuery: () => store.getters.canExecuteQuery,
+    canExportData: () => store.getters.hasActiveGrid
   },
   mounted() {
     this.intellisenseProvider = monaco.languages.registerCompletionItemProvider(

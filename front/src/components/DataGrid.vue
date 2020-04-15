@@ -29,6 +29,7 @@ import DatagridLoader from "@/components/DatagridLoader.vue";
 export default Vue.extend({
   name: "DataGrid",
   props: {
+    gridId: String,
     columns: Array,
     rows: Array,
     loading: Boolean
@@ -66,6 +67,7 @@ export default Vue.extend({
   mounted() {
     this.gridApi = this.gridOptions.api!;
     this.gridColumnApi = this.gridOptions.columnApi!;
+    this.$emit("created", this.gridId, this.gridApi);
   }
 });
 </script>
