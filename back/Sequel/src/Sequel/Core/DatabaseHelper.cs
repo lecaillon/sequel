@@ -131,6 +131,8 @@ namespace Sequel.Core
                 }
                 catch (TaskCanceledException)
                 {
+                    response.Columns.Clear();
+                    response.Rows.Clear();
                     response.Status = QueryResponseStatus.Canceled;
                 }
                 catch (Exception ex)
