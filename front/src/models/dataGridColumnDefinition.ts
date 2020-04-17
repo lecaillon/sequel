@@ -8,4 +8,5 @@ export interface DataGridColumnDefinition {
     editable: boolean,
     resizable: boolean,
     width?: number,
+    cellClass?: string,
 }

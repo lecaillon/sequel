@@ -77,4 +77,7 @@ export default Vue.extend({
   border-width: 1px 0 0 0 !important;
   border-radius: 0px !important;
 }
+.numeric-cell {
+  direction: rtl;
+}
 </style>

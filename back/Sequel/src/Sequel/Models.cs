@@ -116,6 +116,12 @@ namespace Sequel.Models
 
     public class ColumnDefinition
     {
+        static readonly HashSet<string> NumericSqlTypes = new HashSet<string> 
+        {
+            "smallint", "integer", "bigint", "numeric", "real", "double precision", "smallserial", "serial",
+            "bigserial", "bigint", "bit", "decimal", "int", "money", "smallmoney", "tinyint", "float", "real"
+        };
+
         public ColumnDefinition(string colId, string sqlType)
         {
             ColId = Check.NotNullOrEmpty(colId, nameof(colId));
@@ -130,12 +136,13 @@ namespace Sequel.Models
         public bool Filter { get; set; } = true;
         public bool Editable { get; set; } = true;
         public bool Resizable { get; set; } = true;
-        public int? Width => SqlType switch
+        public int? Width => SqlType.ToLower() switch
         {
             "jsonb" => 200,
             "uuid" => 150,
             _ => null
         };
+        public string? CellClass => NumericSqlTypes.Contains(SqlType) ? "numeric-cell" : null;
     }
 
     public class CompletionItem
