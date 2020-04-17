@@ -132,6 +132,7 @@ namespace Sequel.Models
         public string HeaderName => ColId;
         public string Field => HeaderName;
         public string SqlType { get; }
+        public string HeaderTooltip => SqlType;
         public bool Sortable { get; set; } = true;
         public bool Filter { get; set; } = true;
         public bool Editable { get; set; } = true;

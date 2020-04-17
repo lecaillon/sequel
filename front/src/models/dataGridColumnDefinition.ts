@@ -3,6 +3,7 @@ export interface DataGridColumnDefinition {
     headerName: string,
     field: string,
     sqlType: string,
+    headerTooltip: string,
     sortable: boolean,
     filter: boolean,
     editable: boolean,
