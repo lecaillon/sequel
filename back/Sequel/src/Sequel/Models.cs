@@ -134,7 +134,6 @@ namespace Sequel.Models
         public string SqlType { get; }
         public string HeaderTooltip => SqlType;
         public bool Sortable { get; set; } = true;
-        public bool Filter { get; set; } = true;
         public bool Editable { get; set; } = true;
         public bool Resizable { get; set; } = true;
         public int? Width => SqlType.ToLower() switch
@@ -144,6 +143,24 @@ namespace Sequel.Models
             _ => null
         };
         public string? CellClass => NumericSqlTypes.Contains(SqlType) ? "numeric-cell" : null;
+        public object Filter
+        {
+            get
+            {
+                if (NumericSqlTypes.Contains(SqlType))
+                {
+                    return "agNumberColumnFilter";
+                }
+                else if (SqlType.Contains("date") || SqlType.Contains("timestamp"))
+                {
+                    return false;
+                }
+                else
+                {
+                    return "agTextColumnFilter";
+                }
+            }
+        }
     }
 
     public class CompletionItem

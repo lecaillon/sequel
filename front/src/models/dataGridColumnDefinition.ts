@@ -5,7 +5,7 @@ export interface DataGridColumnDefinition {
     sqlType: string,
     headerTooltip: string,
     sortable: boolean,
-    filter: boolean,
+    filter: any,
     editable: boolean,
     resizable: boolean,
     width?: number,
