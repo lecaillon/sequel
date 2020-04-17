@@ -13,7 +13,8 @@ export default Vue.extend({
   },
   data: () => ({
     editor: {} as monaco.editor.IStandaloneCodeEditor,
-    editorActionF5: {} as monaco.IDisposable
+    editorActionF5: {} as monaco.IDisposable,
+    onDidChangeContent: {} as monaco.IDisposable
   }),
   mounted() {
     this.editor = monaco.editor.create(
@@ -41,11 +42,18 @@ export default Vue.extend({
       }
     });
 
+    this.onDidChangeContent = this.editor
+      .getModel()!
+      .onDidChangeContent(() =>
+        monaco.editor.setModelMarkers(this.editor.getModel()!, "sql", [])
+      );
+
     this.editor.focus();
     this.$emit("created", this.editorId, this.editor);
   },
   beforeDestroy() {
     this.editorActionF5.dispose();
+    this.onDidChangeContent.dispose();
     this.editor.dispose();
   }
 });

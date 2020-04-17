@@ -140,6 +140,25 @@ export default new Vuex.Store({
         } as QueryExecutionContext);
         context.commit("mergeQueryTabContent", { id: response.id, response: { columns: response.columns, rows: response.rows }, loading: false } as QueryTabContent);
         context.dispatch("showAppSnackbar", { message: response.message, color: response.color } as AppSnackbar);
+
+        const model = tab.editor?.getModel();
+        if (response.errorPosition != null && model != null) {
+          const pos = model.getPositionAt(response.errorPosition);
+          let endColumn = pos.column;
+          let char = "";
+          while (char != " " && char != "," && endColumn <= model.getLineLastNonWhitespaceColumn(pos.lineNumber)) {
+            endColumn++;
+            char = model.getValueInRange({ startLineNumber: pos.lineNumber, startColumn: endColumn - 1, endLineNumber: pos.lineNumber, endColumn });
+          }
+          monaco.editor.setModelMarkers(tab.editor?.getModel()!, "sql", [{
+            startLineNumber: pos.lineNumber,
+            startColumn: pos.column - 1,
+            endLineNumber: pos.lineNumber,
+            endColumn: endColumn - 1,
+            message: response.error!,
+            severity: monaco.MarkerSeverity.Error
+          }]);
+        }
       }
       catch (Error) {
         context.commit("mergeQueryTabContent", { id: tab.id, response: { columns: new Array<any>(), rows: new Array<any>() }, loading: false } as QueryTabContent);

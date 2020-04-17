@@ -73,6 +73,7 @@ namespace Sequel.Models
         public string Id { get; }
         public QueryResponseStatus Status { get; set; } = QueryResponseStatus.Succeeded;
         public string? Error { get; set; }
+        public int? ErrorPosition { get; set; } = null;
         public long Elapsed { get; set; } = 0;
         public int RecordsAffected { get; set; } = 0;
         public List<ColumnDefinition> Columns { get; } = new List<ColumnDefinition>();

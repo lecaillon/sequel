@@ -144,6 +144,10 @@ namespace Sequel.Core
                 {
                     response.Status = QueryResponseStatus.Failed;
                     response.Error = ex.Message;
+                    if (int.TryParse(ex.Data["Position"]?.ToString(), out int position))
+                    {
+                        response.ErrorPosition = position;
+                    }
                 }
                 finally
                 {

@@ -26,7 +26,7 @@ module.exports = {
           '!gotoError',
           'gotoLine',
           '!gotoSymbol',
-          '!hover',
+          'hover',
           '!inspectTokens',
           'linesOperations',
           '!links',

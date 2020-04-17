@@ -5,6 +5,7 @@ export interface QueryResponseContext {
     status: boolean,
     color: string,
     error?: string,
+    errorPosition?: number,
     message: string,
     elapsed: number,
     columns: Array<DataGridColumnDefinition>,
