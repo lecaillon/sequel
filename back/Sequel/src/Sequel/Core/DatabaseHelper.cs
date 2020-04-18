@@ -103,6 +103,7 @@ namespace Sequel.Core
                 try
                 {
                     sw.Start();
+                    using var ctr = ct.Register(() => dbCommand.Cancel());
                     using var dataReader = await dbCommand.ExecuteReaderAsync(ct);
 
                     do
@@ -134,19 +135,22 @@ namespace Sequel.Core
 
                     response.RecordsAffected = dataReader.RecordsAffected;
                 }
-                catch (TaskCanceledException)
-                {
-                    response.Columns.Clear();
-                    response.Rows.Clear();
-                    response.Status = QueryResponseStatus.Canceled;
-                }
                 catch (Exception ex)
                 {
-                    response.Status = QueryResponseStatus.Failed;
-                    response.Error = ex.Message;
-                    if (int.TryParse(ex.Data["Position"]?.ToString(), out int position))
+                    if (ct.IsCancellationRequested)
                     {
-                        response.ErrorPosition = position;
+                        response.Status = QueryResponseStatus.Canceled;
+                        response.Columns.Clear();
+                        response.Rows.Clear();
+                    }
+                    else
+                    {
+                        response.Status = QueryResponseStatus.Failed;
+                        response.Error = ex.Message;
+                        if (int.TryParse(ex.Data["Position"]?.ToString(), out int position))
+                        {
+                            response.ErrorPosition = position;
+                        }
                     }
                 }
                 finally
