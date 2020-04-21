@@ -50,6 +50,11 @@ export default Vue.extend({
   methods: {
     selected(activeTab: number) {
       store.dispatch("changeActiveQueryTab", activeTab);
+      const editor = (store.getters.activeQueryTab as QueryTabContent).editor;
+      setTimeout(() => {
+        editor?.layout();
+        editor?.focus();
+      }, 100);
     },
     closeTab(activeTab: number) {
       store.dispatch("closeQueryTab", activeTab);
