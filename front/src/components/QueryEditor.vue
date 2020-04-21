@@ -1,5 +1,5 @@
 <template>
-  <v-sheet tile :id="'editor-' + this.editorId" style="height:100%"></v-sheet>
+  <v-sheet tile :id="'editor-' + this.editorId" v-resize="onResize" style="height:100%"></v-sheet>
 </template>
 
 <script lang="ts">
@@ -16,6 +16,13 @@ export default Vue.extend({
     editorActionF5: {} as monaco.IDisposable,
     onDidChangeContent: {} as monaco.IDisposable
   }),
+  methods: {
+    onResize() {
+      if (Object.keys(this.editor).length > 0) {
+        this.editor.layout();
+      }
+    }
+  },
   mounted() {
     this.editor = monaco.editor.create(
       document.getElementById("editor-" + this.editorId)!,
