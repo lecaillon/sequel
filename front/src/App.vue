@@ -32,6 +32,14 @@
       <v-divider vertical inset />
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
+          <v-btn icon v-on="on" @click.stop="openQueryHistoryManager()">
+            <v-icon color="grey lighten-2">mdi-history</v-icon>
+          </v-btn>
+        </template>
+        <span>Open history</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
           <v-btn icon :disabled="!hasActiveNode" v-on="on">
             <v-icon color="grey lighten-2">mdi-database-refresh</v-icon>
           </v-btn>
@@ -96,9 +104,9 @@
       <v-divider></v-divider>
     </v-navigation-drawer>
 
-    <v-content>
+    <v-main>
       <database-query-manager></database-query-manager>
-    </v-content>
+    </v-main>
 
     <v-footer app></v-footer>
 
@@ -107,6 +115,8 @@
       :server="editServer"
       @close="showFormServerConnection = false"
     ></form-server-connection>
+
+    <query-history-manager :show="showQueryHistoryManager" @close="showQueryHistoryManager = false"></query-history-manager>
 
     <app-snackbar
       :show="appSnackbar.show"
@@ -128,6 +138,7 @@ import SelectDatabase from "@/components/SelectDatabase.vue";
 import DatabaseObjectTreeview from "@/components/DatabaseObjectTreeview.vue";
 import DatabaseQueryManager from "@/components/DatabaseQueryManager.vue";
 import AppSnackbar from "@/components/AppSnackbar.vue";
+import QueryHistoryManager from "@/components/QueryHistoryManager.vue";
 import { ServerConnection } from "./models/serverConnection";
 import { QueryTabContent } from "./models/queryTabContent";
 import { CsvExportParams } from "ag-grid-community";
@@ -144,16 +155,21 @@ export default Vue.extend({
     SelectDatabase,
     DatabaseObjectTreeview,
     DatabaseQueryManager,
+    QueryHistoryManager,
     AppSnackbar
   },
   data: () => ({
     showDbExplorer: true,
     showDbProperty: false,
     showFormServerConnection: false,
+    showQueryHistoryManager: false,
     snippetProvider: {} as monaco.IDisposable,
     intellisenseProvider: {} as monaco.IDisposable
   }),
   methods: {
+    openQueryHistoryManager() {
+      this.showQueryHistoryManager = true;
+    },
     openFormServerConnection(newForm: boolean) {
       if (newForm) {
         store.dispatch("changeEditServer", {

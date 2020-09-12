@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -106,6 +107,43 @@ namespace Sequel.Controllers
         public async Task<ActionResult<IEnumerable<CompletionItem>>> Intellisense(QueryExecutionContext context)
         {
             return Ok(await context.Server.GetDatabaseSystem().LoadIntellisenseAsync(context.Database));
+        }
+
+        private static readonly List<ColumnDefinition> QueryHistoryColumns = new List<ColumnDefinition>
+        {
+            new ColumnDefinition("id", "int", "Id") { Editable = false },
+            new ColumnDefinition("type", "text", "DBMS") { Editable = false },
+            new ColumnDefinition("serverConnection", "text", "Connection") { Editable = false },
+            new ColumnDefinition("sql", "text") { Hide = true },
+            new ColumnDefinition("hash", "text") { Hide = true },
+            new ColumnDefinition("executedOn", "date", "Last execution") { Editable = false },
+            new ColumnDefinition("status", "text", "Status") { Editable = false },
+            new ColumnDefinition("elapsed", "int", "Elapsed (ms)") { Hide = true },
+            new ColumnDefinition("rowCount", "int", "Row count") { Hide = true },
+            new ColumnDefinition("recordsAffected", "int", "Records affected") { Hide = true },
+            new ColumnDefinition("executionCount", "int", "Execution Count") { Hide = true },
+            new ColumnDefinition("star", "bool", "Favorite") { Editable = false },
+        };
+
+        [HttpGet]
+        [Route("history")]
+        public async Task<ActionResult<QueryResponseContext>> SearchHistory([FromQuery] QueryHistoryQuery? query)
+        {
+            var response = new QueryResponseContext("id-history");
+            response.Columns.AddRange(QueryHistoryColumns);
+            try
+            {
+                var history = await QueryManager.History.Load(query ?? new QueryHistoryQuery());
+                response.Rows.AddRange(history);
+                response.Status = QueryResponseStatus.Succeeded;
+            }
+            catch (Exception ex)
+            {
+                response.Error = ex.Message;
+                response.Status = QueryResponseStatus.Failed;
+            }
+
+            return Ok(response);
         }
     }
 }

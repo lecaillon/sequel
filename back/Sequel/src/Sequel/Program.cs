@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
@@ -7,6 +8,8 @@ namespace Sequel
 {
     public static class Program
     {
+        public static readonly string RootDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "sequel");
+        
         public static void Main(string[] args)
         {
             CreateHostBuilder(args).Build().Run();

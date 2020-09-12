@@ -17,7 +17,7 @@
               <v-select
                 label="Type*"
                 v-model="editServer.type"
-                :items="['PostgreSQL', 'SQLServer']"
+                :items="['PostgreSQL', 'SQLite', 'SQLServer']"
                 clearable
               ></v-select>
             </v-col>

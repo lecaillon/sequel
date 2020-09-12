@@ -4,8 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Diagnostics;
-using System.Dynamic;
+using System.Data.SQLite;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Npgsql;
@@ -14,13 +14,14 @@ using Sequel.Models;
 
 namespace Sequel.Core
 {
-    public static class DatabaseHelper
+    public static class SqlHelper
     {
         private static DbConnection CreateConnection(this ServerConnection server)
         {
             return server.Type switch
             {
                 DBMS.PostgreSQL => new NpgsqlConnection(server.ConnectionString),
+                DBMS.SQLite => new SQLiteConnection(server.ConnectionString),
                 _ => throw new NotSupportedException($"Unsupported database {server.Type}.")
             };
         }
@@ -38,6 +39,7 @@ namespace Sequel.Core
             return server.Type switch
             {
                 DBMS.PostgreSQL => new PostgreSQL(server),
+                DBMS.SQLite => new SQLite(server),
                 _ => throw new NotSupportedException($"Unsupported database system {server.Type}.")
             };
         }
@@ -61,7 +63,7 @@ namespace Sequel.Core
             });
         }
 
-        public static async Task<IEnumerable<string>> QueryStringListAsync(this ServerConnection server, string sql)
+        public static async Task<IEnumerable<string>> QueryStringListAsync(this ServerConnection server, string sql) 
             => await QueryStringListAsync(server, null, sql);
 
         public static async Task<long> QueryForLongAsync(this ServerConnection server, string? database, string sql)
@@ -72,8 +74,17 @@ namespace Sequel.Core
             });
         }
 
-        public static async Task<long> QueryForLongAsync(this ServerConnection server, string sql)
-            => await QueryForLongAsync(server, null, sql);
+        public static async Task<long> QueryForLongAsync(this ServerConnection server, string sql) => await QueryForLongAsync(server, null, sql);
+
+        public static async Task<bool> QueryForBoolAsync(this ServerConnection server, string? database, string sql)
+        {
+            return await ExecuteAsync(server, database, sql, async (dbCommand, ct) =>
+            {
+                return (bool)(await dbCommand.ExecuteScalarAsync() ?? false);
+            });
+        }
+
+        public static async Task<bool> QueryForBoolAsync(this ServerConnection server, string sql) => await QueryForBoolAsync(server, null, sql);
 
         public static async Task<IEnumerable<T>> QueryListAsync<T>(this ServerConnection server, string? database, string sql, Func<IDataReader, T> map)
         {
@@ -90,79 +101,25 @@ namespace Sequel.Core
             });
         }
 
-        public static async Task<IEnumerable<T>> QueryListAsync<T>(this ServerConnection server, string sql, Func<IDataReader, T> map)
-            => await QueryListAsync(server, null, sql, map);
+        public static async Task<IEnumerable<T>> QueryListAsync<T>(this ServerConnection server, string sql, Func<IDataReader, T> map) => await QueryListAsync(server, null, sql, map);
 
-        public static async Task<QueryResponseContext> ExecuteQueryAsync(this QueryExecutionContext context, CancellationToken cancellationToken)
+        public static async Task<T> QueryAsync<T>(this ServerConnection server, string? database, string sql, Func<IDataReader, T> map)
+            => (await QueryListAsync(server, database, sql, map)).FirstOrDefault();
+
+        public static async Task<T> QueryAsync<T>(this ServerConnection server, string sql, Func<IDataReader, T> map)
+            => (await QueryListAsync(server, null, sql, map)).FirstOrDefault();
+
+        public static async Task<int> ExecuteNonQueryAsync(this ServerConnection server, string? database, string sql)
         {
-            return await ExecuteAsync(context.Server, context.Database, context.Sql!, async (dbCommand, ct) =>
+            return await ExecuteAsync(server, database, sql, async (dbCommand, ct) =>
             {
-                var response = new QueryResponseContext(context.Id!);
-                var sw = new Stopwatch();
-
-                try
-                {
-                    sw.Start();
-                    using var ctr = ct.Register(() => dbCommand.Cancel());
-                    using var dataReader = await dbCommand.ExecuteReaderAsync(ct);
-
-                    do
-                    {
-                        var columnNames = new List<string>();
-                        response.Columns.Clear();
-                        response.Rows.Clear();
-
-                        for (int i = 0; i < dataReader.FieldCount; i++)
-                        {
-                            columnNames.Add(columnNames.Contains(dataReader.GetName(i))
-                                ? dataReader.GetName(i) + (i + 1)
-                                : dataReader.GetName(i));
-
-                            response.Columns.Add(new ColumnDefinition(columnNames[i], dataReader.GetDataTypeName(i)));
-                        }
-
-                        while (await dataReader.ReadAsync(ct))
-                        {
-                            var dataRow = new ExpandoObject() as IDictionary<string, object?>;
-                            for (int i = 0; i < dataReader.FieldCount; i++)
-                            {
-                                var value = dataReader[i];
-                                dataRow.Add(columnNames[i], value is DBNull ? null : value);
-                            }
-                            response.Rows.Add(dataRow);
-                        }
-                    } while (await dataReader.NextResultAsync(ct));
-
-                    response.RecordsAffected = dataReader.RecordsAffected;
-                }
-                catch (Exception ex)
-                {
-                    if (ct.IsCancellationRequested)
-                    {
-                        response.Status = QueryResponseStatus.Canceled;
-                        response.Columns.Clear();
-                        response.Rows.Clear();
-                    }
-                    else
-                    {
-                        response.Status = QueryResponseStatus.Failed;
-                        response.Error = ex.Message;
-                        if (int.TryParse(ex.Data["Position"]?.ToString(), out int position))
-                        {
-                            response.ErrorPosition = position;
-                        }
-                    }
-                }
-                finally
-                {
-                    response.Elapsed = sw.ElapsedMilliseconds;
-                }
-
-                return response;
-            }, dbCommand => dbCommand.CommandTimeout = 0, cancellationToken);
+                return await dbCommand.ExecuteNonQueryAsync();
+            });
         }
 
-        private static async Task<T> ExecuteAsync<T>(this ServerConnection server,
+        public static async Task<int> ExecuteNonQueryAsync(this ServerConnection server, string sql) => await ExecuteNonQueryAsync(server, null, sql);
+
+        public static async Task<T> ExecuteAsync<T>(this ServerConnection server,
                                                      string? database,
                                                      string sql,
                                                      Func<DbCommand, CancellationToken, Task<T>> query,                                                     

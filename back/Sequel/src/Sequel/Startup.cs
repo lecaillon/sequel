@@ -1,10 +1,6 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using static System.Runtime.InteropServices.RuntimeInformation;
-using static System.Runtime.InteropServices.OSPlatform;
 
 namespace Sequel
 {
@@ -17,13 +13,14 @@ namespace Sequel
 
         public IConfiguration Configuration { get; }
 
-        public void ConfigureServices(IServiceCollection services)
+        public static void ConfigureServices(IServiceCollection services)
         {
             services.AddCors();
             services.AddControllers();
+            services.AddHostedService<SequelConfigurationHostedService>();
         }
 
-        public void Configure(IApplicationBuilder app, IHostEnvironment env)
+        public static void Configure(IApplicationBuilder app)
         {
             app.UseDefaultFiles();
             app.UseStaticFiles();
@@ -34,35 +31,6 @@ namespace Sequel
             {
                 endpoints.MapControllers();
             });
-
-            if (env.IsProduction())
-            {
-                OpenDefaultBrowser();
-            }
-        }
-
-        private void OpenDefaultBrowser()
-        {
-            try
-            {
-                string port = Configuration["urls"].Substring(Configuration["urls"].Length - 4);
-                string url = $"http://localhost:{port}";
-
-                if (IsOSPlatform(Windows))
-                {
-                    var psi = new ProcessStartInfo { FileName = url, UseShellExecute = true };
-                    Process.Start(psi);
-                }
-                else if (IsOSPlatform(Linux))
-                {
-                    Process.Start("xdg-open", url);
-                }
-                else if (IsOSPlatform(OSX))
-                {
-                    Process.Start("open", url);
-                }
-            }
-            catch {}
         }
     }
 }

@@ -14,6 +14,7 @@
     stopEditingWhenGridLosesFocus
     preventDefaultOnContextMenu
     @modelUpdated="onModelUpdated"
+    @selection-changed="onSelectionChanged"
   ></ag-grid-vue>
 </template>
 
@@ -53,6 +54,9 @@ export default Vue.extend({
           .filter(x => x.width === null)
           .map(x => x.colId)
       );
+    },
+    onSelectionChanged() {
+      this.$emit("selection-changed", this.gridApi);
     }
   },
   watch: {

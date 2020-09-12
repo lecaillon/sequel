@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -10,8 +9,7 @@ namespace Sequel.Core
 {
     public static class Store<T> where T : class, new()
     {
-        private static readonly string RootDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "sequel");
-        private static readonly string FilePath = Path.Combine(RootDirectory, typeof(T).Name.ToLower() + ".json");
+        private static readonly string FilePath = Path.Combine(Program.RootDirectory, typeof(T).Name.ToLower() + ".json");
         
         public static async Task<List<T>> GetListAsync()
         {
@@ -64,7 +62,7 @@ namespace Sequel.Core
 
         private static FileStream OpenFile()
         {
-            Directory.CreateDirectory(RootDirectory);
+            Directory.CreateDirectory(Program.RootDirectory);
             return File.Open(FilePath, FileMode.OpenOrCreate);
         }
 

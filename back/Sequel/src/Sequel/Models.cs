@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Sequel.Models
@@ -54,10 +55,15 @@ namespace Sequel.Models
 
     public class QueryExecutionContext
     {
+        private string? _database;
+
         [Required]
         public ServerConnection Server { get; set; } = default!;
-        [Required]
-        public string Database { get; set; } = default!;
+        public string? Database
+        {
+            get { return Server.Type == DBMS.SQLite ? null : _database ; }
+            set { _database = value; }
+        }
         public DatabaseObjectNode? DatabaseObject { get; set; }
         public string? Sql { get; set; }
         public string? Id { get; set; }
@@ -67,15 +73,15 @@ namespace Sequel.Models
     {
         public QueryResponseContext(string id)
         {
-            Id = Check.NotNullOrEmpty(id, nameof(id));
+            Id = Check.NotNull(id, nameof(id));
         }
 
         public string Id { get; }
         public QueryResponseStatus Status { get; set; } = QueryResponseStatus.Succeeded;
         public string? Error { get; set; }
         public int? ErrorPosition { get; set; } = null;
-        public long Elapsed { get; set; } = 0;
-        public int RecordsAffected { get; set; } = 0;
+        public long Elapsed { get; set; }
+        public int RecordsAffected { get; set; }
         public List<ColumnDefinition> Columns { get; } = new List<ColumnDefinition>();
         public List<object> Rows { get; } = new List<object>();
         public int RowCount => Rows.Count;
@@ -115,6 +121,53 @@ namespace Sequel.Models
         }
     }
 
+    public class QueryHistory
+    {
+        public int Id { get; set; }
+        public DBMS Type { get; set; }
+        public string ServerConnection { get; set; } = default!;
+        public string Sql { get; set; } = default!;
+        public string Hash { get; set; } = default!;
+        public DateTime ExecutedOn { get; set; }
+        public QueryResponseStatus Status { get; set; }
+        public long Elapsed { get; set; }
+        public int RowCount { get; set; }
+        public int RecordsAffected { get; set; }
+        public int ExecutionCount { get; set; }
+        public bool Star { get; set; }
+
+        public static QueryHistory Create(string sql, string hash, QueryExecutionContext query, QueryResponseContext response) => new QueryHistory
+        {
+            Type = query.Server.Type,
+            ServerConnection = query.Server.Name,
+            Sql = sql,
+            Hash = hash,
+            ExecutedOn = DateTime.UtcNow,
+            Status = response.Status,
+            Elapsed = response.Elapsed,
+            RowCount = response.RowCount,
+            RecordsAffected = response.RecordsAffected,
+            ExecutionCount = 1,
+            Star = false
+        };
+
+        public void UpdateStatistics(QueryExecutionContext query, QueryResponseContext response)
+        {
+            ServerConnection = query.Server.Name;
+            ExecutedOn = DateTime.UtcNow;
+            Status = response.Status;
+            Elapsed = response.Elapsed;
+            RowCount = response.RowCount;
+            RecordsAffected = response.RecordsAffected;
+            ExecutionCount++;
+        }
+    }
+
+    public class QueryHistoryQuery
+    {
+        public string? Sql { get; set; }
+    }
+
     public class ColumnDefinition
     {
         static readonly HashSet<string> NumericSqlTypes = new HashSet<string> 
@@ -123,20 +176,22 @@ namespace Sequel.Models
             "bigserial", "bigint", "bit", "decimal", "int", "money", "smallmoney", "tinyint", "float", "real"
         };
 
-        public ColumnDefinition(string colId, string sqlType)
+        public ColumnDefinition(string colId, string sqlType, string? headerName = null)
         {
-            ColId = Check.NotNullOrEmpty(colId, nameof(colId));
-            SqlType = Check.NotNullOrEmpty(sqlType, nameof(sqlType));
+            ColId = Check.NotNull(colId, nameof(colId));
+            SqlType = Check.NotNull(sqlType, nameof(sqlType));
+            HeaderName = headerName ?? ColId;
         }
 
         public string ColId { get; }
-        public string HeaderName => ColId;
-        public string Field => HeaderName;
+        public string Field => ColId;
+        public string HeaderName { get; }
         public string SqlType { get; }
         public string HeaderTooltip => SqlType;
         public bool Sortable { get; set; } = true;
         public bool Editable { get; set; } = true;
         public bool Resizable { get; set; } = true;
+        public bool Hide { get; set; } = false;
         public int? Width => SqlType.ToLower() switch
         {
             "jsonb" => 200,

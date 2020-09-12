@@ -8,6 +8,7 @@ import { QueryExecutionContext } from "@/models/queryExecutionContext";
 import { QueryResponseContext } from "@/models/queryResponseContext";
 import { AppSnackbar } from "@/models/appSnackbar";
 import { QueryTabContent } from "@/models/queryTabContent";
+import { QueryHistoryContent } from '@/models/queryHistoryContent';
 import { v4 as uuidv4 } from "uuid";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
@@ -25,6 +26,7 @@ export default new Vuex.Store({
     activeNode: {} as DatabaseObjectNode,
     activeQueryTabIndex: {} as number,
     queryTabs: [] as QueryTabContent[],
+    history: {} as QueryHistoryContent,
     intellisense: [] as monaco.languages.CompletionItem[]
   },
   getters: {
@@ -91,6 +93,17 @@ export default new Vuex.Store({
           database: context.state.activeDatabase,
         } as QueryExecutionContext);
         context.commit("setIntellisense", intellisense);
+      }
+    },
+    fetchHistory: async (context, sql: string) => {
+      try {
+        context.commit("setHistory", { loading: true } as QueryHistoryContent);
+        const params = new URLSearchParams({ sql: sql });
+        const response = await http.get<QueryResponseContext>(`${BASE_URL}/sequel/history?` + params.toString());
+        context.commit("setHistory", { response: { columns: response.columns, rows: response.rows }, loading: false } as QueryHistoryContent);
+      }
+      catch (Error) {
+        context.commit("setHistory", { response: { columns: new Array<any>(), rows: new Array<any>() }, loading: false } as QueryHistoryContent);
       }
     },
     fetchDatabaseObjectNodes: async (context, parent: DatabaseObjectNode) => {
@@ -189,6 +202,13 @@ export default new Vuex.Store({
     },
     setIntellisense(state, intellisense: monaco.languages.CompletionItem[]) {
       state.intellisense = intellisense;
+    },
+    setHistory(state, history: QueryHistoryContent) {
+      if (history.loading) {
+        state.history.loading = true;
+        return;
+      }
+      state.history = history;
     },
     clearNodes(state) {
       state.nodes = [];

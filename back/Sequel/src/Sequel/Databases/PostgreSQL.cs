@@ -29,8 +29,10 @@ namespace Sequel.Databases
                 "ORDER BY datname");
         }
 
-        public async Task<IEnumerable<DatabaseObjectNode>> LoadDatabaseObjectNodesAsync(string database, DatabaseObjectNode? parent)
+        public async Task<IEnumerable<DatabaseObjectNode>> LoadDatabaseObjectNodesAsync(string? database, DatabaseObjectNode? parent)
         {
+            Check.NotNull(database, nameof(database));
+
             return (parent) switch
             {
                 null => LoadDatabaseRootNode(database),
@@ -44,8 +46,10 @@ namespace Sequel.Databases
             };
         }
 
-        public async Task<IEnumerable<CompletionItem>> LoadIntellisenseAsync(string database)
+        public async Task<IEnumerable<CompletionItem>> LoadIntellisenseAsync(string? database)
         {
+            Check.NotNull(database, nameof(database));
+
             var items = new List<CompletionItem>();
             var schemas = await LoadSchemasAsync(database);
 
