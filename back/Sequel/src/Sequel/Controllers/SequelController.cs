@@ -69,6 +69,10 @@ namespace Sequel.Controllers
             {
                 ModelState.AddModelError(nameof(QueryExecutionContext.Sql), $"The {nameof(QueryExecutionContext.Sql)} field is required.");
             }
+            if (string.IsNullOrWhiteSpace(context.Database) && context.Server.Type != DBMS.SQLite)
+            {
+                ModelState.AddModelError(nameof(QueryExecutionContext.Sql), $"The {nameof(QueryExecutionContext.Database)} field is required.");
+            }
             if (ModelState.ErrorCount != 0)
             {
                 return BadRequest(new ValidationProblemDetails(ModelState)
