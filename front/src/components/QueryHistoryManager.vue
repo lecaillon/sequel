@@ -1,9 +1,9 @@
 <template>
-  <v-dialog v-model="show" @click:outside="close" content-class="v-dialog-history">
+  <v-dialog width="90%" v-model="show" @click:outside="close" content-class="v-dialog-history">
     <textarea id="sql-copy" readonly style="left:-9999px; position:absolute"></textarea>
     <v-card style="height:100%">
       <v-toolbar dark dense flat>
-        <v-toolbar-title>Query history</v-toolbar-title>
+        <v-toolbar-title >Query history</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
@@ -83,9 +83,11 @@ export default Vue.extend({
               {
                 value: "",
                 readOnly: true,
+                fontSize: 13,
                 language: "sql",
                 theme: "vs-dark",
                 lineNumbers: "off",
+                minimap: { enabled: false },
                 mouseWheelZoom: true,
                 scrollBeyondLastLine: false,
                 automaticLayout: false,
@@ -138,7 +140,7 @@ export default Vue.extend({
     history: () => store.state.history,
     search: {
       get() {
-        return this.debouncedSearch ?? '';
+        return this.debouncedSearch ?? "";
       },
       set(val: string) {
         if (this.timeout) clearTimeout(this.timeout);

@@ -28,6 +28,7 @@ export default Vue.extend({
       document.getElementById("editor-" + this.editorId)!,
       {
         value: "",
+        fontSize: 13,
         language: "sql",
         theme: "vs-dark",
         mouseWheelZoom: true,

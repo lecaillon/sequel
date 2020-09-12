@@ -9,7 +9,7 @@
     :value="displayedItem"
     :items="databases"
     @input="selected"
-    class="body-2"
+    class="caption"
   ></v-autocomplete>
 </template>
 

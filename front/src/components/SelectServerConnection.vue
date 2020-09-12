@@ -7,18 +7,19 @@
     solo
     :items="servers"
     @input="selected"
+    class="caption"
   >
     <template v-slot:selection="{ attrs, item }">
       <v-chip label small :color="getChipColor(item)">{{
         item.environment
       }}</v-chip>
-      <span class="ms-3 body-2">{{ item.name }}</span>
+      <span class="ms-3 caption">{{ item.name }}</span>
     </template>
     <template v-slot:item="{ index, item }">
       <v-chip label small :color="getChipColor(item)">{{
         item.environment
       }}</v-chip>
-      <span class="ms-3 body-2">{{ item.name }}</span>
+      <span class="ms-3 caption">{{ item.name }}</span>
       <v-spacer></v-spacer>
       <v-list-item-action @click.stop>
         <v-btn icon @click.stop.prevent="edit(item)">

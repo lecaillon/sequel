@@ -84,4 +84,7 @@ export default Vue.extend({
 .numeric-cell {
   direction: rtl;
 }
+.ag-row {
+	font-size: 13px !important;
+}
 </style>
