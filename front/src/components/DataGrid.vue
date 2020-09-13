@@ -3,16 +3,19 @@
     style="height:100%"
     class="ag-theme-alpine-dark"
     rowHeight="30"
+    headerHeight="42"
+    rowSelection="multiple"
+    multiSortKey="ctrl"
+    skipHeaderOnAutoSize="true"
+    tooltipShowDelay=600
+    enableCellTextSelection
+    stopEditingWhenGridLosesFocus
+    preventDefaultOnContextMenu
     :gridOptions="gridOptions"
     :columnDefs="columns"
     :rowData="rows"
     :frameworkComponents="frameworkComponents"
     :loadingOverlayComponent="loadingOverlayComponent"
-    enableCellTextSelection
-    rowSelection="multiple"
-    multiSortKey="ctrl"
-    stopEditingWhenGridLosesFocus
-    preventDefaultOnContextMenu
     @modelUpdated="onModelUpdated"
     @selection-changed="onSelectionChanged"
   ></ag-grid-vue>
@@ -81,10 +84,7 @@ export default Vue.extend({
   border-width: 1px 0 0 0 !important;
   border-radius: 0px !important;
 }
-.numeric-cell {
-  direction: rtl;
-}
 .ag-row {
-	font-size: 13px !important;
+  font-size: 13px !important;
 }
 </style>

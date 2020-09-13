@@ -187,7 +187,8 @@ namespace Sequel.Models
         public string Field => ColId;
         public string HeaderName { get; }
         public string SqlType { get; }
-        public string HeaderTooltip => SqlType;
+        public string? Type => NumericSqlTypes.Contains(SqlType) ? "numericColumn" : null;
+        public string HeaderTooltip => $"{HeaderName} : {SqlType}";
         public bool Sortable { get; set; } = true;
         public bool Editable { get; set; } = true;
         public bool Resizable { get; set; } = true;
@@ -198,7 +199,6 @@ namespace Sequel.Models
             "uuid" => 150,
             _ => null
         };
-        public string? CellClass => NumericSqlTypes.Contains(SqlType) ? "numeric-cell" : null;
         public object Filter
         {
             get
