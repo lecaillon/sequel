@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -22,6 +23,8 @@ namespace Sequel
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
+            Directory.CreateDirectory(Program.RootDirectory);
+
             await QueryManager.History.ConfigureAsync();
 
             if (Env.IsProduction())
