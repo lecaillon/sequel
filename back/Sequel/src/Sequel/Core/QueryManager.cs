@@ -259,7 +259,7 @@ namespace Sequel.Core
             private static string ComputeHash(string str)
             {
                 using var sha256Hash = SHA256.Create();
-                var bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(str));
+                var bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(str.ToLowerInvariant()));
                 var builder = new StringBuilder();
                 for (int i = 0; i < bytes.Length; i++)
                 {
