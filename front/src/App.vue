@@ -240,17 +240,73 @@ export default Vue.extend({
           return {
             suggestions: [
               {
+                label: "gb",
+                kind: monaco.languages.CompletionItemKind.Snippet,
+                insertText: "GROUP BY ",
+                detail: "GROUP BY",
+                range: range
+              },
+              {
+                label: "hc*",
+                kind: monaco.languages.CompletionItemKind.Snippet,
+                insertText: "HAVING COUNT(*) ",
+                detail: "HAVING COUNT(*)",
+                range: range
+              },
+              {
+                label: "ij",
+                kind: monaco.languages.CompletionItemKind.Snippet,
+                insertText: "INNER JOIN ",
+                detail: "INNER JOIN",
+                range: range
+              },
+              {
+                label: "in",
+                kind: monaco.languages.CompletionItemKind.Snippet,
+                insertText: "IS NULL ",
+                detail: "IS NULL",
+                range: range
+              },
+              {
+                label: "inn",
+                kind: monaco.languages.CompletionItemKind.Snippet,
+                insertText: "IS NOT NULL ",
+                detail: "IS NOT NULL",
+                range: range
+              },
+              {
+                label: "ob",
+                kind: monaco.languages.CompletionItemKind.Snippet,
+                insertText: "ORDER BY ",
+                detail: "ORDER BY",
+                range: range
+              },
+              {
+                label: "oj",
+                kind: monaco.languages.CompletionItemKind.Snippet,
+                insertText: "OUTER JOIN ",
+                detail: "OUTER JOIN",
+                range: range
+              },
+              {
                 label: "s*",
                 kind: monaco.languages.CompletionItemKind.Snippet,
                 insertText: "SELECT * FROM ",
-                detail: "A snippet to quickly write: SELECT * FROM",
+                detail: "SELECT * FROM",
                 range: range
               },
               {
                 label: "sc*",
                 kind: monaco.languages.CompletionItemKind.Snippet,
                 insertText: "SELECT COUNT(*) FROM ",
-                detail: "A snippet to quickly write: SELECT COUNT(*) FROM",
+                detail: "SELECT COUNT(*) FROM",
+                range: range
+              },
+              {
+                label: "w",
+                kind: monaco.languages.CompletionItemKind.Snippet,
+                insertText: "WHERE ",
+                detail: "WHERE",
                 range: range
               }
             ] as monaco.languages.CompletionItem[]
