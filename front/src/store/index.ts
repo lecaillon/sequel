@@ -85,6 +85,9 @@ export default new Vuex.Store({
       context.commit("setActiveDatabase", database);
       context.dispatch("fetchDatabaseObjectNodes");
       context.dispatch("fetchIntellisense");
+      if (database && context.state.queryTabs.length == 0) {
+        context.dispatch("openNewQueryTab");
+      }
     },
     fetchIntellisense: async context => {
       if (context.state.activeDatabase !== undefined) {
