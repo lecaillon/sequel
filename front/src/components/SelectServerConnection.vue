@@ -10,15 +10,25 @@
     class="caption"
   >
     <template v-slot:selection="{ attrs, item }">
-      <v-chip label small :color="getChipColor(item)">{{
+      <v-avatar size="24" tile left class="mr-2">
+        <v-img :src="require('../assets/db/' + item.type + '.png')"></v-img>
+      </v-avatar>
+      <v-chip label small :color="getChipColor(item)">
+        {{
         item.environment
-      }}</v-chip>
+        }}
+      </v-chip>
       <span class="ms-3 caption">{{ item.name }}</span>
     </template>
     <template v-slot:item="{ index, item }">
-      <v-chip label small :color="getChipColor(item)">{{
+      <v-avatar size="24" tile left class="mr-2">
+        <v-img :src="require('../assets/db/' + item.type + '.png')"></v-img>
+      </v-avatar>
+      <v-chip label small :color="getChipColor(item)">
+        {{
         item.environment
-      }}</v-chip>
+        }}
+      </v-chip>
       <span class="ms-3 caption">{{ item.name }}</span>
       <v-spacer></v-spacer>
       <v-list-item-action @click.stop>
