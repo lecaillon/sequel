@@ -2,7 +2,7 @@
   <v-dialog :value="show" @click:outside="close" max-width="600px">
     <v-card>
       <v-card-title>
-        <span class="headline">Add new database connection</span>
+        <span>Add new database connection</span>
       </v-card-title>
       <v-card-text>
         <v-container>
