@@ -4,7 +4,6 @@
 
 <script lang="ts">
 import Vue from "vue";
-import VJsoneditor from "v-jsoneditor";
 
 export default Vue.extend({
   name: "JsonEditor",
@@ -19,6 +18,9 @@ export default Vue.extend({
 .jsoneditor {
   border: 0 !important;
   font-family: inherit !important;
+}
+.jsoneditor-popover, .jsoneditor-schema-error, div.jsoneditor-field, div.jsoneditor-value, div.jsoneditor td, div.jsoneditor textarea, div.jsoneditor th, pre.jsoneditor-preview {
+	font-family: inherit !important;
 }
 .jsoneditor-search {
   font-family: inherit !important;
