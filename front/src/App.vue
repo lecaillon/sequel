@@ -114,9 +114,12 @@
       :show="showFormServerConnection"
       :server="editServer"
       @close="showFormServerConnection = false"
-    ></form-server-connection>
+    />
 
-    <query-history-manager :show="showQueryHistoryManager" @close="showQueryHistoryManager = false"></query-history-manager>
+    <query-history-manager
+      :show="showQueryHistoryManager"
+      @close="showQueryHistoryManager = false"
+    />
 
     <app-snackbar
       :show="appSnackbar.show"
@@ -124,7 +127,7 @@
       :message="appSnackbar.message"
       :details="appSnackbar.details"
       @close="closeAppSnackbar"
-    ></app-snackbar>
+    />
   </v-app>
 </template>
 
