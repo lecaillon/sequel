@@ -22,11 +22,25 @@
               :rows="tab.response.rows"
               :loading="tab.loading"
               @created="gridCreated"
+              @cell-focused="gridCellfocused"
             ></data-grid>
           </v-container>
         </v-tab-item>
       </v-tabs-items>
     </v-container>
+    <v-dialog
+      id="jsoneditor-modal"
+      :value="showJsonEditor"
+      @click:outside="closeJsonEditor"
+      content-class="v-dialog-jsoneditor"
+      max-width="600px"
+    >
+      <v-card style="height:100%">
+        <v-card-text class="pa-0" style="height:100%">
+          <json-editor :json="jsonb" :options="jsonEditorOptions"></json-editor>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -36,7 +50,9 @@ import store from "@/store";
 import QueryTab from "@/components/QueryTab.vue";
 import QueryEditor from "@/components/QueryEditor.vue";
 import DataGrid from "@/components/DataGrid.vue";
+import JsonEditor from "@/components/JsonEditor.vue";
 import { QueryTabContent } from "@/models/queryTabContent";
+import { DataGridColumnDefinition } from "@/models/dataGridColumnDefinition";
 import { GridApi } from "ag-grid-community";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
@@ -45,8 +61,22 @@ export default Vue.extend({
   components: {
     QueryTab,
     QueryEditor,
-    DataGrid
+    DataGrid,
+    JsonEditor
   },
+  data: () => ({
+    showJsonEditor: false,
+    jsonb: {} as any,
+    jsonEditorOptions: {
+      mode: "tree",
+      search: true,
+      caseSensitive: false,
+      mainMenuBar: true,
+      navigationBar: true,
+      statusBar: false,
+      modalAnchor: document.getElementById("jsoneditor-modal")
+    }
+  }),
   methods: {
     selected(activeTab: number) {
       store.dispatch("changeActiveQueryTab", activeTab);
@@ -71,6 +101,16 @@ export default Vue.extend({
         grid
       } as QueryTabContent);
     },
+    gridCellfocused(grid: GridApi) {
+      const cell = grid.getFocusedCell();
+      if (
+        (cell.column.getColDef() as DataGridColumnDefinition).sqlType == "jsonb"
+      ) {
+        const row = grid.getDisplayedRowAtIndex(cell.rowIndex);
+        this.jsonb = JSON.parse(grid.getValue(cell.column.getColId(), row));
+        this.showJsonEditor = true;
+      }
+    },
     editorKeyPressedF5(id: string) {
       if (!store.getters.canExecuteQuery) {
         return;
@@ -79,6 +119,9 @@ export default Vue.extend({
         "executeQuery",
         store.getters.getQueryTabById(id) as QueryTabContent
       );
+    },
+    closeJsonEditor() {
+      this.showJsonEditor = false;
     }
   },
   computed: {
@@ -91,3 +134,9 @@ export default Vue.extend({
   }
 });
 </script>
+
+<style lang="scss">
+.v-dialog-jsoneditor {
+  height: 60%;
+}
+</style>

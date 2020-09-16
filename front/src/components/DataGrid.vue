@@ -7,7 +7,7 @@
     rowSelection="multiple"
     multiSortKey="ctrl"
     skipHeaderOnAutoSize="true"
-    tooltipShowDelay=600
+    tooltipShowDelay="600"
     enableCellTextSelection
     stopEditingWhenGridLosesFocus
     preventDefaultOnContextMenu
@@ -18,6 +18,7 @@
     :loadingOverlayComponent="loadingOverlayComponent"
     @modelUpdated="onModelUpdated"
     @selection-changed="onSelectionChanged"
+    @cell-focused="onCellFocused"
   ></ag-grid-vue>
 </template>
 
@@ -60,6 +61,9 @@ export default Vue.extend({
     },
     onSelectionChanged() {
       this.$emit("selection-changed", this.gridApi);
+    },
+    onCellFocused() {
+      this.$emit("cell-focused", this.gridApi);
     }
   },
   watch: {
