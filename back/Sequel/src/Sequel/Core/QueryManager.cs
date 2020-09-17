@@ -218,7 +218,7 @@ namespace Sequel.Core
                     "( " +
                        $"{(int)history.Type}, " +
                        $"'{history.ServerConnection}', " +
-                       $"'{history.Sql}', " +
+                       $"'{history.Sql.Replace("'", "''")}', " +
                        $"'{history.Hash}', " +
                        $"'{history.ExecutedOn:yyyy-MM-dd HH:mm:ss}', " +
                        $"{(int)history.Status}, " +
