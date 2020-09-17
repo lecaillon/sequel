@@ -19,8 +19,15 @@ export default Vue.extend({
   border: 0 !important;
   font-family: inherit !important;
 }
-.jsoneditor-popover, .jsoneditor-schema-error, div.jsoneditor-field, div.jsoneditor-value, div.jsoneditor td, div.jsoneditor textarea, div.jsoneditor th, pre.jsoneditor-preview {
-	font-family: inherit !important;
+.jsoneditor-popover,
+.jsoneditor-schema-error,
+div.jsoneditor-field,
+div.jsoneditor-value,
+div.jsoneditor td,
+div.jsoneditor textarea,
+div.jsoneditor th,
+pre.jsoneditor-preview {
+  font-family: inherit !important;
 }
 .jsoneditor-search {
   font-family: inherit !important;
@@ -46,16 +53,16 @@ div.jsoneditor td.jsoneditor-tree {
   color: white !important;
 }
 .jsoneditor-string {
-  color: #90A4AE !important;
+  color: #90a4ae !important;
 }
 .jsoneditor-number {
-  color: #7CB342 !important;
+  color: #7cb342 !important;
 }
 .jsoneditor-boolean {
-  color: #FF8F00 !important;
+  color: #ff8f00 !important;
 }
 .jsoneditor-null {
-  color: #2196F3 !important;
+  color: #2196f3 !important;
 }
 div.jsoneditor-field.jsoneditor-highlight,
 div.jsoneditor-field[contenteditable="true"]:focus,
