@@ -147,6 +147,7 @@ namespace Sequel.Core
         public static class History
         {
             private const string SelectAllClause = "SELECT id, type, server_connection, sql, hash, executed_on, status, elapsed, row_count, records_affected, execution_count, star FROM [data] ";
+            private const string OrderByClause = " ORDER BY executed_on DESC ";
             private static readonly char[] CharsToTrimStart = { '\r', '\n' };
             private static readonly char[] CharsToTrimEnd = { '\r', '\n', '\t', ' ' };
             private static readonly Func<IDataReader, QueryHistory> Map = r =>
@@ -246,7 +247,7 @@ namespace Sequel.Core
             }
 
             public static async Task<IEnumerable<QueryHistory>> Load(QueryHistoryQuery query)
-                => await ServerConnection.QueryListAsync(SelectAllClause + query.BuildWhereClause(), Map);
+                => await ServerConnection.QueryListAsync(SelectAllClause + query.BuildWhereClause() + OrderByClause, Map);
 
             //private static async Task<QueryHistory?> LoadByIdAsync(int id)
             //    => await ServerConnection.QueryAsync(SelectAllClause + $"WHERE id = '{id}'", Map);
