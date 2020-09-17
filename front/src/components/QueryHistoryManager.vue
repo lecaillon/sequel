@@ -7,7 +7,7 @@
         <v-spacer></v-spacer>
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
-            <v-btn icon :disabled="!hasActiveSql" v-on="on" @click.stop="copySql()">
+            <v-btn icon :disabled="!rowSelected" v-on="on" @click.stop="copySql()">
               <v-icon color="grey lighten-2">mdi-content-copy</v-icon>
             </v-btn>
           </template>
@@ -15,7 +15,7 @@
         </v-tooltip>
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
-            <v-btn icon :disabled="!hasActiveSql" v-on="on" @click.stop="pasteSql()">
+            <v-btn icon :disabled="!rowSelected" v-on="on" @click.stop="pasteSql()">
               <v-icon color="grey lighten-2">mdi-content-paste</v-icon>
             </v-btn>
           </template>
@@ -74,7 +74,9 @@ export default Vue.extend({
     editor: {} as monaco.editor.IStandaloneCodeEditor,
     debouncedSearch: "" as string,
     timeout: null as number | null,
-    hasActiveSql: false as boolean
+    rowSelected: false as boolean,
+    sql: "" as string,
+    star: false as boolean
   }),
   watch: {
     search: function() {
@@ -82,7 +84,7 @@ export default Vue.extend({
     },
     show: function(showForm: boolean) {
       if (showForm) {
-        this.hasActiveSql = false;
+        this.rowSelected = false;
         this.fetchHistory();
         setTimeout(
           () =>
@@ -122,19 +124,20 @@ export default Vue.extend({
     },
     onSelectionChanged(grid: GridApi) {
       const selectedRows = grid.getSelectedRows();
-      this.editor?.getModel()?.setValue(selectedRows[0].sql);
-      this.hasActiveSql = true;
+      this.sql = selectedRows[0].sql;
+      this.star = selectedRows[0].star;
+      this.editor?.getModel()?.setValue(this.sql);
+      this.rowSelected = true;
     },
     fetchHistory() {
       store.dispatch("fetchHistory", this.search);
     },
     copySql() {
-      const sql = this.editor?.getModel()?.getValue();
-      if (!sql || sql.length === 0) {
+      if (!this.rowSelected) {
         return;
       }
       const el = document.getElementById("sql-copy") as HTMLInputElement;
-      el.value = sql;
+      el.value = this.sql;
       el.select();
       document.execCommand("copy");
       store.dispatch("showAppSnackbar", {
@@ -144,11 +147,10 @@ export default Vue.extend({
       this.close();
     },
     pasteSql() {
-      const sql = this.editor?.getModel()?.getValue();
-      if (!sql || sql.length === 0) {
+      if (!this.rowSelected) {
         return;
       }
-      store.dispatch("pasteSqlInActiveTab", sql);
+      store.dispatch("pasteSqlInActiveTab", this.sql);
       this.close();
     }
   },
