@@ -182,6 +182,9 @@ export default new Vuex.Store({
     },
     cancelQuery: async (context, tab: QueryTabContent) => {
       await http.post<QueryResponseContext>(`${BASE_URL}/sequel/cancel-query`, tab.id);
+    },
+    pasteSqlInActiveTab: (context, sql: string) => {
+      (context.getters.activeQueryTab as QueryTabContent)?.editor?.trigger('keyboard', 'type', { text: sql + ' ' });
     }
   },
   mutations: {

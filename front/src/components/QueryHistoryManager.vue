@@ -3,7 +3,7 @@
     <textarea id="sql-copy" readonly style="left:-9999px; position:absolute"></textarea>
     <v-card style="height:100%">
       <v-toolbar dark dense flat>
-        <v-toolbar-title >Query history</v-toolbar-title>
+        <v-toolbar-title>Query history</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
@@ -12,6 +12,14 @@
             </v-btn>
           </template>
           <span>Copy</span>
+        </v-tooltip>
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on }">
+            <v-btn icon :disabled="!hasActiveSql" v-on="on" @click.stop="pasteSql()">
+              <v-icon color="grey lighten-2">mdi-content-paste</v-icon>
+            </v-btn>
+          </template>
+          <span>Paste in active tab</span>
         </v-tooltip>
         <v-text-field
           v-model="search"
@@ -133,6 +141,14 @@ export default Vue.extend({
         message: "Copied to clipboard!",
         color: "success"
       } as AppSnackbar);
+      this.close();
+    },
+    pasteSql() {
+      const sql = this.editor?.getModel()?.getValue();
+      if (!sql || sql.length === 0) {
+        return;
+      }
+      store.dispatch("pasteSqlInActiveTab", sql);
       this.close();
     }
   },
