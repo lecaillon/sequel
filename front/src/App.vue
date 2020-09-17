@@ -38,15 +38,15 @@
         </template>
         <span>Open history</span>
       </v-tooltip>
-      <v-tooltip bottom>
+      <!-- <v-tooltip bottom>
         <template v-slot:activator="{ on }">
           <v-btn icon :disabled="!hasActiveNode" v-on="on">
             <v-icon color="grey lighten-2">mdi-database-refresh</v-icon>
           </v-btn>
         </template>
         <span>Todo: Refresh database tree node</span>
-      </v-tooltip>
-      <v-tooltip bottom>
+      </v-tooltip>-->
+      <!-- <v-tooltip bottom>
         <template v-slot:activator="{ on }">
           <v-btn
             icon
@@ -58,7 +58,7 @@
           </v-btn>
         </template>
         <span>Todo: Show database property panel</span>
-      </v-tooltip>
+      </v-tooltip>-->
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
           <v-btn icon :disabled="!canExportData" v-on="on" @click.stop="exportDataAsCsv()">
