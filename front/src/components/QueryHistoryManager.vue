@@ -8,7 +8,7 @@
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
             <v-btn icon :disabled="!rowSelected" v-on="on" @click.stop="copySql()">
-              <v-icon color="grey lighten-2">mdi-content-copy</v-icon>
+              <v-icon small color="grey lighten-2">mdi-content-copy</v-icon>
             </v-btn>
           </template>
           <span>Copy</span>
@@ -16,10 +16,19 @@
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
             <v-btn icon :disabled="!rowSelected" v-on="on" @click.stop="pasteSql()">
-              <v-icon color="grey lighten-2">mdi-content-paste</v-icon>
+              <v-icon small color="grey lighten-2">mdi-content-paste</v-icon>
             </v-btn>
           </template>
           <span>Paste in active tab</span>
+        </v-tooltip>
+        <v-divider vertical inset />
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on }">
+            <v-btn icon v-on="on" @click.stop="fetchHistory(!displayErrors)">
+              <v-icon small :color="getDisplayErrorsIconColor">mdi-close-circle</v-icon>
+            </v-btn>
+          </template>
+          <span>{{ this.displayErrors ? 'Hide failed queries' : 'Display failed queries' }}</span>
         </v-tooltip>
         <v-text-field
           v-model="search"
@@ -58,6 +67,7 @@
 import Vue from "vue";
 import store from "@/store";
 import { AppSnackbar } from "@/models/appSnackbar";
+import { QueryHistoryQuery } from "@/models/queryHistoryQuery";
 import DataGrid from "@/components/DataGrid.vue";
 import { GridApi } from "ag-grid-community";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
@@ -76,16 +86,17 @@ export default Vue.extend({
     timeout: null as number | null,
     rowSelected: false as boolean,
     sql: "" as string,
-    star: false as boolean
+    star: false as boolean,
+    displayErrors: false as boolean
   }),
   watch: {
     search: function() {
-      this.fetchHistory();
+      this.fetchHistory(this.displayErrors);
     },
     show: function(showForm: boolean) {
       if (showForm) {
         this.rowSelected = false;
-        this.fetchHistory();
+        this.fetchHistory(this.displayErrors);
         setTimeout(
           () =>
             (this.editor = monaco.editor.create(
@@ -129,8 +140,9 @@ export default Vue.extend({
       this.editor?.getModel()?.setValue(this.sql);
       this.rowSelected = true;
     },
-    fetchHistory() {
-      store.dispatch("fetchHistory", this.search);
+    fetchHistory(displayErrors: boolean) {
+      store.dispatch("fetchHistory", { sql: this.search, displayErrors } as QueryHistoryQuery);
+      this.displayErrors = displayErrors;
     },
     copySql() {
       if (!this.rowSelected) {
@@ -156,6 +168,9 @@ export default Vue.extend({
   },
   computed: {
     history: () => store.state.history,
+    getDisplayErrorsIconColor() {
+      return this.displayErrors ? "red" : "grey lighten-2";
+    },
     search: {
       get() {
         return this.debouncedSearch ?? "";

@@ -278,6 +278,10 @@ namespace Sequel.Core
             {
                 sql += $" {WhereOrAnd()} sql LIKE '%{query.Sql}%' ";
             }
+            if (!query.DisplayErrors)
+            {
+                sql += $" {WhereOrAnd()} status = {(int)QueryResponseStatus.Succeeded} ";
+            }
 
             return sql;
 

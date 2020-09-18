@@ -8,7 +8,8 @@ import { QueryExecutionContext } from "@/models/queryExecutionContext";
 import { QueryResponseContext } from "@/models/queryResponseContext";
 import { AppSnackbar } from "@/models/appSnackbar";
 import { QueryTabContent } from "@/models/queryTabContent";
-import { QueryHistoryContent } from '@/models/queryHistoryContent';
+import { QueryHistoryContent } from "@/models/queryHistoryContent";
+import { QueryHistoryQuery } from "@/models/queryHistoryQuery";
 import { v4 as uuidv4 } from "uuid";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
@@ -98,10 +99,10 @@ export default new Vuex.Store({
         context.commit("setIntellisense", intellisense);
       }
     },
-    fetchHistory: async (context, sql: string) => {
+    fetchHistory: async (context, query: QueryHistoryQuery) => {
       try {
         context.commit("setHistory", { loading: true } as QueryHistoryContent);
-        const params = new URLSearchParams({ sql: sql });
+        const params = new URLSearchParams(Object.entries(query));
         const response = await http.get<QueryResponseContext>(`${BASE_URL}/sequel/history?` + params.toString());
         context.commit("setHistory", { response: { columns: response.columns, rows: response.rows }, loading: false } as QueryHistoryContent);
       }

@@ -166,6 +166,7 @@ namespace Sequel.Models
     public class QueryHistoryQuery
     {
         public string? Sql { get; set; }
+        public bool DisplayErrors { get; set; }
     }
 
     public class ColumnDefinition
