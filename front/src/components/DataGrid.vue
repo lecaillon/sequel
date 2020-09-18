@@ -30,6 +30,7 @@ import { DataGridColumnDefinition } from "@/models/dataGridColumnDefinition";
 import "ag-grid-community/dist/styles/ag-grid.css";
 import "ag-grid-community/dist/styles/ag-theme-alpine-dark.css";
 import DatagridLoader from "@/components/DatagridLoader.vue";
+import CellRendererStar from "@/components/CellRendererStar.vue";
 
 export default Vue.extend({
   name: "DataGrid",
@@ -47,7 +48,8 @@ export default Vue.extend({
     gridApi: {} as GridApi,
     gridColumnApi: {} as ColumnApi,
     frameworkComponents: {
-      customLoadingOverlay: DatagridLoader
+      customLoadingOverlay: DatagridLoader,
+      cellRendererStar: CellRendererStar
     },
     loadingOverlayComponent: "customLoadingOverlay"
   }),

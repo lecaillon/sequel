@@ -141,7 +141,10 @@ export default Vue.extend({
       this.rowSelected = true;
     },
     fetchHistory(displayErrors: boolean) {
-      store.dispatch("fetchHistory", { sql: this.search, displayErrors } as QueryHistoryQuery);
+      store.dispatch("fetchHistory", {
+        sql: this.search,
+        displayErrors
+      } as QueryHistoryQuery);
       this.displayErrors = displayErrors;
     },
     copySql() {

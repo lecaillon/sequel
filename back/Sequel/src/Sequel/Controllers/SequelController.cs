@@ -122,7 +122,7 @@ namespace Sequel.Controllers
             new ColumnDefinition("rowCount", "int", "Row count") { Hide = true },
             new ColumnDefinition("recordsAffected", "int", "Records affected") { Hide = true },
             new ColumnDefinition("executionCount", "int", "Execution Count") { Hide = true },
-            new ColumnDefinition("star", "bool", "Favorite") { Editable = false },
+            new ColumnDefinition("star", "bool", "Favorite") { Editable = false, CellRenderer = "cellRendererStar" },
         };
 
         [HttpGet]

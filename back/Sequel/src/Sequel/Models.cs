@@ -218,6 +218,7 @@ namespace Sequel.Models
                 }
             }
         }
+        public string? CellRenderer { get; set; }
     }
 
     public class CompletionItem
