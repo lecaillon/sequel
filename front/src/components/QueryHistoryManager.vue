@@ -37,7 +37,7 @@
               <v-icon small :color="getShowErrorsIconColor">mdi-close-circle</v-icon>
             </v-btn>
           </template>
-          <span>{{ this.showErrors ? 'Hide failed queries' : 'Show failed queries' }}</span>
+          <span>{{ this.showErrors ? 'Hide failed and canceled queries' : 'Show failed and canceled queries' }}</span>
         </v-tooltip>
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
