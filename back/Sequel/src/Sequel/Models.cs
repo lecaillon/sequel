@@ -167,6 +167,7 @@ namespace Sequel.Models
     {
         public string? Sql { get; set; }
         public bool DisplayErrors { get; set; }
+        public bool Star { get; set; }
     }
 
     public class ColumnDefinition

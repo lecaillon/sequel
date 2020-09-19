@@ -186,7 +186,12 @@ export default new Vuex.Store({
     },
     pasteSqlInActiveTab: (context, sql: string) => {
       (context.getters.activeQueryTab as QueryTabContent)?.editor?.trigger('keyboard', 'type', { text: sql + ' ' });
-    }
+    },
+    updateFavorite: async (context, favorite: { id: number, star: boolean }) => {
+      await http.post<void>(`${BASE_URL}/sequel/history/favorites/${favorite.id}`, { star: favorite.star });
+      const msg = favorite.star ? "Added to the favorites" : "Removed from the favorites";
+      context.dispatch("showAppSnackbar", { message: msg, color: "success" } as AppSnackbar);
+    },
   },
   mutations: {
     setAppSnackbar(state, appSnackbar: AppSnackbar) {

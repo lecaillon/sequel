@@ -145,5 +145,13 @@ namespace Sequel.Controllers
 
             return Ok(response);
         }
+
+        [HttpPost]
+        [Route("history/favorites/{id}")]
+        public async Task<IActionResult> UpdateHistoryFavorite(int id, QueryHistoryQuery query)
+        {
+            await QueryManager.History.UpdateFavorite(id, query.Star);
+            return Ok();
+        }
     }
 }

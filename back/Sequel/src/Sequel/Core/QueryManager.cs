@@ -246,11 +246,11 @@ namespace Sequel.Core
                 await ServerConnection.ExecuteNonQueryAsync(sql);
             }
 
+            public static async Task UpdateFavorite(int id, bool star)
+                => await ServerConnection.ExecuteNonQueryAsync($"UPDATE [data] SET star = {(star ? 1 : 0)} WHERE id = {id}");
+
             public static async Task<IEnumerable<QueryHistory>> Load(QueryHistoryQuery query)
                 => await ServerConnection.QueryListAsync(SelectAllClause + query.BuildWhereClause() + OrderByClause, Map);
-
-            //private static async Task<QueryHistory?> LoadByIdAsync(int id)
-            //    => await ServerConnection.QueryAsync(SelectAllClause + $"WHERE id = '{id}'", Map);
 
             private static async Task<QueryHistory?> LoadByHashAsync(string hash) 
                 => await ServerConnection.QueryAsync(SelectAllClause + $"WHERE hash = '{hash}'", Map);

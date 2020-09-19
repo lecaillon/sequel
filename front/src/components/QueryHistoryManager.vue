@@ -24,6 +24,15 @@
         <v-divider vertical inset />
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
+            <v-btn icon v-on="on" @click.stop="updateFavorite()">
+              <v-icon small color="orange">mdi-star</v-icon>
+            </v-btn>
+          </template>
+          <span>Add / Remove favorites</span>
+        </v-tooltip>
+        <v-divider vertical inset />
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on }">
             <v-btn icon v-on="on" @click.stop="fetchHistory(!displayErrors)">
               <v-icon small :color="getDisplayErrorsIconColor">mdi-close-circle</v-icon>
             </v-btn>
@@ -50,6 +59,7 @@
                 :columns="history.response.columns"
                 :rows="history.response.rows"
                 :loading="history.loading"
+                @created="gridCreated"
                 @selection-changed="onSelectionChanged"
               ></data-grid>
             </v-col>
@@ -69,7 +79,7 @@ import store from "@/store";
 import { AppSnackbar } from "@/models/appSnackbar";
 import { QueryHistoryQuery } from "@/models/queryHistoryQuery";
 import DataGrid from "@/components/DataGrid.vue";
-import { GridApi } from "ag-grid-community";
+import { GridApi, RefreshCellsParams } from "ag-grid-community";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 export default Vue.extend({
@@ -84,9 +94,10 @@ export default Vue.extend({
     editor: {} as monaco.editor.IStandaloneCodeEditor,
     debouncedSearch: "" as string,
     timeout: null as number | null,
+    gridApi: {} as GridApi,
     rowSelected: false as boolean,
     sql: "" as string,
-    star: false as boolean,
+    id: 0 as number,
     displayErrors: false as boolean
   }),
   watch: {
@@ -133,10 +144,12 @@ export default Vue.extend({
         this.editor.layout();
       }
     },
-    onSelectionChanged(grid: GridApi) {
-      const selectedRows = grid.getSelectedRows();
-      this.sql = selectedRows[0].sql;
-      this.star = selectedRows[0].star;
+    gridCreated(id: string, grid: GridApi) {
+      this.gridApi = grid;
+    },
+    onSelectionChanged() {
+      this.sql = this.gridApi.getSelectedRows()[0].sql;
+      this.id = this.gridApi.getSelectedRows()[0].id;
       this.editor?.getModel()?.setValue(this.sql);
       this.rowSelected = true;
     },
@@ -167,6 +180,16 @@ export default Vue.extend({
       }
       store.dispatch("pasteSqlInActiveTab", this.sql);
       this.close();
+    },
+    updateFavorite() {
+      const star = !this.gridApi.getSelectedRows()[0].star;
+      store.dispatch("updateFavorite", { id: this.id, star: star });
+      this.gridApi.getSelectedRows()[0].star = star;
+      this.gridApi.refreshCells({
+        rowNodes: this.gridApi.getSelectedNodes(),
+        force: true,
+        suppressFlash: true
+      } as RefreshCellsParams);
     }
   },
   computed: {
