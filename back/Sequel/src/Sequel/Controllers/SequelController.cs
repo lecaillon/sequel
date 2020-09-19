@@ -112,7 +112,7 @@ namespace Sequel.Controllers
         private static readonly List<ColumnDefinition> QueryHistoryColumns = new List<ColumnDefinition>
         {
             new ColumnDefinition("id", "int", "Id") { Editable = false },
-            new ColumnDefinition("type", "text", "DBMS") { Editable = false },
+            new ColumnDefinition("type", "text", "DBMS") { Editable = false, CellRenderer = "cellRendererDbms" },
             new ColumnDefinition("serverConnection", "text", "Connection") { Editable = false },
             new ColumnDefinition("sql", "text") { Hide = true },
             new ColumnDefinition("hash", "text") { Hide = true },
