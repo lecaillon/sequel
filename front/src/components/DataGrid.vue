@@ -32,6 +32,7 @@ import "ag-grid-community/dist/styles/ag-theme-alpine-dark.css";
 import DatagridLoader from "@/components/DatagridLoader.vue";
 import CellRendererStar from "@/components/CellRendererStar.vue";
 import CellRendererDbms from "@/components/CellRendererDbms.vue";
+import CellRendererQueryStatus from "@/components/CellRendererQueryStatus.vue";
 
 export default Vue.extend({
   name: "DataGrid",
@@ -51,7 +52,8 @@ export default Vue.extend({
     frameworkComponents: {
       customLoadingOverlay: DatagridLoader,
       cellRendererStar: CellRendererStar,
-      cellRendererDbms: CellRendererDbms
+      cellRendererDbms: CellRendererDbms,
+      cellRendererQueryStatus: CellRendererQueryStatus
     },
     loadingOverlayComponent: "customLoadingOverlay"
   }),
