@@ -142,7 +142,7 @@ namespace Sequel.Models
             ServerConnection = query.Server.Name,
             Sql = sql,
             Hash = hash,
-            ExecutedOn = DateTime.UtcNow,
+            ExecutedOn = DateTime.Now,
             Status = response.Status,
             Elapsed = response.Elapsed,
             RowCount = response.RowCount,
@@ -154,7 +154,7 @@ namespace Sequel.Models
         public void UpdateStatistics(QueryExecutionContext query, QueryResponseContext response)
         {
             ServerConnection = query.Server.Name;
-            ExecutedOn = DateTime.UtcNow;
+            ExecutedOn = DateTime.Now;
             Status = response.Status;
             Elapsed = response.Elapsed;
             RowCount = response.RowCount;
@@ -221,6 +221,7 @@ namespace Sequel.Models
             }
         }
         public string? CellRenderer { get; set; }
+        public string? ValueFormatter { get; set; }
     }
 
     public class CompletionItem

@@ -116,7 +116,7 @@ namespace Sequel.Controllers
             new ColumnDefinition("serverConnection", "text", "Connection") { Editable = false },
             new ColumnDefinition("sql", "text") { Hide = true },
             new ColumnDefinition("hash", "text") { Hide = true },
-            new ColumnDefinition("executedOn", "date", "Last execution") { Editable = false },
+            new ColumnDefinition("executedOn", "date", "Last execution") { Editable = false, ValueFormatter = "new Date(value).toLocaleDateString() + ' ' + new Date(value).toLocaleTimeString()" },
             new ColumnDefinition("status", "text", "Status") { Editable = false, CellRenderer = "cellRendererQueryStatus" },
             new ColumnDefinition("elapsed", "int", "Elapsed (ms)") { Hide = true },
             new ColumnDefinition("rowCount", "int", "Row count") { Hide = true },
