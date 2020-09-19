@@ -111,12 +111,12 @@ export default Vue.extend({
   }),
   watch: {
     search: function() {
-      this.fetchHistory(this.showErrors);
+      this.fetchHistory();
     },
     show: function(showForm: boolean) {
       if (showForm) {
         this.rowSelected = false;
-        this.fetchHistory(this.showErrors);
+        this.fetchHistory();
         setTimeout(
           () =>
             (this.editor = monaco.editor.create(
