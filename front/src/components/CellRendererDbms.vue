@@ -19,11 +19,6 @@ export default Vue.extend({
       }
       return true;
     }
-  },
-  computed: {
-    getDbmsIcon() {
-      return this.params.value ? "mdi-star" : "mdi-star-outline";
-    }
   }
 });
 </script>
