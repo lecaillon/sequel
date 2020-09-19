@@ -166,8 +166,9 @@ namespace Sequel.Models
     public class QueryHistoryQuery
     {
         public string? Sql { get; set; }
-        public bool DisplayErrors { get; set; }
-        public bool Star { get; set; }
+        public bool ShowErrors { get; set; }
+        public bool ShowFavorites { get; set; }
+        public bool Star { get; set; } // used to add or remove a favorite
     }
 
     public class ColumnDefinition

@@ -1,4 +1,5 @@
 export interface QueryHistoryQuery {
     sql: string,
-    displayErrors: boolean
+    showErrors: boolean,
+    showFavorites: boolean
 }

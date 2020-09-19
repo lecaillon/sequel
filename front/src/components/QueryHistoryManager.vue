@@ -33,11 +33,19 @@
         <v-divider vertical inset />
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
-            <v-btn icon v-on="on" @click.stop="fetchHistory(!displayErrors)">
-              <v-icon small :color="getDisplayErrorsIconColor">mdi-close-circle</v-icon>
+            <v-btn icon v-on="on" @click.stop="showErrors=!showErrors; fetchHistory()">
+              <v-icon small :color="getShowErrorsIconColor">mdi-close-circle</v-icon>
             </v-btn>
           </template>
-          <span>{{ this.displayErrors ? 'Hide failed queries' : 'Display failed queries' }}</span>
+          <span>{{ this.showErrors ? 'Hide failed queries' : 'Show failed queries' }}</span>
+        </v-tooltip>
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on }">
+            <v-btn icon v-on="on" @click.stop="showFavorites=!showFavorites; fetchHistory()">
+              <v-icon small :color="getShowFavoritesIconColor">mdi-playlist-star</v-icon>
+            </v-btn>
+          </template>
+          <span>Show favorites only</span>
         </v-tooltip>
         <v-text-field
           v-model="search"
@@ -98,16 +106,17 @@ export default Vue.extend({
     rowSelected: false as boolean,
     sql: "" as string,
     id: 0 as number,
-    displayErrors: false as boolean
+    showErrors: false as boolean,
+    showFavorites: false as boolean
   }),
   watch: {
     search: function() {
-      this.fetchHistory(this.displayErrors);
+      this.fetchHistory(this.showErrors);
     },
     show: function(showForm: boolean) {
       if (showForm) {
         this.rowSelected = false;
-        this.fetchHistory(this.displayErrors);
+        this.fetchHistory(this.showErrors);
         setTimeout(
           () =>
             (this.editor = monaco.editor.create(
@@ -153,12 +162,12 @@ export default Vue.extend({
       this.editor?.getModel()?.setValue(this.sql);
       this.rowSelected = true;
     },
-    fetchHistory(displayErrors: boolean) {
+    fetchHistory() {
       store.dispatch("fetchHistory", {
         sql: this.search,
-        displayErrors
+        showErrors: this.showErrors,
+        showFavorites: this.showFavorites
       } as QueryHistoryQuery);
-      this.displayErrors = displayErrors;
     },
     copySql() {
       if (!this.rowSelected) {
@@ -194,8 +203,11 @@ export default Vue.extend({
   },
   computed: {
     history: () => store.state.history,
-    getDisplayErrorsIconColor() {
-      return this.displayErrors ? "red" : "grey lighten-2";
+    getShowErrorsIconColor() {
+      return this.showErrors ? "red" : "grey lighten-2";
+    },
+    getShowFavoritesIconColor() {
+      return this.showFavorites ? "orange" : "grey lighten-2";
     },
     search: {
       get() {

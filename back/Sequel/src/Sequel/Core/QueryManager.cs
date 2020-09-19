@@ -278,9 +278,13 @@ namespace Sequel.Core
             {
                 sql += $" {WhereOrAnd()} sql LIKE '%{query.Sql}%' ";
             }
-            if (!query.DisplayErrors)
+            if (!query.ShowErrors)
             {
                 sql += $" {WhereOrAnd()} status = {(int)QueryResponseStatus.Succeeded} ";
+            }
+            if (query.ShowFavorites)
+            {
+                sql += $" {WhereOrAnd()} star = 1 ";
             }
 
             return sql;
