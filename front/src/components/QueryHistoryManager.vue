@@ -69,6 +69,7 @@
                 :loading="history.loading"
                 @created="gridCreated"
                 @selection-changed="onSelectionChanged"
+                @cell-focused="onCellFocused"
               ></data-grid>
             </v-col>
             <v-col class="pa-0 pt-2" cols="12" md="7">
@@ -161,6 +162,11 @@ export default Vue.extend({
       this.id = this.gridApi.getSelectedRows()[0].id;
       this.editor?.getModel()?.setValue(this.sql);
       this.rowSelected = true;
+    },
+    onCellFocused() {
+      this.gridApi
+        .getRowNode(this.gridApi.getFocusedCell().rowIndex.toString())
+        .setSelected(true, true);
     },
     fetchHistory() {
       store.dispatch("fetchHistory", {
