@@ -202,11 +202,18 @@ namespace Sequel.Models
             "uuid" => 150,
             _ => null
         };
+        public string? CellRenderer { get; set; }
+        public string? ValueFormatter { get; set; }
+        private object? _filter = null;
         public object Filter
         {
             get
             {
-                if (NumericSqlTypes.Contains(SqlType))
+                if (_filter != null)
+                {
+                    return _filter;
+                }
+                else if (NumericSqlTypes.Contains(SqlType))
                 {
                     return "agNumberColumnFilter";
                 }
@@ -219,9 +226,8 @@ namespace Sequel.Models
                     return "agTextColumnFilter";
                 }
             }
+            set { _filter = value; }
         }
-        public string? CellRenderer { get; set; }
-        public string? ValueFormatter { get; set; }
     }
 
     public class CompletionItem

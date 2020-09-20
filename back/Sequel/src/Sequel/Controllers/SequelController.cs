@@ -117,12 +117,12 @@ namespace Sequel.Controllers
             new ColumnDefinition("sql", "text") { Hide = true },
             new ColumnDefinition("hash", "text") { Hide = true },
             new ColumnDefinition("executedOn", "date", "Last execution") { Editable = false, ValueFormatter = "new Date(value).toLocaleDateString() + ' ' + new Date(value).toLocaleTimeString()" },
-            new ColumnDefinition("status", "text", "Status") { Editable = false, CellRenderer = "cellRendererQueryStatus" },
+            new ColumnDefinition("status", "text", "Status") { Editable = false, Filter = false, CellRenderer = "cellRendererQueryStatus" },
             new ColumnDefinition("elapsed", "int", "Elapsed (ms)") { Hide = true },
             new ColumnDefinition("rowCount", "int", "Row count") { Hide = true },
             new ColumnDefinition("recordsAffected", "int", "Records affected") { Hide = true },
             new ColumnDefinition("executionCount", "int", "Execution Count") { Hide = true },
-            new ColumnDefinition("star", "bool", "Favorite") { Editable = false, CellRenderer = "cellRendererStar" },
+            new ColumnDefinition("star", "bool", "Favorite") { Editable = false, Filter = false, CellRenderer = "cellRendererStar" },
         };
 
         [HttpGet]
