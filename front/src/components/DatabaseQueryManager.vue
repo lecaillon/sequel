@@ -32,6 +32,7 @@
       id="jsoneditor-modal"
       :value="showJsonEditor"
       @click:outside="closeJsonEditor"
+      @keydown.esc="closeJsonEditor"
       content-class="v-dialog-jsoneditor"
       max-width="600px"
     >

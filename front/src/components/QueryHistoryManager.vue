@@ -1,5 +1,5 @@
 <template>
-  <v-dialog width="90%" v-model="show" @click:outside="close" content-class="v-dialog-history">
+  <v-dialog width="90%" v-model="show" @click:outside="close" @keydown.esc="close" content-class="v-dialog-history">
     <textarea id="sql-copy" readonly style="left:-9999px; position:absolute"></textarea>
     <v-card style="height:100%">
       <v-toolbar dark dense flat>

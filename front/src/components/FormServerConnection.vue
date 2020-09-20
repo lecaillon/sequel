@@ -1,5 +1,5 @@
 <template>
-  <v-dialog :value="show" @click:outside="close" max-width="600px">
+  <v-dialog :value="show" @click:outside="close" @keydown.esc="close" max-width="600px">
     <v-card>
       <v-card-title>
         <span>Add new database connection</span>
