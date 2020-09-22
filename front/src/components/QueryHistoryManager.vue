@@ -184,7 +184,7 @@ export default Vue.extend({
       el.select();
       document.execCommand("copy");
       store.dispatch("showAppSnackbar", {
-        message: "Copied to clipboard!",
+        message: "SQL statement added to your clipboard",
         color: "success"
       } as AppSnackbar);
       this.close();
