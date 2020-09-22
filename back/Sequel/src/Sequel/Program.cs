@@ -9,6 +9,7 @@ namespace Sequel
     public static class Program
     {
         public static readonly string RootDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "sequel");
+        public static readonly string WarpDirectory = Directory.GetCurrentDirectory();
         
         public static void Main(string[] args)
         {
