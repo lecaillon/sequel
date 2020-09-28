@@ -1,10 +1,10 @@
 import { ServerConnection } from "./serverConnection";
-import { DatabaseObjectNode } from "./databaseObjectNode";
+import { TreeViewNode } from "./treeViewNode";
 
 export interface QueryExecutionContext {
     server: ServerConnection;
     database: string;
-    databaseObject?: DatabaseObjectNode;
+    node?: TreeViewNode;
     sql?: string;
     id?: string;
 }

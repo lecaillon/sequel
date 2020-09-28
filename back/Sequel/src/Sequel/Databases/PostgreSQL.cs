@@ -3,12 +3,18 @@ using System.Linq;
 using System.Threading.Tasks;
 using Sequel.Core;
 using Sequel.Models;
-using static Sequel.DatabaseObjectType;
+using static Sequel.TreeViewNodeType;
 
 namespace Sequel.Databases
 {
-    public class PostgreSQL : IDatabaseSystem
+    public class PostgreSQL : DatabaseSystem
     {
+        internal static readonly List<TreeViewMenuItem> TreeViewMenuItems = new List<TreeViewMenuItem>
+        {
+            new TreeViewMenuItem("All rows", "SELECT * FROM ${schema}.${table}", "mdi-database-search", 1000, new[] { DBMS.PostgreSQL }, new[] { Table }),
+            new TreeViewMenuItem("First 100 rows", "SELECT * FROM ${schema}.${table} LIMIT 100", "mdi-database-search", 1010, new[] { DBMS.PostgreSQL }, new[] { Table }),
+        };
+
         private readonly ServerConnection _server;
 
         public PostgreSQL(ServerConnection server)
@@ -16,11 +22,9 @@ namespace Sequel.Databases
             _server = Check.NotNull(server, nameof(server));
         }
 
-        public DBMS Type => _server.Type;
+        public override DBMS Type => DBMS.PostgreSQL;
 
-        public async Task<long> GetVersion() => await _server.QueryForLongAsync("SHOW server_version_num");
-
-        public async Task<IEnumerable<string>> LoadDatabasesAsync()
+        public override async Task<IEnumerable<string>> LoadDatabasesAsync()
         {
             return await _server.QueryStringListAsync(
                 "SELECT datname " +
@@ -29,24 +33,27 @@ namespace Sequel.Databases
                 "ORDER BY datname");
         }
 
-        public async Task<IEnumerable<DatabaseObjectNode>> LoadDatabaseObjectNodesAsync(string? database, DatabaseObjectNode? parent)
+        public override async Task<IEnumerable<TreeViewNode>> LoadTreeViewNodesAsync(string? database, TreeViewNode? parent)
         {
             Check.NotNull(database, nameof(database));
 
-            return (parent) switch
+            return parent?.Type switch
             {
                 null => LoadDatabaseRootNode(database),
-                { Type: GroupLabel, Name: Label.Schemas } => await LoadSchemaNodesAsync(database, parent),
-                { Type: GroupLabel, Name: Label.Tables } => await LoadTableNodesAsync(database, parent),
-                { Type: GroupLabel, Name: Label.Functions } => await LoadFunctionNodesAsync(database, parent),
-                { Type: GroupLabel, Name: Label.Columns } => await LoadColumnNodes(database, parent),
-                { Type: Schema } => LoadSchemaGroupLabels(parent),
-                { Type: Table } => LoadTableGroupLabels(parent),
-                _ => new List<DatabaseObjectNode>()
+
+                Schemas => await LoadSchemaNodesAsync(database, parent),
+                Tables => await LoadTableNodesAsync(database, parent),
+                Functions => await LoadFunctionNodesAsync(database, parent),
+                Columns => await LoadColumnNodes(database, parent),
+
+                Schema => LoadSchemaGroupLabels(parent),
+                Table => LoadTableGroupLabels(parent),
+
+                _ => new List<TreeViewNode>()
             };
         }
 
-        public async Task<IEnumerable<CompletionItem>> LoadIntellisenseAsync(string? database)
+        public override async Task<IEnumerable<CompletionItem>> LoadIntellisenseAsync(string? database)
         {
             Check.NotNull(database, nameof(database));
 
@@ -74,12 +81,23 @@ namespace Sequel.Databases
             return items;
         }
 
-        private IEnumerable<DatabaseObjectNode> LoadDatabaseRootNode(string database)
+        protected override Task<Dictionary<string, string>> GetPlaceholdersAsync(TreeViewNode node)
         {
-            var rootNode = new DatabaseObjectNode(database, Database, parent: null, "mdi-database", "amber darken-1");
-            rootNode.Children.Add(new DatabaseObjectNode(Label.Schemas, GroupLabel, rootNode, "mdi-hexagon-multiple-outline", "cyan"));
+            return Task.FromResult(new Dictionary<string, string>
+            {
+                { "${schema}", GetSchema(node) },
+                { "${table}", GetTable(node) },
+            });
+        }
 
-            return new List<DatabaseObjectNode> { rootNode };
+        private async Task<long> GetVersion() => await _server.QueryForLongAsync("SHOW server_version_num");
+
+        private IEnumerable<TreeViewNode> LoadDatabaseRootNode(string database)
+        {
+            var rootNode = new TreeViewNode(database, Database, parent: null, "mdi-database", "amber darken-1");
+            rootNode.Children.Add(new TreeViewNode(Schemas.ToString(), Schemas, rootNode, "mdi-hexagon-multiple-outline", "cyan"));
+
+            return new List<TreeViewNode> { rootNode };
         }
 
         private async Task<IEnumerable<string>> LoadSchemasAsync(string database)
@@ -92,18 +110,18 @@ namespace Sequel.Databases
                 "ORDER BY schema_name");
         }
 
-        private async Task<IEnumerable<DatabaseObjectNode>> LoadSchemaNodesAsync(string database, DatabaseObjectNode parent)
+        private async Task<IEnumerable<TreeViewNode>> LoadSchemaNodesAsync(string database, TreeViewNode parent)
         {
             return (await LoadSchemasAsync(database))
-                .Select(schema => new DatabaseObjectNode(schema, Schema, parent, "mdi-hexagon-multiple-outline", "cyan"));
+                .Select(schema => new TreeViewNode(schema, Schema, parent, "mdi-hexagon-multiple-outline", "cyan"));
         }
 
-        private IEnumerable<DatabaseObjectNode> LoadSchemaGroupLabels(DatabaseObjectNode parent)
+        private IEnumerable<TreeViewNode> LoadSchemaGroupLabels(TreeViewNode parent)
         {
-            return new List<DatabaseObjectNode>
+            return new List<TreeViewNode>
             {
-                new DatabaseObjectNode(Label.Tables, GroupLabel, parent, "mdi-table", "blue"),
-                new DatabaseObjectNode(Label.Functions, GroupLabel, parent, "mdi-function", "teal")
+                new TreeViewNode(Tables.ToString(), Tables, parent, "mdi-table", "blue"),
+                new TreeViewNode(Functions.ToString(), Functions, parent, "mdi-function", "teal")
             };
         }
 
@@ -119,17 +137,17 @@ namespace Sequel.Databases
                 "AND NOT (SELECT EXISTS (SELECT inhrelid FROM pg_catalog.pg_inherits WHERE inhrelid = (quote_ident(t.table_schema)||'.'||quote_ident(t.table_name))::regclass::oid))");
         }
 
-        private async Task<IEnumerable<DatabaseObjectNode>> LoadTableNodesAsync(string database, DatabaseObjectNode parent)
+        private async Task<IEnumerable<TreeViewNode>> LoadTableNodesAsync(string database, TreeViewNode parent)
         {
             return (await LoadTablesAsync(database, GetSchema(parent)))
-                .Select(table => new DatabaseObjectNode(table, Table, parent, "mdi-table", "blue"));
+                .Select(table => new TreeViewNode(table, Table, parent, "mdi-table", "blue"));
         }
 
-        private IEnumerable<DatabaseObjectNode> LoadTableGroupLabels(DatabaseObjectNode parent)
+        private IEnumerable<TreeViewNode> LoadTableGroupLabels(TreeViewNode parent)
         {
-            return new List<DatabaseObjectNode>
+            return new List<TreeViewNode>
             {
-                new DatabaseObjectNode(Label.Columns, GroupLabel, parent, "mdi-table-column", "deep-purple"),
+                new TreeViewNode(Columns.ToString(), Columns, parent, "mdi-table-column", "deep-purple"),
             };
         }
 
@@ -141,7 +159,7 @@ namespace Sequel.Databases
                $"WHERE table_schema = '{schema}'");
         }
 
-        private async Task<IEnumerable<DatabaseObjectNode>> LoadColumnNodes(string database, DatabaseObjectNode parent)
+        private async Task<IEnumerable<TreeViewNode>> LoadColumnNodes(string database, TreeViewNode parent)
         {
             string sql = 
                 "SELECT column_name, data_type " +
@@ -149,8 +167,10 @@ namespace Sequel.Databases
                $"WHERE table_schema = '{GetSchema(parent)}' " +
                $"AND table_name = '{GetTable(parent)}'";
 
+            var list = await _server.QueryListAsync(database, sql, reader => new { Name = reader.GetString(0), Type = reader.GetString(1) });
+
             return (await _server.QueryListAsync(database, sql, reader => new { Name = reader.GetString(0), Type = reader.GetString(1) }))
-                .Select(x => new DatabaseObjectNode(x.Name, Column, parent, "mdi-table-column", "deep-purple",
+                .Select(x => new TreeViewNode(x.Name, Column, parent, "mdi-table-column", "deep-purple",
                                                     details: new Dictionary<string, object> { ["type"] = x.Type }));
 
         }
@@ -181,23 +201,15 @@ namespace Sequel.Databases
             return await _server.QueryListAsync(database, sql, reader => (Name: reader.GetString(0), Args: reader.GetString(1)));
         }
 
-        private async Task<IEnumerable<DatabaseObjectNode>> LoadFunctionNodesAsync(string database, DatabaseObjectNode parent)
+        private async Task<IEnumerable<TreeViewNode>> LoadFunctionNodesAsync(string database, TreeViewNode parent)
         {
             return (await LoadFunctionsAsync(database, GetSchema(parent)))
-                .Select(x => new DatabaseObjectNode(x.Name, Function, parent, "mdi-function", "teal",
+                .Select(x => new TreeViewNode(x.Name, Function, parent, "mdi-function", "teal",
                                                     details: new Dictionary<string, object> { ["args"] = x.Args }));
         }
 
-        private static string GetSchema(DatabaseObjectNode node) => node.Id.Split(DatabaseObjectNode.PathSeparator)[2];
+        private static string GetSchema(TreeViewNode node) => node.Id.Split(TreeViewNode.PathSeparator)[2];
 
-        private static string GetTable(DatabaseObjectNode node) => node.Id.Split(DatabaseObjectNode.PathSeparator)[4];
-
-        private static class Label
-        {
-            public const string Schemas = "Schemas";
-            public const string Tables = "Tables";
-            public const string Functions = "Functions";
-            public const string Columns = "Columns";
-        }
+        private static string GetTable(TreeViewNode node) => node.Id.Split(TreeViewNode.PathSeparator)[4];
     }
 }

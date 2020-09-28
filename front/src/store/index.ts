@@ -3,13 +3,14 @@ import Vuex from "vuex";
 import { http } from "@/core/http";
 import { BASE_URL } from "@/appsettings";
 import { ServerConnection } from "@/models/serverConnection";
-import { DatabaseObjectNode } from "@/models/databaseObjectNode";
+import { TreeViewNode } from "@/models/treeViewNode";
 import { QueryExecutionContext } from "@/models/queryExecutionContext";
 import { QueryResponseContext } from "@/models/queryResponseContext";
 import { AppSnackbar } from "@/models/appSnackbar";
 import { QueryTabContent } from "@/models/queryTabContent";
 import { QueryHistoryContent } from "@/models/queryHistoryContent";
 import { QueryHistoryQuery } from "@/models/queryHistoryQuery";
+import { TreeViewMenuItem } from "@/models/treeViewMenuItem";
 import { v4 as uuidv4 } from "uuid";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
@@ -23,8 +24,9 @@ export default new Vuex.Store({
     editServer: {} as ServerConnection,
     databases: [] as string[],
     activeDatabase: {} as string,
-    nodes: [] as DatabaseObjectNode[],
-    activeNode: {} as DatabaseObjectNode,
+    nodes: [] as TreeViewNode[],
+    activeNode: {} as TreeViewNode,
+    activeNodeMenu: [] as TreeViewMenuItem[],
     activeQueryTabIndex: {} as number,
     queryTabs: [] as QueryTabContent[],
     history: {} as QueryHistoryContent,
@@ -84,7 +86,7 @@ export default new Vuex.Store({
     },
     changeActiveDatabase: (context, database: string) => {
       context.commit("setActiveDatabase", database);
-      context.dispatch("fetchDatabaseObjectNodes");
+      context.dispatch("fetchTreeViewNodes");
       context.dispatch("fetchIntellisense");
       if (database && context.state.queryTabs.length == 0) {
         context.dispatch("openNewQueryTab");
@@ -110,19 +112,31 @@ export default new Vuex.Store({
         context.commit("setHistory", { response: { columns: new Array<any>(), rows: new Array<any>() }, loading: false } as QueryHistoryContent);
       }
     },
-    fetchDatabaseObjectNodes: async (context, parent: DatabaseObjectNode) => {
-      if (context.state.activeDatabase === undefined) {
+    fetchTreeViewNodes: async (context, parent: TreeViewNode) => {
+      if (context.state.activeDatabase === undefined || Object.keys(context.state.activeDatabase).length === 0) {
         context.commit("clearNodes");
       } else {
-        const nodes = await http.post<DatabaseObjectNode[]>(`${BASE_URL}/sequel/database-objects`, {
+        const nodes = await http.post<TreeViewNode[]>(`${BASE_URL}/sequel/nodes`, {
           server: context.state.activeServer,
           database: context.state.activeDatabase,
-          databaseObject: parent === undefined ? null : parent
+          node: parent === undefined ? null : parent
         } as QueryExecutionContext);
         context.commit("pushNodes", { parent, nodes });
       }
     },
-    changeActiveNode: (context, node: DatabaseObjectNode) => {
+    fetchActiveNodeMenuItems: async (context) => {
+      if (context.state.activeNode === undefined || Object.keys(context.state.activeNode).length === 0) {
+        context.commit("setActiveNodeMenuItems", null);
+      } else {
+        const menuItems = await http.post<TreeViewNode[]>(`${BASE_URL}/sequel/nodes/${context.state.activeNode.id}/menu-items`, {
+          server: context.state.activeServer,
+          database: context.state.activeDatabase,
+          node: context.state.activeNode
+        } as QueryExecutionContext);
+        context.commit("setActiveNodeMenuItems", menuItems);
+      }
+    },
+    changeActiveNode: (context, node: TreeViewNode) => {
       context.commit("setActiveNode", node);
     },
     openNewQueryTab: context => {
@@ -143,6 +157,10 @@ export default new Vuex.Store({
       context.commit("mergeQueryTabContent", tab);
     },
     executeQuery: async (context, tab: QueryTabContent) => {
+      if (!context.getters.canExecuteQuery) {
+        return;
+      }
+
       context.commit("mergeQueryTabContent", { id: tab.id, loading: true } as QueryTabContent);
       const sql = tab.editor?.getSelection()?.isEmpty()
         ? tab.editor?.getValue()
@@ -192,6 +210,13 @@ export default new Vuex.Store({
       const msg = favorite.star ? "Added to the favorites" : "Removed from the favorites";
       context.dispatch("showAppSnackbar", { message: msg, color: "success" } as AppSnackbar);
     },
+    executeTreeViewMenuItem: async (context, item: TreeViewMenuItem) => {
+      if (!context.getters.hasActiveTab || (context.getters.activeQueryTab as QueryTabContent)?.editor?.getValue()) {
+        await context.dispatch("openNewQueryTab");
+      }
+      (context.getters.activeQueryTab as QueryTabContent)?.editor?.setValue(item.command);
+      await context.dispatch("executeQuery", context.getters.activeQueryTab);
+    },
   },
   mutations: {
     setAppSnackbar(state, appSnackbar: AppSnackbar) {
@@ -224,16 +249,19 @@ export default new Vuex.Store({
     },
     clearNodes(state) {
       state.nodes = [];
-      state.activeNode = {} as DatabaseObjectNode;
+      state.activeNode = {} as TreeViewNode;
     },
     pushNodes(state, { parent, nodes }) {
       if (parent === undefined) {
         state.nodes = nodes;
       } else {
-        (parent as DatabaseObjectNode).children.push(...nodes);
+        (parent as TreeViewNode).children.push(...nodes);
       }
     },
-    setActiveNode(state, node: DatabaseObjectNode) {
+    setActiveNodeMenuItems(state, menu: TreeViewMenuItem[]) {
+      state.activeNodeMenu = menu;
+    },
+    setActiveNode(state, node: TreeViewNode) {
       state.activeNode = node;
     },
     pushQueryTab(state, queryTab: QueryTabContent) {

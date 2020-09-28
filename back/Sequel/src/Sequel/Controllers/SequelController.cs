@@ -24,7 +24,7 @@ namespace Sequel.Controllers
         [Route("server-connections")]
         public async Task<IActionResult> AddServerConnection(ServerConnection server)
         {
-            await Store<ServerConnection>.Add(server);
+            await Store<ServerConnection>.AddAsync(server);
             return Ok();
         }
 
@@ -32,12 +32,13 @@ namespace Sequel.Controllers
         [Route("server-connections/{id}")]
         public async Task<IActionResult> DeleteServerConnection(int id)
         {
-            await Store<ServerConnection>.Delete(id);
+            await Store<ServerConnection>.DeleteAsync(id);
             return Ok();
         }
 
         [HttpPost]
         [Route("server-connections/test")]
+
         public async Task<IActionResult> TestServerConnection(ServerConnection server)
         {
             await server.ValidateAsync();
@@ -52,10 +53,33 @@ namespace Sequel.Controllers
         }
 
         [HttpPost]
-        [Route("database-objects")]
-        public async Task<ActionResult<IEnumerable<DatabaseObjectNode>>> GetDatabaseObjects(QueryExecutionContext context)
+        [Route("nodes")]
+        public async Task<ActionResult<IEnumerable<TreeViewNode>>> GetTreeViewNodes(QueryExecutionContext context)
         {
-            return Ok(await context.Server.GetDatabaseSystem().LoadDatabaseObjectNodesAsync(context.Database, context.DatabaseObject));
+            return Ok(await context.Server.GetDatabaseSystem().LoadTreeViewNodesAsync(context.Database, context.Node));
+        }
+
+        [HttpPost]
+        [Route("nodes/{id}/menu-items")]
+        public async Task<ActionResult<List<TreeViewMenuItem>>> GetTreeViewMenuItems(QueryExecutionContext context)
+        {
+            if (context.Node is null)
+            {
+                ModelState.AddModelError(nameof(QueryExecutionContext.Node), $"The {nameof(QueryExecutionContext.Node)} field is required.");
+            }
+            if (string.IsNullOrWhiteSpace(context.Database) && context.Server.Type != DBMS.SQLite)
+            {
+                ModelState.AddModelError(nameof(QueryExecutionContext.Sql), $"The {nameof(QueryExecutionContext.Database)} field is required.");
+            }
+            if (ModelState.ErrorCount != 0)
+            {
+                return BadRequest(new ValidationProblemDetails(ModelState)
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                });
+            }
+
+            return Ok(await context.Server.GetDatabaseSystem().LoadTreeViewMenuItemsAsync(context.Node!, context.Database, context.Server.Id!.Value));
         }
 
         [HttpPost]

@@ -17,7 +17,15 @@ namespace Sequel.Core
             return await DeserializeListAsync(fs);
         }
 
-        public static async Task Add<TIdentity>(TIdentity item) where TIdentity : Identity, T
+        public static async Task InitAsync(IEnumerable<T> list)
+        {
+            Check.NotNull(list, nameof(list));
+            
+            using var fs = OpenFile(FileMode.Create);
+            await SaveFileAsync(fs, list);
+        }
+
+        public static async Task AddAsync<TIdentity>(TIdentity item) where TIdentity : Identity, T
         {
             Check.NotNull(item, nameof(item));
 
@@ -36,7 +44,7 @@ namespace Sequel.Core
             await SaveFileAsync(stream, list);
         }
 
-        public static async Task Delete(int id)
+        public static async Task DeleteAsync(int id)
         {
             using var stream = OpenFile();
             var list = await DeserializeListAsync(stream);
@@ -46,42 +54,21 @@ namespace Sequel.Core
             await SaveFileAsync(stream, list);
         }
 
-        public static async Task<T> GetItem()
-        {
-            using var stream = OpenFile();
-            return await DeserializeItemAsync(stream);
-        }
+        public static bool Exists() => File.Exists(FilePath);
 
-        public static async Task Save(T item)
-        {
-            Check.NotNull(item, nameof(item));
-
-            using var fs = OpenFile();
-            await SaveFileAsync(fs, item);
-        }
-
-        private static FileStream OpenFile()
+        private static FileStream OpenFile(FileMode mode = FileMode.OpenOrCreate)
         {
             Directory.CreateDirectory(Program.RootDirectory);
-            return File.Open(FilePath, FileMode.OpenOrCreate);
+            return File.Open(FilePath, mode);
         }
 
         private static async Task<List<T>> DeserializeListAsync(FileStream stream)
             => stream.Length > 0 ? await JsonSerializer.DeserializeAsync<List<T>>(stream) : new List<T>();
 
-        private static async Task<T> DeserializeItemAsync(FileStream stream)
-            => stream.Length > 0 ? await JsonSerializer.DeserializeAsync<T>(stream) : new T();
-
-        private static async Task SaveFileAsync(FileStream stream, T value)
+        private static async Task SaveFileAsync(FileStream stream, IEnumerable<T> value)
         {
             stream.SetLength(0);
-            await JsonSerializer.SerializeAsync(stream, value);
-        }
-
-        private static async Task SaveFileAsync(FileStream stream, List<T> value)
-        {
-            stream.SetLength(0);
-            await JsonSerializer.SerializeAsync(stream, value);
+            await JsonSerializer.SerializeAsync(stream, value, new JsonSerializerOptions { WriteIndented = true });
         }
     }
 }

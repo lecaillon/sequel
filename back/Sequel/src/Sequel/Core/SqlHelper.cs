@@ -34,7 +34,7 @@ namespace Sequel.Core
             await dbConnection.CloseAsync();
         }
 
-        public static IDatabaseSystem GetDatabaseSystem(this ServerConnection server)
+        public static DatabaseSystem GetDatabaseSystem(this ServerConnection server)
         {
             return server.Type switch
             {

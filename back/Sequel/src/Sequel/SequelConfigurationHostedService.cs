@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Sequel.Core;
+using Sequel.Models;
 using static System.Runtime.InteropServices.OSPlatform;
 using static System.Runtime.InteropServices.RuntimeInformation;
 
@@ -26,6 +27,7 @@ namespace Sequel
             Directory.CreateDirectory(Program.RootDirectory);
 
             await QueryManager.History.ConfigureAsync();
+            await TreeViewMenuItem.ConfigureAsync();
 
             if (Env.IsProduction())
             {

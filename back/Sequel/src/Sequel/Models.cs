@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
+using Sequel.Core;
+using Sequel.Databases;
 
 namespace Sequel.Models
 {
@@ -16,26 +20,26 @@ namespace Sequel.Models
         public Env Environment { get; set; }
     }
 
-    public class DatabaseObjectNode
+    public class TreeViewNode
     {
         public const string PathSeparator = "::";
 
-        public DatabaseObjectNode() { }
+        public TreeViewNode() { }
 
-        public DatabaseObjectNode(string name,
-                                  DatabaseObjectType type,
-                                  DatabaseObjectNode? parent,
-                                  string icon,
-                                  string color,
-                                  List<DatabaseObjectNode> children = null!,
-                                  Dictionary<string, object> details = null!)
+        public TreeViewNode(string name,
+                            TreeViewNodeType type,
+                            TreeViewNode? parent,
+                            string icon,
+                            string color,
+                            List<TreeViewNode> children = null!,
+                            Dictionary<string, object> details = null!)
         {
             Id = parent is null ? name : $"{parent.Id}{PathSeparator}{name}";
             Type = type;
             Name = name;
             Icon = icon;
             Color = color;
-            Children = children ?? new List<DatabaseObjectNode>();
+            Children = children ?? new List<TreeViewNode>();
             Details = details ?? new Dictionary<string, object>();
         }
 
@@ -44,13 +48,57 @@ namespace Sequel.Models
         [Required]
         public string Name { get; set; } = default!;
         [Required]
-        public DatabaseObjectType Type { get; set; }
+        public TreeViewNodeType Type { get; set; }
         [Required]
         public string Icon { get; set; } = default!;
         [Required]
         public string Color { get; set; } = default!;
-        public List<DatabaseObjectNode> Children { get; } = new List<DatabaseObjectNode>();
+        public List<TreeViewNode> Children { get; } = new List<TreeViewNode>();
         public Dictionary<string, object> Details { get; } = new Dictionary<string, object>();
+    }
+
+    public class TreeViewMenuItem
+    {
+        private int _order;
+
+        public TreeViewMenuItem() { }
+
+        public TreeViewMenuItem(string title, string command, string icon, int order, IEnumerable<DBMS>? dbms, IEnumerable<TreeViewNodeType>? nodeTypes)
+        {
+            Command = Check.NotNull(command, nameof(command));
+            Title = Check.NotNull(title, nameof(title));
+            Icon = Check.NotNull(icon, nameof(icon));
+            Order = order;
+            Dbms = dbms?.ToList() ?? new List<DBMS>();
+            NodeTypes = nodeTypes?.ToList() ?? new List<TreeViewNodeType>();
+        }
+        // Menu
+        public string Title { get; set; } = default!;
+        public string Command { get; set; } = default!;
+        public string Icon { get; set; } = default!;
+        public int Order
+        {
+            get { return _order; }
+            set { _order = value <= 0 ? int.MaxValue : value; }
+        }
+        public string? Confirmation { get; set; }
+        // Targets
+        public List<DBMS>? Dbms { get; set; } = new List<DBMS>();
+        public List<TreeViewNodeType>? NodeTypes { get; set; } = new List<TreeViewNodeType>();
+        public List<int>? ConnectionIds { get; set; } = new List<int>();
+        public List<string>? Databases { get; set; } = new List<string>();
+        public List<string>? Nodes { get; set; } = new List<string>();
+
+        internal static async Task ConfigureAsync()
+        {
+            if (!Store<TreeViewMenuItem>.Exists())
+            {
+                await Store<TreeViewMenuItem>.InitAsync(new List<TreeViewMenuItem>()
+                    .Union(PostgreSQL.TreeViewMenuItems)
+                    .Union(SQLite.TreeViewMenuItems)
+                    .OrderBy(x => x.Order));
+            }
+        }
     }
 
     public class QueryExecutionContext
@@ -64,7 +112,7 @@ namespace Sequel.Models
             get { return Server.Type == DBMS.SQLite ? null : _database ; }
             set { _database = value; }
         }
-        public DatabaseObjectNode? DatabaseObject { get; set; }
+        public TreeViewNode? Node { get; set; }
         public string? Sql { get; set; }
         public string? Id { get; set; }
     }

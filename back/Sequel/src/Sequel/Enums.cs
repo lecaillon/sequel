@@ -27,14 +27,19 @@ namespace Sequel
     }
 
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum DatabaseObjectType
+    public enum TreeViewNodeType
     {
-        GroupLabel,
         Database,
         Schema,
         Table,
         Function,
         Column,
+
+        // Group label
+        Schemas,
+        Tables,
+        Functions,
+        Columns,
     }
 
     [JsonConverter(typeof(JsonStringEnumConverter))]
