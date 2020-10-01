@@ -1,12 +1,19 @@
 <template>
   <v-app>
     <v-app-bar app clipped-left clipped-right>
-      <v-app-bar-nav-icon @click.stop="showDbExplorer = !showDbExplorer"></v-app-bar-nav-icon>
+      <v-app-bar-nav-icon
+        @click.stop="showDbExplorer = !showDbExplorer"
+      ></v-app-bar-nav-icon>
       <v-toolbar-title>Sequel</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
-          <v-btn icon :disabled="!canExecuteQuery" v-on="on" @click.stop="executeQuery()">
+          <v-btn
+            icon
+            :disabled="!canExecuteQuery"
+            v-on="on"
+            @click.stop="executeQuery()"
+          >
             <v-icon color="green">mdi-play</v-icon>
           </v-btn>
         </template>
@@ -14,7 +21,12 @@
       </v-tooltip>
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
-          <v-btn icon :disabled="!hasActiveTabLoading" v-on="on" @click.stop="cancelQuery()">
+          <v-btn
+            icon
+            :disabled="!hasActiveTabLoading"
+            v-on="on"
+            @click.stop="cancelQuery()"
+          >
             <v-icon color="red">mdi-stop</v-icon>
           </v-btn>
         </template>
@@ -27,6 +39,21 @@
           </v-btn>
         </template>
         <span>Open new tab</span>
+      </v-tooltip>
+
+      <v-divider vertical inset />
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <v-btn
+            icon
+            :disabled="!hasActiveTab"
+            v-on="on"
+            @click.stop="formatQuery()"
+          >
+            <v-icon color="grey lighten-2">mdi-format-align-left</v-icon>
+          </v-btn>
+        </template>
+        <span>Format query</span>
       </v-tooltip>
 
       <v-divider vertical inset />
@@ -61,7 +88,12 @@
       </v-tooltip>-->
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
-          <v-btn icon :disabled="!canExportData" v-on="on" @click.stop="exportDataAsCsv()">
+          <v-btn
+            icon
+            :disabled="!canExportData"
+            v-on="on"
+            @click.stop="exportDataAsCsv()"
+          >
             <v-icon color="grey lighten-2">mdi-file-download-outline</v-icon>
           </v-btn>
         </template>
@@ -186,6 +218,11 @@ export default Vue.extend({
     },
     closeAppSnackbar: () => store.dispatch("hideAppSnackbar"),
     openNewQueryTab: () => store.dispatch("openNewQueryTab"),
+    formatQuery: () =>
+      store.dispatch(
+        "formatQuery",
+        store.getters.activeQueryTab as QueryTabContent
+      ),
     executeQuery: () =>
       store.dispatch(
         "executeQuery",
@@ -207,6 +244,7 @@ export default Vue.extend({
     hasActiveTabLoading: () => store.getters.hasActiveTabLoading,
     hasActiveNode: () => store.getters.hasActiveNode,
     canExecuteQuery: () => store.getters.canExecuteQuery,
+    hasActiveTab: () => store.getters.hasActiveTab,
     canExportData: () => store.getters.hasActiveGrid
   },
   mounted() {

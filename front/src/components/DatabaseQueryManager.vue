@@ -2,7 +2,11 @@
   <v-container fluid class="pa-0" fill-height>
     <v-tabs :value="activeTab" @change="selected">
       <v-tab v-for="(tab, index) in queryTabs" :key="tab.id">
-        <query-tab :title="tab.title" :index="index" @close="closeTab"></query-tab>
+        <query-tab
+          :title="tab.title"
+          :index="index"
+          @close="closeTab"
+        ></query-tab>
       </v-tab>
     </v-tabs>
     <v-container fluid class="pa-0" style="height:100%">
@@ -13,6 +17,7 @@
               :editorId="tab.id"
               @created="editorCreated"
               @keyPressedF5="editorKeyPressedF5"
+              @keyPressedF6="editorKeyPressedF6"
             ></query-editor>
           </v-container>
           <v-container fluid class="pa-0" style="height:calc(55% - 48px)">
@@ -118,6 +123,12 @@ export default Vue.extend({
       }
       store.dispatch(
         "executeQuery",
+        store.getters.getQueryTabById(id) as QueryTabContent
+      );
+    },
+    editorKeyPressedF6(id: string) {
+      store.dispatch(
+        "formatQuery",
         store.getters.getQueryTabById(id) as QueryTabContent
       );
     },

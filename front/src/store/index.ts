@@ -13,6 +13,7 @@ import { QueryHistoryQuery } from "@/models/queryHistoryQuery";
 import { TreeViewMenuItem } from "@/models/treeViewMenuItem";
 import { v4 as uuidv4 } from "uuid";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
+import sqlFormatter from "sql-formatter";
 
 Vue.use(Vuex);
 
@@ -217,6 +218,26 @@ export default new Vuex.Store({
       (context.getters.activeQueryTab as QueryTabContent)?.editor?.setValue(item.command);
       await context.dispatch("executeQuery", context.getters.activeQueryTab);
     },
+    formatQuery: (context, tab: QueryTabContent) => {
+      const editor = tab.editor!;
+      const sql = editor.getSelection()?.isEmpty()
+        ? editor.getValue()
+        : editor.getModel()?.getValueInRange(editor.getSelection()!);
+      if (!sql) {
+        return;
+      }
+      const range = editor.getSelection()?.isEmpty()
+        ? editor.getModel()!.getFullModelRange()
+        : editor.getSelection()!;
+      const op = {
+        range: range,
+        text: sqlFormatter.format(sql!),
+        forceMoveMarkers: true
+      } as monaco.editor.IIdentifiedSingleEditOperation;
+
+      editor.executeEdits("sequel-source", [op]);
+      editor.focus();
+    }
   },
   mutations: {
     setAppSnackbar(state, appSnackbar: AppSnackbar) {

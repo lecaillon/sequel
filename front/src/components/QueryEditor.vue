@@ -1,5 +1,10 @@
 <template>
-  <v-sheet tile :id="'editor-' + this.editorId" v-resize="onResize" style="height:100%"></v-sheet>
+  <v-sheet
+    tile
+    :id="'editor-' + this.editorId"
+    v-resize="onResize"
+    style="height:100%"
+  ></v-sheet>
 </template>
 
 <script lang="ts">
@@ -14,6 +19,7 @@ export default Vue.extend({
   data: () => ({
     editor: {} as monaco.editor.IStandaloneCodeEditor,
     editorActionF5: {} as monaco.IDisposable,
+    editorActionF6: {} as monaco.IDisposable,
     onDidChangeContent: {} as monaco.IDisposable
   }),
   methods: {
@@ -42,11 +48,21 @@ export default Vue.extend({
 
     this.editorActionF5 = this.editor.addAction({
       id: "sequel-F5",
-      label: "Execute Query - Sequel",
+      label: "Execute Query",
       keybindings: [monaco.KeyCode.F5],
       contextMenuGroupId: "1_modification",
       run: () => {
         this.$emit("keyPressedF5", this.editorId);
+      }
+    });
+
+    this.editorActionF6 = this.editor.addAction({
+      id: "sequel-F6",
+      label: "Format Query",
+      keybindings: [monaco.KeyCode.F6],
+      contextMenuGroupId: "1_modification",
+      run: () => {
+        this.$emit("keyPressedF6", this.editorId);
       }
     });
 
