@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <nullable>enable</nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="5.10.3" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Sequel\Sequel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Files\**\*.*ql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Files\begintag.sql" />
+    <None Remove="Files\begintag2.sql" />
+    <None Remove="Files\casewhen_procedure.sql" />
+    <None Remove="Files\dashcomment.sql" />
+    <None Remove="Files\function_pgsql.sql" />
+    <None Remove="Files\function_pgsql2.sql" />
+    <None Remove="Files\function_pgsql3.sql" />
+    <None Remove="Files\function_pgsql4.sql" />
+    <None Remove="Files\mysql_handler.sql" />
+  </ItemGroup>
+</Project>
