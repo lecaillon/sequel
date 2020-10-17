@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Sequel.Core;
+using Sequel.Core.Parser;
 using Sequel.Models;
 
 namespace Sequel.Databases
@@ -40,6 +41,25 @@ namespace Sequel.Databases
         public abstract Task<IEnumerable<string>> LoadDatabasesAsync();
         public abstract Task<IEnumerable<TreeViewNode>> LoadTreeViewNodesAsync(string? database, TreeViewNode? node);
         public abstract Task<IEnumerable<CompletionItem>> LoadIntellisenseAsync(string? database);
+
+        public virtual Task<IEnumerable<CodeLens>> LoadCodeLensAsync(string? sql)
+        {
+            if (sql.IsNullOrEmpty())
+            {
+                return Task.FromResult(Enumerable.Empty<CodeLens>());
+            }
+
+            try
+            {
+                return Task.FromResult(
+                    new Splitter().Process(sql).Select((stmt, i) => CodeLens.CreateExecuteBlockStatement(i, stmt.StartLineNumber ?? -1)));
+            }
+            catch
+            {
+                return Task.FromResult(Enumerable.Empty<CodeLens>());
+            }
+        }
+
         protected abstract Task<Dictionary<string, string>> GetPlaceholdersAsync(TreeViewNode node);
     }
 }

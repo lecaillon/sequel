@@ -82,3 +82,15 @@ export default Vue.extend({
   }
 });
 </script>
+
+<style lang="scss">
+.monaco-editor .codelens-decoration {
+  font-size: 11px !important;
+}
+.monaco-editor .codelens-decoration a {
+  color: #999999 !important;
+}
+.monaco-editor .codelens-decoration a[id]:hover {
+  color: #0097fb !important;
+}
+</style>

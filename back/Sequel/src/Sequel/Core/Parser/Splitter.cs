@@ -73,7 +73,7 @@ namespace Sequel.Core.Parser
                 _level = 0;
                 _isInCreate = false;
                 _beginDepth = 0;
-                statement = new Statement();
+                statement = new Statement(currentLineNumber: statements.LastOrDefault()?.EndLineNumber ?? 1);
             }
         }
 

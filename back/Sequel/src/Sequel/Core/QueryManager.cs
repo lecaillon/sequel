@@ -4,10 +4,12 @@ using System.Data;
 using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Sequel.Core.Parser;
 using Sequel.Models;
 using static Sequel.Helper;
 
@@ -53,7 +55,7 @@ namespace Sequel.Core
 
         private static async Task<QueryResponseContext> ExecuteQueryAsync(this QueryExecutionContext context, CancellationToken cancellationToken)
         {
-            return await context.Server.ExecuteAsync(context.Database, context.Sql!, async (dbCommand, ct) =>
+            return await context.Server.ExecuteAsync(context.Database, context.GetSqlStatement()!, async (dbCommand, ct) =>
             {
                 var response = new QueryResponseContext(context.Id!);
                 var sw = new Stopwatch();
@@ -202,7 +204,7 @@ namespace Sequel.Core
 
             public static async Task SaveAsync(QueryExecutionContext query, QueryResponseContext response)
             {
-                string? statement = NormalizeSql(query.Sql);
+                string? statement = NormalizeSql(query.GetSqlStatement());
                 if (statement is null)
                 {
                     return;

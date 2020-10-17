@@ -149,8 +149,8 @@
     />
 
     <query-history-manager
-      :show="showQueryHistoryManager"
-      @close="showQueryHistoryManager = false"
+      :show="isQueryHistoryManagerOpened"
+      @close="closeQueryHistoryManager"
     />
 
     <app-snackbar
@@ -174,6 +174,7 @@ import DatabaseObjectTreeview from "@/components/DatabaseObjectTreeview.vue";
 import DatabaseQueryManager from "@/components/DatabaseQueryManager.vue";
 import AppSnackbar from "@/components/AppSnackbar.vue";
 import QueryHistoryManager from "@/components/QueryHistoryManager.vue";
+import SequelCodeLensProvider from "@/monaco-editor-utils/sequelCodeLensProvider";
 import { ServerConnection } from "./models/serverConnection";
 import { QueryTabContent } from "./models/queryTabContent";
 import { CsvExportParams } from "ag-grid-community";
@@ -197,14 +198,12 @@ export default Vue.extend({
     showDbExplorer: true,
     showDbProperty: false,
     showFormServerConnection: false,
-    showQueryHistoryManager: false,
     snippetProvider: {} as monaco.IDisposable,
     intellisenseProvider: {} as monaco.IDisposable
   }),
   methods: {
-    openQueryHistoryManager() {
-      this.showQueryHistoryManager = true;
-    },
+    openQueryHistoryManager: () => store.dispatch("showQueryHistoryManager", true),
+    closeQueryHistoryManager: () => store.dispatch("showQueryHistoryManager", false),
     openFormServerConnection(newForm: boolean) {
       if (newForm) {
         store.dispatch("changeEditServer", {
@@ -218,21 +217,9 @@ export default Vue.extend({
     },
     closeAppSnackbar: () => store.dispatch("hideAppSnackbar"),
     openNewQueryTab: () => store.dispatch("openNewQueryTab"),
-    formatQuery: () =>
-      store.dispatch(
-        "formatQuery",
-        store.getters.activeQueryTab as QueryTabContent
-      ),
-    executeQuery: () =>
-      store.dispatch(
-        "executeQuery",
-        store.getters.activeQueryTab as QueryTabContent
-      ),
-    cancelQuery: () =>
-      store.dispatch(
-        "cancelQuery",
-        store.getters.activeQueryTab as QueryTabContent
-      ),
+    formatQuery: () => store.dispatch("formatQuery"),
+    executeQuery: () => store.dispatch("executeQuery"),
+    cancelQuery: () => store.dispatch("cancelQuery"),
     exportDataAsCsv: () =>
       (store.getters.activeQueryTab as QueryTabContent).grid?.exportDataAsCsv({
         allColumns: true
@@ -245,7 +232,8 @@ export default Vue.extend({
     hasActiveNode: () => store.getters.hasActiveNode,
     canExecuteQuery: () => store.getters.canExecuteQuery,
     hasActiveTab: () => store.getters.hasActiveTab,
-    canExportData: () => store.getters.hasActiveGrid
+    canExportData: () => store.getters.hasActiveGrid,
+    isQueryHistoryManagerOpened: () => store.state.isQueryHistoryManagerOpened,
   },
   mounted() {
     this.intellisenseProvider = monaco.languages.registerCompletionItemProvider(
@@ -353,6 +341,21 @@ export default Vue.extend({
             ] as monaco.languages.CompletionItem[]
           };
         }
+      }
+    );
+
+    monaco.languages.registerCodeLensProvider(
+      "sql",
+      new SequelCodeLensProvider()
+    );
+
+    // https://github.com/microsoft/monaco-editor/issues/1857#issuecomment-594457013
+    const commandRegistry = require("monaco-editor/esm/vs/platform/commands/common/commands")
+      .CommandsRegistry;
+    commandRegistry.registerCommand(
+      "CmdExecuteBlockStmt",
+      (_: any, args: any[]) => {
+        store.dispatch("executeQuery", args);
       }
     );
   },

@@ -69,7 +69,7 @@ namespace Sequel.Controllers
             }
             if (string.IsNullOrWhiteSpace(context.Database) && context.Server.Type != DBMS.SQLite)
             {
-                ModelState.AddModelError(nameof(QueryExecutionContext.Sql), $"The {nameof(QueryExecutionContext.Database)} field is required.");
+                ModelState.AddModelError(nameof(QueryExecutionContext.Database), $"The {nameof(QueryExecutionContext.Database)} field is required.");
             }
             if (ModelState.ErrorCount != 0)
             {
@@ -90,13 +90,13 @@ namespace Sequel.Controllers
             {
                 ModelState.AddModelError(nameof(QueryExecutionContext.Id), $"The {nameof(QueryExecutionContext.Id)} field is required.");
             }
-            if (string.IsNullOrWhiteSpace(context.Sql))
+            if (string.IsNullOrWhiteSpace(context.GetSqlStatement()))
             {
-                ModelState.AddModelError(nameof(QueryExecutionContext.Sql), $"The {nameof(QueryExecutionContext.Sql)} field is required.");
+                ModelState.AddModelError("Sql", $"The Sql field is required.");
             }
             if (string.IsNullOrWhiteSpace(context.Database) && context.Server.Type != DBMS.SQLite)
             {
-                ModelState.AddModelError(nameof(QueryExecutionContext.Sql), $"The {nameof(QueryExecutionContext.Database)} field is required.");
+                ModelState.AddModelError(nameof(QueryExecutionContext.Database), $"The {nameof(QueryExecutionContext.Database)} field is required.");
             }
             if (ModelState.ErrorCount != 0)
             {
@@ -131,6 +131,13 @@ namespace Sequel.Controllers
         public async Task<ActionResult<IEnumerable<CompletionItem>>> Intellisense(QueryExecutionContext context)
         {
             return Ok(await context.Server.GetDatabaseSystem().LoadIntellisenseAsync(context.Database));
+        }
+
+        [HttpPost]
+        [Route("codelenses")]
+        public async Task<ActionResult<IEnumerable<CodeLens>>> CodeLens(QueryExecutionContext context)
+        {
+            return Ok(await context.Server.GetDatabaseSystem().LoadCodeLensAsync(context.GetSqlStatement()));
         }
 
         private static readonly List<ColumnDefinition> QueryHistoryColumns = new List<ColumnDefinition>

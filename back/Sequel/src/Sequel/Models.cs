@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Sequel.Core;
+using Sequel.Core.Parser;
 using Sequel.Databases;
 
 namespace Sequel.Models
@@ -104,17 +105,61 @@ namespace Sequel.Models
     public class QueryExecutionContext
     {
         private string? _database;
+        private string? _sqlStatement;
 
         [Required]
         public ServerConnection Server { get; set; } = default!;
+
         public string? Database
         {
             get { return Server.Type == DBMS.SQLite ? null : _database ; }
             set { _database = value; }
         }
+
+        /// <summary>
+        ///     Selected node in the Sequel tree view
+        /// </summary>
         public TreeViewNode? Node { get; set; }
+
+        /// <summary>
+        ///     Sql statement(s).
+        /// </summary>
+        /// <remarks>
+        ///     Should be private --> .NET 5
+        /// </remarks>
         public string? Sql { get; set; }
+
+        /// <summary>
+        ///     Index of the statement to execute in the <see cref="Sql"/>.
+        ///     If null execute everything.
+        /// </summary>
+        public int? StatementIndex { get; set; }
+
+        /// <summary>
+        ///     Sequel tab id.
+        /// </summary>
         public string? Id { get; set; }
+
+        /// <summary>
+        ///     Returns the <see cref="Sql"/> to execute, or just the statement at a given <see cref="StatementIndex"/>.
+        /// </summary>
+        public string? GetSqlStatement()
+        {
+            if (_sqlStatement is null)
+            {
+
+                if (Sql.IsNullOrEmpty() || StatementIndex is null)
+                {
+                    _sqlStatement = Sql;
+                }
+                else
+                {
+                    _sqlStatement = new Splitter().Process(Sql).ElementAt(StatementIndex.Value).ToString();
+                }
+            }
+
+            return _sqlStatement;
+        }
     }
 
     public class QueryResponseContext
@@ -292,6 +337,55 @@ namespace Sequel.Models
         public CompletionItemKind Kind { get; set; }
         public string InsertText { get; set; }
         public string? Detail { get; set; }
+    }
+
+    public class CodeLens
+    {
+        public CodeLens(MonacoRange range, MonacoCommand command, string? id)
+        {
+            Id = id;
+            Range = range;
+            Command = command;
+        }
+
+        public MonacoRange Range { get; set; }
+        public MonacoCommand Command { get; set; }
+        public string? Id { get; set; }
+
+        public static CodeLens CreateExecuteBlockStatement(int statementIndex, int startLineNumber)
+            => new CodeLens(new MonacoRange(startLineNumber), new MonacoCommand("CmdExecuteBlockStmt", "Execute", new List<object> { statementIndex }), id: null);
+
+        public class MonacoRange
+        {
+            public MonacoRange(int startLineNumber, int startColumn = 1, int endLineNumber = 0, int endColumn = 1)
+            {
+                StartLineNumber = startLineNumber;
+                StartColumn = startColumn;
+                EndLineNumber = endLineNumber == 0 ? StartLineNumber + 1 : endLineNumber;
+                EndColumn = endColumn;
+            }
+
+            public int StartLineNumber { get; set; }
+            public int StartColumn { get; set; }
+            public int EndLineNumber { get; set; }
+            public int EndColumn { get; set; }
+        }
+
+        public class MonacoCommand
+        {
+            public MonacoCommand(string id, string title, List<object> args, string? tooltip = null)
+            {
+                Id = id;
+                Title = title;
+                Tooltip = tooltip;
+                Arguments = args ?? new List<object>();
+            }
+
+            public string Id { get; set; }
+            public string Title { get; set; }
+            public string? Tooltip { get; set; }
+            public List<object> Arguments { get; }
+        }
     }
 
     public abstract class Identity

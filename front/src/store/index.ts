@@ -31,7 +31,8 @@ export default new Vuex.Store({
     activeQueryTabIndex: {} as number,
     queryTabs: [] as QueryTabContent[],
     history: {} as QueryHistoryContent,
-    intellisense: [] as monaco.languages.CompletionItem[]
+    intellisense: [] as monaco.languages.CompletionItem[],
+    isQueryHistoryManagerOpened: false as boolean
   },
   getters: {
     activeQueryTab: state => state.queryTabs[state.activeQueryTabIndex],
@@ -50,6 +51,9 @@ export default new Vuex.Store({
     },
     hideAppSnackbar: context => {
       context.commit("setAppSnackbar", { show: false } as AppSnackbar);
+    },
+    showQueryHistoryManager: (context, show: boolean) => {
+      context.commit("setIsQueryHistoryManagerOpened", show);
     },
     fetchServers: async context => {
       const servers = await http.get<ServerConnection[]>(`${BASE_URL}/sequel/server-connections`);
@@ -157,13 +161,14 @@ export default new Vuex.Store({
     updateQueryTabContent: (context, tab: QueryTabContent) => {
       context.commit("mergeQueryTabContent", tab);
     },
-    executeQuery: async (context, tab: QueryTabContent) => {
+    executeQuery: async (context, statementIndex?: number) => {
       if (!context.getters.canExecuteQuery) {
         return;
       }
 
+      const tab = context.getters.activeQueryTab as QueryTabContent;
       context.commit("mergeQueryTabContent", { id: tab.id, loading: true } as QueryTabContent);
-      const sql = tab.editor?.getSelection()?.isEmpty()
+      const sql = tab.editor?.getSelection()?.isEmpty() || statementIndex !== undefined
         ? tab.editor?.getValue()
         : tab.editor?.getModel()?.getValueInRange(tab.editor!.getSelection()!);
 
@@ -172,7 +177,8 @@ export default new Vuex.Store({
           server: context.state.activeServer,
           database: context.state.activeDatabase,
           sql: sql,
-          id: tab.id
+          id: tab.id,
+          statementIndex: statementIndex
         } as QueryExecutionContext);
         context.commit("mergeQueryTabContent", { id: response.id, response: { columns: response.columns, rows: response.rows }, loading: false } as QueryTabContent);
         context.dispatch("showAppSnackbar", { message: response.message, color: response.color } as AppSnackbar);
@@ -200,7 +206,8 @@ export default new Vuex.Store({
         context.commit("mergeQueryTabContent", { id: tab.id, response: { columns: new Array<any>(), rows: new Array<any>() }, loading: false } as QueryTabContent);
       }
     },
-    cancelQuery: async (context, tab: QueryTabContent) => {
+    cancelQuery: async context => {
+      const tab = context.getters.activeQueryTab as QueryTabContent;
       await http.post<QueryResponseContext>(`${BASE_URL}/sequel/cancel-query`, tab.id);
     },
     pasteSqlInActiveTab: (context, sql: string) => {
@@ -216,10 +223,10 @@ export default new Vuex.Store({
         await context.dispatch("openNewQueryTab");
       }
       (context.getters.activeQueryTab as QueryTabContent)?.editor?.setValue(item.command);
-      await context.dispatch("executeQuery", context.getters.activeQueryTab);
+      await context.dispatch("executeQuery");
     },
-    formatQuery: (context, tab: QueryTabContent) => {
-      const editor = tab.editor!;
+    formatQuery: context => {
+      const editor = (context.getters.activeQueryTab as QueryTabContent).editor!;
       const sql = editor.getSelection()?.isEmpty()
         ? editor.getValue()
         : editor.getModel()?.getValueInRange(editor.getSelection()!);
@@ -242,6 +249,9 @@ export default new Vuex.Store({
   mutations: {
     setAppSnackbar(state, appSnackbar: AppSnackbar) {
       state.appSnackbar = appSnackbar;
+    },
+    setIsQueryHistoryManagerOpened(state, show: boolean) {
+      state.isQueryHistoryManagerOpened = show;
     },
     setServers(state, servers: ServerConnection[]) {
       state.servers = servers;

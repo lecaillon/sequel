@@ -12,7 +12,7 @@ module.exports = {
           'caretOperations',
           'clipboard',
           '!codeAction',
-          '!codelens',
+          'codelens',
           '!colorDetector',
           'comment',
           'contextmenu',

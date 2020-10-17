@@ -64,7 +64,9 @@
     "parserOptions": {
       "ecmaVersion": 2020
     },
-    "rules": {}
+    "rules": {
+      "@typescript-eslint/no-empty-function": "off"
+    }
   },
   "browserslist": [
     "> 1%",

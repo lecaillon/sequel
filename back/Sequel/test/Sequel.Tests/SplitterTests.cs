@@ -68,5 +68,28 @@ namespace Sequel.Tests
             string.Join("", statements.Select(x => x.ToString())).Should().Be(sql);
             statements.All(x => x.NeedsSemicolon == false).Should().BeTrue();
         }
+
+        [Fact]
+        public void Should_split_script_into_statements_with_start_line_number()
+        {
+            // Arrange
+            string sql = ReadFile("start_line_number.sql");
+
+            // Act
+            var statements = new Splitter().Process(sql);
+
+            // Assert
+            statements.Count.Should().Be(5);
+            statements[0].StartLineNumber.Should().Be(3);
+            statements[0].EndLineNumber.Should().Be(4);
+            statements[1].StartLineNumber.Should().Be(5);
+            statements[1].EndLineNumber.Should().Be(6);
+            statements[2].StartLineNumber.Should().Be(6);
+            statements[2].EndLineNumber.Should().Be(6);
+            statements[3].StartLineNumber.Should().Be(6);
+            statements[3].EndLineNumber.Should().Be(7);
+            statements[4].StartLineNumber.Should().Be(10);
+            statements[4].EndLineNumber.Should().Be(13);
+        }
     }
 }

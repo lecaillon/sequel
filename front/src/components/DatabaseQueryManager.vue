@@ -118,19 +118,10 @@ export default Vue.extend({
       }
     },
     editorKeyPressedF5(id: string) {
-      if (!store.getters.canExecuteQuery) {
-        return;
-      }
-      store.dispatch(
-        "executeQuery",
-        store.getters.getQueryTabById(id) as QueryTabContent
-      );
+      store.dispatch("executeQuery");
     },
     editorKeyPressedF6(id: string) {
-      store.dispatch(
-        "formatQuery",
-        store.getters.getQueryTabById(id) as QueryTabContent
-      );
+      store.dispatch("formatQuery");
     },
     closeJsonEditor() {
       this.showJsonEditor = false;

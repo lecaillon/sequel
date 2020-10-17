@@ -36,5 +36,6 @@
     <None Remove="Files\function_pgsql3.sql" />
     <None Remove="Files\function_pgsql4.sql" />
     <None Remove="Files\mysql_handler.sql" />
+    <None Remove="Files\start_line_number.sql" />
   </ItemGroup>
 </Project>

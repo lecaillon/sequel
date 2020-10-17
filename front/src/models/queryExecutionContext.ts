@@ -6,5 +6,6 @@ export interface QueryExecutionContext {
     database: string;
     node?: TreeViewNode;
     sql?: string;
+    statementIndex?: number;
     id?: string;
 }
