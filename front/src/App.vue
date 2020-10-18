@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-app-bar app clipped-left clipped-right>
+    <v-app-bar app clipped-left clipped-right dense>
       <v-app-bar-nav-icon
         @click.stop="showDbExplorer = !showDbExplorer"
       ></v-app-bar-nav-icon>
@@ -14,7 +14,7 @@
             v-on="on"
             @click.stop="executeQuery()"
           >
-            <v-icon color="green">mdi-play</v-icon>
+            <v-icon small color="green">mdi-play</v-icon>
           </v-btn>
         </template>
         <span>Execute</span>
@@ -27,7 +27,7 @@
             v-on="on"
             @click.stop="cancelQuery()"
           >
-            <v-icon color="red">mdi-stop</v-icon>
+            <v-icon small color="red">mdi-stop</v-icon>
           </v-btn>
         </template>
         <span>Cancel</span>
@@ -35,7 +35,7 @@
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
           <v-btn icon v-on="on" @click.stop="openNewQueryTab()">
-            <v-icon color="primary">mdi-tab-plus</v-icon>
+            <v-icon small color="primary">mdi-tab-plus</v-icon>
           </v-btn>
         </template>
         <span>Open new tab</span>
@@ -50,7 +50,7 @@
             v-on="on"
             @click.stop="formatQuery()"
           >
-            <v-icon color="grey lighten-2">mdi-format-align-left</v-icon>
+            <v-icon small color="grey lighten-2">mdi-format-align-left</v-icon>
           </v-btn>
         </template>
         <span>Format query</span>
@@ -60,7 +60,7 @@
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
           <v-btn icon v-on="on" @click.stop="openQueryHistoryManager()">
-            <v-icon color="grey lighten-2">mdi-history</v-icon>
+            <v-icon small color="grey lighten-2">mdi-history</v-icon>
           </v-btn>
         </template>
         <span>Open history</span>
@@ -94,7 +94,7 @@
             v-on="on"
             @click.stop="exportDataAsCsv()"
           >
-            <v-icon color="grey lighten-2">mdi-file-download-outline</v-icon>
+            <v-icon small color="grey lighten-2">mdi-file-download-outline</v-icon>
           </v-btn>
         </template>
         <span>Export data to CSV</span>
@@ -103,7 +103,7 @@
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
           <v-btn icon v-on="on" @click.stop="openFormServerConnection(true)">
-            <v-icon color="primary">mdi-server-plus</v-icon>
+            <v-icon small color="primary">mdi-server-plus</v-icon>
           </v-btn>
         </template>
         <span>Add new server</span>
