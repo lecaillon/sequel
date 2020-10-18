@@ -13,6 +13,7 @@ export default class SequelCodeLensProvider implements monaco.languages.CodeLens
                 server: store.state.activeServer,
                 database: store.state.activeDatabase,
                 sql: (store.getters.activeQueryTab as QueryTabContent).editor?.getValue(),
+                id: (store.getters.activeQueryTab as QueryTabContent).id
             } as QueryExecutionContext);
         }
         return {

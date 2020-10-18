@@ -17,6 +17,7 @@ namespace Sequel
         {
             services.AddCors();
             services.AddControllers();
+            services.AddMemoryCache();
             services.AddHostedService<SequelConfigurationHostedService>();
         }
 

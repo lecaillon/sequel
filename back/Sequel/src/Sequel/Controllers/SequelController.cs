@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Sequel.Core;
 using Sequel.Models;
 
@@ -13,6 +14,14 @@ namespace Sequel.Controllers
     [Route("sequel")]
     public class SequelController : ControllerBase
     {
+        private readonly IMemoryCache _cache;
+        private static readonly MemoryCacheEntryOptions CodeLensCacheEntryOptions = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(1));
+
+        public SequelController(IMemoryCache cache)
+        {
+            _cache = Check.NotNull(cache, nameof(cache));
+        }
+
         [HttpGet]
         [Route("server-connections")]
         public async Task<ActionResult<List<ServerConnection>>> GetAllServerConnection()
@@ -137,7 +146,14 @@ namespace Sequel.Controllers
         [Route("codelenses")]
         public async Task<ActionResult<IEnumerable<CodeLens>>> CodeLens(QueryExecutionContext context)
         {
-            return Ok(await context.Server.GetDatabaseSystem().LoadCodeLensAsync(context.GetSqlStatement()));
+            string key = $"CodeLens-{context.Id}";
+            if (!_cache.TryGetValue<IEnumerable<CodeLens>>(key, out var lenses))
+            {
+                lenses = await context.Server.GetDatabaseSystem().LoadCodeLensAsync(context.GetSqlStatement());
+                _cache.Set(key, lenses, CodeLensCacheEntryOptions);
+            }
+            
+            return Ok(lenses);
         }
 
         private static readonly List<ColumnDefinition> QueryHistoryColumns = new List<ColumnDefinition>
