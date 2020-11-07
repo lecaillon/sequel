@@ -31,7 +31,6 @@ export default new Vuex.Store({
     activeQueryTabIndex: {} as number,
     queryTabs: [] as QueryTabContent[],
     history: {} as QueryHistoryContent,
-    intellisense: [] as monaco.languages.CompletionItem[],
     isQueryHistoryManagerOpened: false as boolean
   },
   getters: {
@@ -92,18 +91,8 @@ export default new Vuex.Store({
     changeActiveDatabase: (context, database: string) => {
       context.commit("setActiveDatabase", database);
       context.dispatch("fetchTreeViewNodes");
-      context.dispatch("fetchIntellisense");
       if (database && context.state.queryTabs.length == 0) {
         context.dispatch("openNewQueryTab");
-      }
-    },
-    fetchIntellisense: async context => {
-      if (context.state.activeDatabase !== undefined) {
-        const intellisense = await http.post<monaco.languages.CompletionItem[]>(`${BASE_URL}/sequel/intellisense`, {
-          server: context.state.activeServer,
-          database: context.state.activeDatabase,
-        } as QueryExecutionContext);
-        context.commit("setIntellisense", intellisense);
       }
     },
     fetchHistory: async (context, query: QueryHistoryQuery) => {
@@ -267,9 +256,6 @@ export default new Vuex.Store({
     },
     setActiveDatabase(state, database: string) {
       state.activeDatabase = database;
-    },
-    setIntellisense(state, intellisense: monaco.languages.CompletionItem[]) {
-      state.intellisense = intellisense;
     },
     setHistory(state, history: QueryHistoryContent) {
       if (history.loading) {

@@ -66,6 +66,16 @@ namespace Sequel.Core
         public static async Task<IEnumerable<string>> QueryStringListAsync(this ServerConnection server, string sql) 
             => await QueryStringListAsync(server, null, sql);
 
+        public static async Task<string?> QueryForStringAsync(this ServerConnection server, string? database, string sql)
+        {
+            return await ExecuteAsync(server, database, sql, async (dbCommand, ct) =>
+            {
+                return Convert.ToString(await dbCommand.ExecuteScalarAsync());
+            });
+        }
+
+        public static async Task<string?> QueryForStringAsync(this ServerConnection server, string sql) => await QueryForStringAsync(server, null, sql);
+
         public static async Task<long> QueryForLongAsync(this ServerConnection server, string? database, string sql)
         {
             return await ExecuteAsync(server, database, sql, async (dbCommand, ct) =>

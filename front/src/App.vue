@@ -94,7 +94,9 @@
             v-on="on"
             @click.stop="exportDataAsCsv()"
           >
-            <v-icon small color="grey lighten-2">mdi-file-download-outline</v-icon>
+            <v-icon small color="grey lighten-2"
+              >mdi-file-download-outline</v-icon
+            >
           </v-btn>
         </template>
         <span>Export data to CSV</span>
@@ -175,6 +177,7 @@ import DatabaseQueryManager from "@/components/DatabaseQueryManager.vue";
 import AppSnackbar from "@/components/AppSnackbar.vue";
 import QueryHistoryManager from "@/components/QueryHistoryManager.vue";
 import SequelCodeLensProvider from "@/monaco-editor-utils/sequelCodeLensProvider";
+import SequelIntellisenseProvider from "@/monaco-editor-utils/sequelIntellisenseProvider";
 import { ServerConnection } from "./models/serverConnection";
 import { QueryTabContent } from "./models/queryTabContent";
 import { CsvExportParams } from "ag-grid-community";
@@ -202,8 +205,10 @@ export default Vue.extend({
     intellisenseProvider: {} as monaco.IDisposable
   }),
   methods: {
-    openQueryHistoryManager: () => store.dispatch("showQueryHistoryManager", true),
-    closeQueryHistoryManager: () => store.dispatch("showQueryHistoryManager", false),
+    openQueryHistoryManager: () =>
+      store.dispatch("showQueryHistoryManager", true),
+    closeQueryHistoryManager: () =>
+      store.dispatch("showQueryHistoryManager", false),
     openFormServerConnection(newForm: boolean) {
       if (newForm) {
         store.dispatch("changeEditServer", {
@@ -233,117 +238,13 @@ export default Vue.extend({
     canExecuteQuery: () => store.getters.canExecuteQuery,
     hasActiveTab: () => store.getters.hasActiveTab,
     canExportData: () => store.getters.hasActiveGrid,
-    isQueryHistoryManagerOpened: () => store.state.isQueryHistoryManagerOpened,
+    isQueryHistoryManagerOpened: () => store.state.isQueryHistoryManagerOpened
   },
   mounted() {
-    this.intellisenseProvider = monaco.languages.registerCompletionItemProvider(
+    monaco.languages.registerCompletionItemProvider(
       "sql",
-      {
-        provideCompletionItems: (model, position) => {
-          const word = model.getWordUntilPosition(position);
-          const range = {
-            startLineNumber: position.lineNumber,
-            endLineNumber: position.lineNumber,
-            startColumn: word.startColumn,
-            endColumn: word.endColumn
-          };
-          const intellisense = Array.from(store.state.intellisense);
-          intellisense.forEach(x => (x.range = range));
-          return {
-            suggestions: intellisense
-          };
-        }
-      }
+      new SequelIntellisenseProvider()
     );
-    this.snippetProvider = monaco.languages.registerCompletionItemProvider(
-      "sql",
-      {
-        provideCompletionItems: (model, position) => {
-          const word = model.getWordUntilPosition(position);
-          const range = {
-            startLineNumber: position.lineNumber,
-            endLineNumber: position.lineNumber,
-            startColumn: word.startColumn,
-            endColumn: word.endColumn
-          };
-          return {
-            suggestions: [
-              {
-                label: "gb",
-                kind: monaco.languages.CompletionItemKind.Snippet,
-                insertText: "GROUP BY ",
-                detail: "GROUP BY",
-                range: range
-              },
-              {
-                label: "hc*",
-                kind: monaco.languages.CompletionItemKind.Snippet,
-                insertText: "HAVING COUNT(*) ",
-                detail: "HAVING COUNT(*)",
-                range: range
-              },
-              {
-                label: "ij",
-                kind: monaco.languages.CompletionItemKind.Snippet,
-                insertText: "INNER JOIN ",
-                detail: "INNER JOIN",
-                range: range
-              },
-              {
-                label: "in",
-                kind: monaco.languages.CompletionItemKind.Snippet,
-                insertText: "IS NULL ",
-                detail: "IS NULL",
-                range: range
-              },
-              {
-                label: "inn",
-                kind: monaco.languages.CompletionItemKind.Snippet,
-                insertText: "IS NOT NULL ",
-                detail: "IS NOT NULL",
-                range: range
-              },
-              {
-                label: "ob",
-                kind: monaco.languages.CompletionItemKind.Snippet,
-                insertText: "ORDER BY ",
-                detail: "ORDER BY",
-                range: range
-              },
-              {
-                label: "oj",
-                kind: monaco.languages.CompletionItemKind.Snippet,
-                insertText: "OUTER JOIN ",
-                detail: "OUTER JOIN",
-                range: range
-              },
-              {
-                label: "s*",
-                kind: monaco.languages.CompletionItemKind.Snippet,
-                insertText: "SELECT * FROM ",
-                detail: "SELECT * FROM",
-                range: range
-              },
-              {
-                label: "sc*",
-                kind: monaco.languages.CompletionItemKind.Snippet,
-                insertText: "SELECT COUNT(*) FROM ",
-                detail: "SELECT COUNT(*) FROM",
-                range: range
-              },
-              {
-                label: "w",
-                kind: monaco.languages.CompletionItemKind.Snippet,
-                insertText: "WHERE ",
-                detail: "WHERE",
-                range: range
-              }
-            ] as monaco.languages.CompletionItem[]
-          };
-        }
-      }
-    );
-
     monaco.languages.registerCodeLensProvider(
       "sql",
       new SequelCodeLensProvider()

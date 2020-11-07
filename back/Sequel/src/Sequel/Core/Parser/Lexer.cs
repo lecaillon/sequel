@@ -4,14 +4,20 @@
  */
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Sequel.Core.Parser
 {
     public static class Lexer
     {
-        public static List<Token> GetTokens(string sql)
+        public static List<Token> GetTokens(string? sql)
         {
+            if (sql.IsNullOrEmpty())
+            {
+                return new List<Token>();
+            }
+
             int startat = 0;
             var tokens = new List<Token>();
 
@@ -23,7 +29,7 @@ namespace Sequel.Core.Parser
                     match = rex.Regex.Match(sql, startat);
                     if (match.Success)
                     {
-                        tokens.Add(new Token(rex.TokenType, match.Value, match.Index));
+                        tokens.Add(new Token(rex.TokenType, match.Value, tokens.LastOrDefault()));
                         startat += match.Length;
                         break;
                     }
@@ -36,7 +42,7 @@ namespace Sequel.Core.Parser
                 match = RegexKeyword.Match(sql, startat);
                 if (match.Success)
                 { // Simple keywords
-                    var token = IsKeyword(match.Value, match.Index);
+                    var token = IsKeyword(match.Value, tokens.LastOrDefault());
                     if (token != null)
                     {
                         tokens.Add(token);
@@ -46,7 +52,7 @@ namespace Sequel.Core.Parser
                 }
 
                 // Fallback to TokenType.Name
-                tokens.Add(new Token(TokenType.Name, match.Value, match.Index));
+                tokens.Add(new Token(TokenType.Name, match.Value, tokens.LastOrDefault()));
                 startat += match.Length;
             }
 
@@ -103,15 +109,15 @@ namespace Sequel.Core.Parser
 
         private static readonly Regex RegexKeyword = new Regex(@"\G[0-9_A-ZÀ-Ü][_$#\w]*", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-        private static Token? IsKeyword(string value, int position)
+        private static Token? IsKeyword(string value, Token? previousToken)
         {
-            var upperValue = value.ToUpper();
+            var upperValue = value.ToUpperInvariant();
 
             return !CommonKeywords.TryGetValue(upperValue, out TokenType tokenType)
                 && !Keywords.TryGetValue(upperValue, out tokenType)
                 && !PostgreSQLKeywords.TryGetValue(upperValue, out tokenType)
                 ? null
-                : new Token(tokenType, value, position);
+                : new Token(tokenType, value, previousToken);
         }
 
         private static readonly Dictionary<string, TokenType> CommonKeywords = new Dictionary<string, TokenType>

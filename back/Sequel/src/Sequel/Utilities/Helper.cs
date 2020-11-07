@@ -19,8 +19,9 @@ namespace Sequel
             {
                 operation.Invoke();
             }
-            catch
+            catch (Exception ex)
             {
+                ex.LogWarning();
                 return false;
             }
 
@@ -38,8 +39,9 @@ namespace Sequel
             {
                 await operation();
             }
-            catch
+            catch (Exception ex)
             {
+                ex.LogWarning();
                 return false;
             }
 
@@ -58,8 +60,9 @@ namespace Sequel
             {
                 result = operation.Invoke();
             }
-            catch
+            catch(Exception ex)
             {
+                ex.LogWarning();
                 result = defaultValue;
             }
 
@@ -78,8 +81,9 @@ namespace Sequel
             {
                 result = await operation();
             }
-            catch
+            catch (Exception ex)
             {
+                ex.LogWarning();
                 result = defaultValue;
             }
 
@@ -112,6 +116,13 @@ namespace Sequel
                     }
                 }
             }
+        }
+
+        public static void LogWarning(this Exception ex)
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine(ex);
+            Console.ResetColor();
         }
     }
 }

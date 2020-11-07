@@ -25,17 +25,4 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Files\begintag.sql" />
-    <None Remove="Files\begintag2.sql" />
-    <None Remove="Files\casewhen_procedure.sql" />
-    <None Remove="Files\dashcomment.sql" />
-    <None Remove="Files\function_pgsql.sql" />
-    <None Remove="Files\function_pgsql2.sql" />
-    <None Remove="Files\function_pgsql3.sql" />
-    <None Remove="Files\function_pgsql4.sql" />
-    <None Remove="Files\mysql_handler.sql" />
-    <None Remove="Files\start_line_number.sql" />
-  </ItemGroup>
 </Project>

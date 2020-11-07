@@ -4,7 +4,6 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Sequel.Core.Parser
@@ -16,9 +15,9 @@ namespace Sequel.Core.Parser
         private bool _isInDeclare;
         private int _beginDepth;
 
-        public List<Statement> Process(string sql)
+        public StatementList Process(string? sql)
         {
-            var statements = new List<Statement>();
+            var statements = new StatementList();
             var tokens = Lexer.GetTokens(sql);
 
             var statement = new Statement();
@@ -73,62 +72,61 @@ namespace Sequel.Core.Parser
                 _level = 0;
                 _isInCreate = false;
                 _beginDepth = 0;
-                statement = new Statement(currentLineNumber: statements.LastOrDefault()?.EndLineNumber ?? 1);
+                statement = new Statement();
             }
         }
 
         private int ChangeSplitLevel(Token token)
         {
             // Parenthesis increase/decrease a level
-            if (token.IsOpenParenthesis())
+            if (token.IsOpenParenthesis)
             {
                 return 1;
             }
-            else if (token.IsCloseParenthesis())
+            else if (token.IsCloseParenthesis)
             {
                 return -1;
             }
-            else if (!token.IsKeyword())
+            else if (!token.IsKeyword)
             {
                 return 0;
             }
 
-            // Everything after here is TokenType = Keyword
-            string upperText = token.Text.ToUpperInvariant();
+            /* Everything after here is TokenType = Keyword */
 
             // Three keywords begin with CREATE, but only one of them is DDL
             // DDL Create though can contain more words such as "or replace"
-            if (token.Type == TokenType.KeywordDDL && upperText.StartsWith("CREATE"))
+            if (token.Type == TokenType.KeywordDDL && token.UpperText.StartsWith("CREATE"))
             {
                 _isInCreate = true;
                 return 0;
             }
 
             // Can have nested declare inside of begin
-            if (upperText == "DECLARE" && _isInCreate && _beginDepth == 0)
+            if (token.UpperText == "DECLARE" && _isInCreate && _beginDepth == 0)
             {
                 _isInDeclare = true;
                 return 0;
             }
 
-            if (upperText == "BEGIN")
+            if (token.UpperText == "BEGIN")
             {
                 _beginDepth += 1;
                 return _isInCreate ? 1 : 0;
             }
 
-            if (upperText == "END")
+            if (token.UpperText == "END")
             {
                 _beginDepth = Math.Max(0, _beginDepth - 1);
                 return -1;
             }
 
-            if (_isInCreate && _beginDepth > 0 && (upperText == "IF" || upperText == "FOR" || upperText == "WHILE" || upperText == "CASE"))
+            if (_isInCreate && _beginDepth > 0 && (token.UpperText == "IF" || token.UpperText == "FOR" || token.UpperText == "WHILE" || token.UpperText == "CASE"))
             {
                 return 1;
             }
 
-            if (upperText == "END IF" || upperText == "END FOR" || upperText == "END WHILE" )
+            if (token.UpperText == "END IF" || token.UpperText == "END FOR" || token.UpperText == "END WHILE" )
             {
                 return -1;
             }

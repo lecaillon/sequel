@@ -136,20 +136,25 @@ namespace Sequel.Controllers
         }
 
         [HttpPost]
-        [Route("intellisense")]
-        public async Task<ActionResult<IEnumerable<CompletionItem>>> Intellisense(QueryExecutionContext context)
+        [Route("completion-items")]
+        public async Task<ActionResult<IEnumerable<CompletionItem>>> GetCompletionItems(CompletionContext context)
         {
-            return Ok(await context.Server.GetDatabaseSystem().LoadIntellisenseAsync(context.Database));
+            return Ok(await context.Server.GetDatabaseSystem().LoadCompletionItemsAsync(
+                context.LineNumber,
+                context.Column,
+                context.TriggerCharacter,
+                context.Sql,
+                context.Database));
         }
 
         [HttpPost]
         [Route("codelenses")]
-        public async Task<ActionResult<IEnumerable<CodeLens>>> CodeLens(QueryExecutionContext context)
+        public ActionResult<IEnumerable<CodeLens>> GetCodeLenses(QueryExecutionContext context)
         {
             string key = $"CodeLens-{context.Id}";
             if (!_cache.TryGetValue<IEnumerable<CodeLens>>(key, out var lenses))
             {
-                lenses = await context.Server.GetDatabaseSystem().LoadCodeLensAsync(context.GetSqlStatement());
+                lenses = context.Server.GetDatabaseSystem().LoadCodeLens(context.GetSqlStatement());
                 _cache.Set(key, lenses, CodeLensCacheEntryOptions);
             }
             

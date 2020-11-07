@@ -29,9 +29,9 @@ namespace Sequel.Tests
         [InlineData(TokenType.Name, " `pg_constraint`")]
         [InlineData(TokenType.Name, " ´pg_constraint´")]
         [InlineData(TokenType.Name, " @X1")]
-        [InlineData(TokenType.Name, "public.", "public", 0, 0)]
+        [InlineData(TokenType.Name, "public.", "public", 0)]
         [InlineData(TokenType.Name, ".v_table_constraints", "v_table_constraints")]
-        [InlineData(TokenType.Name, "COUNT(", "COUNT", 0, 0)]
+        [InlineData(TokenType.Name, "COUNT(", "COUNT", 0)]
         [InlineData(TokenType.NamePlaceholder, " ?")]
         [InlineData(TokenType.NameBuiltin, " DOUBLE PRECISION")]
         [InlineData(TokenType.Newline, " \r\n")]
@@ -47,14 +47,15 @@ namespace Sequel.Tests
         [InlineData(TokenType.Punctuation, " ::")]
         [InlineData(TokenType.StringSingle, " 'Sequel'")]
         [InlineData(TokenType.StringSymbol, " \"Sequel\"")]
-        [InlineData(TokenType.Whitespace, "/* comment1 comment2 */   ", "   ", 23)]
+        [InlineData(TokenType.Whitespace, "/* comment1 comment2 */   ", "   ")]
         [InlineData(TokenType.Wildcard, " *")]
         [InlineData(TokenType.KeywordDML, " insert")]
-        public void Should_get_tokens(TokenType tokenType, string sql, string? expected = null, int position = 1, int index = 1)
+        public void Should_get_tokens(TokenType tokenType, string sql, string? expected = null, int index = 1)
         {
             var tokens = Lexer.GetTokens(sql);
             tokens.Count.Should().Be(2);
-            tokens[index].Should().BeEquivalentTo(new Token(tokenType, expected ?? sql.Substring(1), position));
+            tokens[index].Type.Should().Be(tokenType);
+            tokens[index].Text.Should().Be(expected ?? sql.Substring(1));
         }
     }
 }

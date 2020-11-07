@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 namespace Sequel
 {
@@ -11,7 +9,7 @@ namespace Sequel
     internal static class Check
     {
         private const string ArgumentIsEmpty = "The string cannot be empty.";
-        private const string CollectionArgumentHasNullElement = "The collection must not contain any null element.";
+        private const string NumberNotPositive = "The number must be positive.";
 
         /// <summary>
         ///     Ensures that the string passed as a parameter is neither null or empty.
@@ -60,26 +58,29 @@ namespace Sequel
         }
 
         /// <summary>
-        ///     Ensures that a <paramref name="enumerable"/> does not contain a null element.
+        ///     Ensures that the specified number is greater than zero.
         /// </summary>
-        /// <typeparam name="T"> The type of the enumerable to test. </typeparam>
-        /// <param name="enumerable"> The enumerable to test. </param>
+        /// <param name="value"> The number to test. </param>
         /// <param name="parameterName"> The name of the parameter to test. </param>
-        /// <returns> The enumerable without null element that was validated. </returns>
-        /// <exception cref="ArgumentNullException"> Throws ArgumentNullException if the enumerable is null. </exception>
-        /// <exception cref="ArgumentException"> Throws ArgumentException if the enumerable contains at least one null element. </exception>
-        public static IEnumerable<T> HasNoNulls<T>(IEnumerable<T> enumerable, string parameterName) where T : class
+        /// <returns> The number that was validated. </returns>
+        /// <exception cref="ArgumentOutOfRangeException"> Throws ArgumentOutOfRangeException if the number is not positive. </exception>
+        public static T Positive<T>(T value, string parameterName) where T : struct, IComparable, IComparable<T>, IConvertible, IEquatable<T>, IFormattable
         {
-            NotNull(enumerable, parameterName);
+            // https://msdn.microsoft.com/en-us/library/system.icomparable.compareto
+            // Less than zero - This instance precedes obj in the sort order.
+            // Zero - This instance occurs in the same position in the sort order as obj.
+            // Greater than zero - This instance follows obj in the sort order.
 
-            if (enumerable.Any(e => e is null))
+            var minimumValue = default(T);
+            var compare = value.CompareTo(minimumValue);
+            if (compare <= 0)
             {
                 NotNullOrEmpty(parameterName, nameof(parameterName));
 
-                throw new ArgumentException(CollectionArgumentHasNullElement, parameterName);
+                throw new ArgumentOutOfRangeException(parameterName, value, NumberNotPositive);
             }
 
-            return enumerable;
+            return value;
         }
     }
 }

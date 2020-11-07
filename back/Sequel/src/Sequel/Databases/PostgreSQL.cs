@@ -33,6 +33,30 @@ namespace Sequel.Databases
                 "ORDER BY datname");
         }
 
+        public override async Task<IEnumerable<string>> LoadSchemasAsync(string? database)
+        {
+            return await _server.QueryStringListAsync(database,
+                "SELECT schema_name " +
+                "FROM information_schema.schemata " +
+                "WHERE schema_name NOT LIKE 'pg_%' " +
+                "AND schema_name <> 'information_schema' " +
+                "ORDER BY schema_name");
+        }
+
+        public override async Task<IEnumerable<string>> LoadTablesAsync(string? database, string? schema)
+        {
+            Check.NotNullOrEmpty(schema, nameof(schema));
+
+            return await _server.QueryStringListAsync(database,
+                "SELECT t.table_name " +
+                "FROM information_schema.tables t " +
+                "LEFT JOIN pg_depend dep ON dep.objid = (quote_ident(t.table_schema)||'.'||quote_ident(t.table_name))::regclass::oid AND dep.deptype = 'e' " +
+               $"WHERE table_schema = '{schema}' " +
+                "AND table_type='BASE TABLE' " +
+                "AND dep.objid IS NULL " +
+                "AND NOT (SELECT EXISTS (SELECT inhrelid FROM pg_catalog.pg_inherits WHERE inhrelid = (quote_ident(t.table_schema)||'.'||quote_ident(t.table_name))::regclass::oid))");
+        }
+
         public override async Task<IEnumerable<TreeViewNode>> LoadTreeViewNodesAsync(string? database, TreeViewNode? parent)
         {
             Check.NotNull(database, nameof(database));
@@ -51,34 +75,6 @@ namespace Sequel.Databases
 
                 _ => new List<TreeViewNode>()
             };
-        }
-
-        public override async Task<IEnumerable<CompletionItem>> LoadIntellisenseAsync(string? database)
-        {
-            Check.NotNull(database, nameof(database));
-
-            var items = new List<CompletionItem>();
-            var schemas = await LoadSchemasAsync(database);
-
-            items.AddRange(schemas.Select(schema => new CompletionItem(schema, CompletionItemKind.Module)));
-
-            items.AddRange((await Task.WhenAll(schemas.Select(schema => LoadTablesAsync(database, schema))))
-                 .SelectMany(tables => tables)
-                 .Distinct()
-                 .Select(t => new CompletionItem(t, CompletionItemKind.Constant)));
-            
-            items.AddRange((await Task.WhenAll(schemas.Select(schema => LoadFunctionsAsync(database, schema))))
-                 .SelectMany(functions => functions)
-                 .Select(f => f.Name)
-                 .Distinct()
-                 .Select(f => new CompletionItem(f, CompletionItemKind.Function)));
-
-            items.AddRange((await Task.WhenAll(schemas.Select(schema => LoadColumns(database, schema))))
-                 .SelectMany(cols => cols)
-                 .Distinct()
-                 .Select(c => new CompletionItem(c, CompletionItemKind.Field)));
-
-            return items;
         }
 
         protected override Task<Dictionary<string, string>> GetPlaceholdersAsync(TreeViewNode node)
@@ -100,16 +96,6 @@ namespace Sequel.Databases
             return new List<TreeViewNode> { rootNode };
         }
 
-        private async Task<IEnumerable<string>> LoadSchemasAsync(string database)
-        {
-            return await _server.QueryStringListAsync(database,
-                "SELECT schema_name " +
-                "FROM information_schema.schemata " +
-                "WHERE schema_name NOT LIKE 'pg_%' " +
-                "AND schema_name <> 'information_schema' " +
-                "ORDER BY schema_name");
-        }
-
         private async Task<IEnumerable<TreeViewNode>> LoadSchemaNodesAsync(string database, TreeViewNode parent)
         {
             return (await LoadSchemasAsync(database))
@@ -123,18 +109,6 @@ namespace Sequel.Databases
                 new TreeViewNode(Tables.ToString(), Tables, parent, "mdi-table", "blue"),
                 new TreeViewNode(Functions.ToString(), Functions, parent, "mdi-function", "teal")
             };
-        }
-
-        private async Task<IEnumerable<string>> LoadTablesAsync(string database, string schema)
-        {
-            return await _server.QueryStringListAsync(database,
-                "SELECT t.table_name " +
-                "FROM information_schema.tables t " +
-                "LEFT JOIN pg_depend dep ON dep.objid = (quote_ident(t.table_schema)||'.'||quote_ident(t.table_name))::regclass::oid AND dep.deptype = 'e' " +
-               $"WHERE table_schema = '{schema}' " +
-                "AND table_type='BASE TABLE' " +
-                "AND dep.objid IS NULL " +
-                "AND NOT (SELECT EXISTS (SELECT inhrelid FROM pg_catalog.pg_inherits WHERE inhrelid = (quote_ident(t.table_schema)||'.'||quote_ident(t.table_name))::regclass::oid))");
         }
 
         private async Task<IEnumerable<TreeViewNode>> LoadTableNodesAsync(string database, TreeViewNode parent)
@@ -151,12 +125,15 @@ namespace Sequel.Databases
             };
         }
 
-        private async Task<IEnumerable<string>> LoadColumns(string database, string schema)
+        public override async Task<IEnumerable<string>> LoadColumnsAsync(string? database, string? schema, string table)
         {
+            Check.NotNull(schema, nameof(schema));
+
             return await _server.QueryStringListAsync(database,
-                "SELECT distinct column_name, data_type " +
+                "SELECT column_name " +
                 "FROM information_schema.columns " +
-               $"WHERE table_schema = '{schema}'");
+               $"WHERE table_schema = '{schema}' " +
+               $"AND table_name = '{table}' ");
         }
 
         private async Task<IEnumerable<TreeViewNode>> LoadColumnNodes(string database, TreeViewNode parent)
@@ -211,5 +188,29 @@ namespace Sequel.Databases
         private static string GetSchema(TreeViewNode node) => node.Id.Split(TreeViewNode.PathSeparator)[2];
 
         private static string GetTable(TreeViewNode node) => node.Id.Split(TreeViewNode.PathSeparator)[4];
+
+        public override async Task<string?> GetCurrentSchema(string? database)
+            => CleanSchemaName(await _server.QueryForStringAsync(database, "SHOW search_path"));
+
+        private static string CleanSchemaName(string? schema)
+        {
+            if (schema is null)
+            {
+                return string.Empty;
+            }
+
+            string newSchema = schema.Replace("\"", "").Replace("$user", "").Trim();
+            if (newSchema.StartsWith(","))
+            {
+                newSchema = newSchema.Substring(1);
+            }
+
+            if (newSchema.Contains(","))
+            {
+                newSchema = newSchema.Substring(0, newSchema.IndexOf(","));
+            }
+
+            return newSchema.Trim();
+        }
     }
 }
