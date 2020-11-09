@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Linq;
+using FluentAssertions;
 using Sequel.Core.Parser;
 using Xunit;
 using static Sequel.Tests.TestContext;
@@ -67,8 +68,8 @@ namespace Sequel.Tests
             statements.GetStatementAtPosition(lineNumber: 8, column: 6)!.GetCurrentToken()!.Type.Should().Be(TokenType.CommentMultiline);
             statements.GetStatementAtPosition(lineNumber: 12, column: 9)!.GetCurrentToken()!.Text.Should().Be(".");
             statements.GetStatementAtPosition(lineNumber: 10, column: 9)!.GetCurrentToken()!.Text.Should().Be("*");
-            statements.GetStatementAtPosition(lineNumber: 10, column: 18)!.GetCurrentToken()!.Text.Should().Be("table5");
-            statements.GetStatementAtPosition(lineNumber: 10, column: 23)!.GetCurrentToken()!.Text.Should().Be("t");
+            statements.GetStatementAtPosition(lineNumber: 10, column: 15)!.GetCurrentToken()!.Text.Should().Be(" ");
+            statements.GetStatementAtPosition(lineNumber: 10, column: 18)!.GetCurrentToken()!.Text.Should().Be(" ");
             statements.GetStatementAtPosition(lineNumber: 99, column: 99).Should().BeNull();
         }
 
@@ -78,25 +79,12 @@ namespace Sequel.Tests
             string sql = ReadFile("start_line_number.sql");
             var statements = new Splitter().Process(sql);
 
-            statements.GetStatementAtPosition(lineNumber: 6, column: 56)!.GetPreviousToken(skipMeaningless: true)!.Text.Should().Be("from");
+            statements.GetStatementAtPosition(lineNumber: 1, column: 1)!.GetPreviousToken(skipMeaningless: false).Should().BeNull();
             statements.GetStatementAtPosition(lineNumber: 6, column: 32)!.GetPreviousToken(skipMeaningless: true).Should().BeNull();
-            statements.GetStatementAtPosition(lineNumber: 12, column: 10)!.GetPreviousToken(skipMeaningless: true)!.Text.Should().Be(".");
+            statements.GetStatementAtPosition(lineNumber: 6, column: 56)!.GetPreviousToken(skipMeaningless: true)!.Text.Should().Be("from");
             statements.GetStatementAtPosition(lineNumber: 12, column: 4)!.GetPreviousToken(skipMeaningless: true)!.Text.Should().Be("t");
             statements.GetStatementAtPosition(lineNumber: 12, column: 4)!.GetPreviousToken(skipMeaningless: false)!.Text.Should().Be("-- comment\r\n");
-            statements.GetStatementAtPosition(lineNumber: 1, column: 1)!.GetPreviousToken(skipMeaningless: false).Should().BeNull();
             statements.GetStatementAtPosition(lineNumber: 6, column: 8)!.GetPreviousToken(skipMeaningless: false)!.Text.Should().Be("select");
-        }
-
-        [Fact]
-        public void Should_get_next_token_relative_to_position()
-        {
-            string sql = ReadFile("start_line_number.sql");
-            var statements = new Splitter().Process(sql);
-
-            statements.GetStatementAtPosition(lineNumber: 1, column: 1)!.GetNextToken(skipMeaningless: true)!.Text.Should().Be("select");
-            statements.GetStatementAtPosition(lineNumber: 6, column: 56)!.GetNextToken(skipMeaningless: true)!.Text.Should().Be(";");
-            statements.GetStatementAtPosition(lineNumber: 6, column: 60)!.GetNextToken(skipMeaningless: true).Should().BeNull();
-            statements.GetStatementAtPosition(lineNumber: 8, column: 6)!.GetNextToken(skipMeaningless: true)!.Text.Should().Be("select");
         }
 
         [Theory]
@@ -125,7 +113,7 @@ namespace Sequel.Tests
             string sql = ReadFile("alias_origin.sql");
             var statements = new Splitter().Process(sql);
             var statement = statements.GetStatementAtPosition(lineNumber: 10, column: 20)!;
-            var alias = statement.GetCurrentToken()!;
+            var alias = statement.Single(x => x.Range.StartLineNumber == statement.LineNumber && x.Range.EndColumn == statement.Column);
 
             // Act
             var tableAlias = statement.GetTableAlias(alias)!;
@@ -145,7 +133,7 @@ namespace Sequel.Tests
             string sql = ReadFile("alias_origin.sql");
             var statements = new Splitter().Process(sql);
             var statement = statements.GetStatementAtPosition(lineNumber: 11, column: 8)!;
-            var alias = statement.GetCurrentToken()!;
+            var alias = statement.Single(x => x.Range.StartLineNumber == statement.LineNumber && x.Range.EndColumn == statement.Column);
 
             // Act
             var tableAlias = statement.GetTableAlias(alias)!;
@@ -165,7 +153,7 @@ namespace Sequel.Tests
             string sql = ReadFile("alias_origin.sql");
             var statements = new Splitter().Process(sql);
             var statement = statements.GetStatementAtPosition(lineNumber: 10, column: 13)!;
-            var alias = statement.GetCurrentToken()!;
+            var alias = statement.Single(x => x.Range.StartLineNumber == statement.LineNumber && x.Range.EndColumn == statement.Column);
 
             // Act
             var tableAlias = statement.GetTableAlias(alias)!;

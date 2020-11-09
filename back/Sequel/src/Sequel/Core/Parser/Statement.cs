@@ -217,7 +217,7 @@ namespace Sequel.Core.Parser
         public int Column { get; }
 
         /// <summary>
-        ///     Returns the token at the position
+        ///     Returns the token at the position, or the previous one when the token's type is Name.
         /// </summary>
         public Token GetCurrentToken()
         {
@@ -226,18 +226,20 @@ namespace Sequel.Core.Parser
                 ? tokens.SingleOrDefault()
                 : tokens.SingleOrDefault(x => x.Range.StartColumn < Column && x.Range.EndColumn >= Column);
 
-            return currentToken ?? throw new Exception("Current token not found");
+            if (currentToken is null)
+            {
+                throw new Exception("Current token not found");
+            }
+
+            return currentToken.Type != TokenType.Name
+                ? currentToken
+                : GetPreviousToken(currentToken, skipMeaningless: false) ?? currentToken;
         }
 
         /// <summary>
         ///     Returns the previous token relative to the position.
         /// </summary>
         public Token? GetPreviousToken(bool skipMeaningless) => GetPreviousToken(GetCurrentToken(), skipMeaningless);
-
-        /// <summary>
-        ///     Returns the next/previous token relative to the position.
-        /// </summary>
-        public Token? GetNextToken(bool skipMeaningless) => GetNextToken(GetCurrentToken(), skipMeaningless);
 
         public override string ToString() => string.Join("", this.Select(x => x.Text));
     }
