@@ -74,7 +74,7 @@ namespace Sequel.Controllers
         {
             if (context.Node is null)
             {
-                ModelState.AddModelError(nameof(QueryExecutionContext.Node), $"The {nameof(QueryExecutionContext.Node)} field is required.");
+                ModelState.AddModelError(nameof(TreeViewContext.Node), $"The {nameof(TreeViewContext.Node)} field is required.");
             }
             if (ModelState.ErrorCount != 0)
             {
