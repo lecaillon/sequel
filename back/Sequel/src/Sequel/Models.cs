@@ -102,66 +102,6 @@ namespace Sequel.Models
         }
     }
 
-    public class QueryExecutionContext
-    {
-        private string? _database;
-        private string? _sqlStatement;
-
-        [Required]
-        public ServerConnection Server { get; set; } = default!;
-
-        public string? Database
-        {
-            get { return Server.Type == DBMS.SQLite ? null : _database ; }
-            set { _database = value; }
-        }
-
-        /// <summary>
-        ///     Selected node in the Sequel tree view
-        /// </summary>
-        public TreeViewNode? Node { get; set; }
-
-        /// <summary>
-        ///     Sql statement(s).
-        /// </summary>
-        /// <remarks>
-        ///     Should be private --> .NET 5
-        /// </remarks>
-        public string? Sql { get; set; }
-
-        /// <summary>
-        ///     Index of the statement to execute in the <see cref="Sql"/>.
-        ///     If null execute everything.
-        /// </summary>
-        public int? StatementIndex { get; set; }
-
-        /// <summary>
-        ///     Sequel tab id.
-        /// </summary>
-        public string? Id { get; set; }
-
-        /// <summary>
-        ///     Returns the <see cref="Sql"/> to execute, or just the statement at a given <see cref="StatementIndex"/>.
-        /// </summary>
-        public string? GetSqlStatement()
-        {
-            if (_sqlStatement is null)
-            {
-
-                if (Sql.IsNullOrEmpty() || StatementIndex is null)
-                {
-                    _sqlStatement = Sql;
-                }
-                else
-                {
-                    _sqlStatement = new Splitter().Process(Sql).ElementAt(StatementIndex.Value).ToString();
-                }
-            }
-
-            return _sqlStatement;
-        }
-    }
-
     public class QueryResponseContext
     {
         public QueryResponseContext(string id)
@@ -445,6 +385,52 @@ namespace Sequel.Models
             {
                 yield return new ValidationResult($"The {nameof(QueryExecutionContext.Database)} field is required.", new[] { nameof(QueryExecutionContext.Database) });
             }
+        }
+    }
+
+    public class QueryExecutionContext : ContextBase
+    {
+        private string? _sqlStatement;
+
+        /// <summary>
+        ///     Sql statement(s).
+        /// </summary>
+        /// <remarks>
+        ///     Should be private --> .NET 5
+        /// </remarks>
+        public string? Sql { get; set; }
+
+        /// <summary>
+        ///     Index of the statement to execute in the <see cref="Sql"/>.
+        ///     If null execute everything.
+        /// </summary>
+        public int? StatementIndex { get; set; }
+
+        /// <summary>
+        ///     Sequel tab id.
+        /// </summary>
+        [Required]
+        public string Id { get; set; } = default!;
+
+        /// <summary>
+        ///     Returns the <see cref="Sql"/> to execute, or just the statement at a given <see cref="StatementIndex"/>.
+        /// </summary>
+        public string? GetSqlStatement()
+        {
+            if (_sqlStatement is null)
+            {
+
+                if (Sql.IsNullOrEmpty() || StatementIndex is null)
+                {
+                    _sqlStatement = Sql;
+                }
+                else
+                {
+                    _sqlStatement = new Splitter().Process(Sql).ElementAt(StatementIndex.Value).ToString();
+                }
+            }
+
+            return _sqlStatement;
         }
     }
 

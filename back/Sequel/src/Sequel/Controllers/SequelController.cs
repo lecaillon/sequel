@@ -91,17 +91,9 @@ namespace Sequel.Controllers
         [Route("execute-query")]
         public async Task<ActionResult<QueryResponseContext>> ExecuteQuery(QueryExecutionContext context)
         {
-            if (string.IsNullOrEmpty(context.Id))
-            {
-                ModelState.AddModelError(nameof(QueryExecutionContext.Id), $"The {nameof(QueryExecutionContext.Id)} field is required.");
-            }
             if (string.IsNullOrWhiteSpace(context.GetSqlStatement()))
             {
                 ModelState.AddModelError("Sql", $"The Sql field is required.");
-            }
-            if (string.IsNullOrWhiteSpace(context.Database) && context.Server.Type != DBMS.SQLite)
-            {
-                ModelState.AddModelError(nameof(QueryExecutionContext.Database), $"The {nameof(QueryExecutionContext.Database)} field is required.");
             }
             if (ModelState.ErrorCount != 0)
             {

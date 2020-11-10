@@ -55,7 +55,7 @@ namespace Sequel.Core
         {
             return await context.Server.Execute(context.Database, context.GetSqlStatement()!, async (dbCommand, ct) =>
             {
-                var response = new QueryResponseContext(context.Id!);
+                var response = new QueryResponseContext(context.Id);
                 var sw = new Stopwatch();
 
                 try
