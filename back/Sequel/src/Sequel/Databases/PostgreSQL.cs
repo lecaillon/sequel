@@ -202,7 +202,7 @@ namespace Sequel.Databases
             string newSchema = schema.Replace("\"", "").Replace("$user", "").Trim();
             if (newSchema.StartsWith(","))
             {
-                newSchema = newSchema.Substring(1);
+                newSchema = newSchema[1..];
             }
 
             if (newSchema.Contains(","))
