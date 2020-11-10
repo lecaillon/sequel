@@ -63,22 +63,18 @@ namespace Sequel.Controllers
 
         [HttpPost]
         [Route("nodes")]
-        public async Task<ActionResult<IEnumerable<TreeViewNode>>> GetTreeViewNodes(QueryExecutionContext context)
+        public async Task<ActionResult<IEnumerable<TreeViewNode>>> GetTreeViewNodes(TreeViewContext context)
         {
             return Ok(await context.Server.GetDatabaseSystem().LoadTreeViewNodes(context.Database, context.Node));
         }
 
         [HttpPost]
         [Route("nodes/{id}/menu-items")]
-        public async Task<ActionResult<List<TreeViewMenuItem>>> GetTreeViewMenuItems(QueryExecutionContext context)
+        public async Task<ActionResult<List<TreeViewMenuItem>>> GetTreeViewMenuItems(TreeViewContext context)
         {
             if (context.Node is null)
             {
                 ModelState.AddModelError(nameof(QueryExecutionContext.Node), $"The {nameof(QueryExecutionContext.Node)} field is required.");
-            }
-            if (string.IsNullOrWhiteSpace(context.Database) && context.Server.Type != DBMS.SQLite)
-            {
-                ModelState.AddModelError(nameof(QueryExecutionContext.Database), $"The {nameof(QueryExecutionContext.Database)} field is required.");
             }
             if (ModelState.ErrorCount != 0)
             {

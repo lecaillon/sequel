@@ -102,28 +102,6 @@ namespace Sequel.Models
         }
     }
 
-    public abstract class ContextBase : IValidatableObject
-    {
-        private string? _database;
-
-        [Required]
-        public ServerConnection Server { get; set; } = default!;
-
-        public string? Database
-        {
-            get { return Server.Type == DBMS.SQLite ? null : _database; }
-            set { _database = value; }
-        }
-
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            if (string.IsNullOrWhiteSpace(Database) && Server.Type != DBMS.SQLite)
-            {
-                yield return new ValidationResult($"The {nameof(QueryExecutionContext.Database)} field is required.", new[] { nameof(QueryExecutionContext.Database) });
-            }
-        }
-    }
-
     public class QueryExecutionContext
     {
         private string? _database;
@@ -345,28 +323,6 @@ namespace Sequel.Models
         }
     }
 
-    public class CompletionContext : ContextBase
-    {
-        /// <summary>
-        ///     Line number (starts at 1)
-        /// </summary>
-        [Range(1, int.MaxValue)]
-        public int LineNumber { get; set; }
-
-        /// <summary>
-        ///     Column (the first character in a line is between column 1 and column 2)
-        /// </summary>
-        [Range(1, int.MaxValue)]
-        public int Column { get; set; }
-
-        /// <summary>
-        ///     Character that triggered the completion item provider
-        /// </summary>
-        public string? TriggerCharacter { get; set; }
-
-        public string? Sql { get; set; }
-    }
-
     public class CompletionItem
     {
         public CompletionItem(string label, CompletionItemKind kind, string? insertText = null, string? detail = null)
@@ -468,5 +424,57 @@ namespace Sequel.Models
         public static bool operator !=(Identity? operand1, Identity? operand2) => !(operand1 == operand2);
 
         public override int GetHashCode() => Id.GetHashCode();
+    }
+
+    public abstract class ContextBase : IValidatableObject
+    {
+        private string? _database;
+
+        [Required]
+        public ServerConnection Server { get; set; } = default!;
+
+        public string? Database
+        {
+            get { return Server.Type == DBMS.SQLite ? null : _database; }
+            set { _database = value; }
+        }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (string.IsNullOrWhiteSpace(Database) && Server.Type != DBMS.SQLite)
+            {
+                yield return new ValidationResult($"The {nameof(QueryExecutionContext.Database)} field is required.", new[] { nameof(QueryExecutionContext.Database) });
+            }
+        }
+    }
+
+    public class CompletionContext : ContextBase
+    {
+        /// <summary>
+        ///     Line number (starts at 1)
+        /// </summary>
+        [Range(1, int.MaxValue)]
+        public int LineNumber { get; set; }
+
+        /// <summary>
+        ///     Column (the first character in a line is between column 1 and column 2)
+        /// </summary>
+        [Range(1, int.MaxValue)]
+        public int Column { get; set; }
+
+        /// <summary>
+        ///     Character that triggered the completion item provider
+        /// </summary>
+        public string? TriggerCharacter { get; set; }
+
+        public string? Sql { get; set; }
+    }
+
+    public class TreeViewContext : ContextBase
+    {
+        /// <summary>
+        ///     Selected node in the Sequel tree view
+        /// </summary>
+        public TreeViewNode? Node { get; set; }
     }
 }

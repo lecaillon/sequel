@@ -5,6 +5,7 @@ import { BASE_URL } from "@/appsettings";
 import { ServerConnection } from "@/models/serverConnection";
 import { TreeViewNode } from "@/models/treeViewNode";
 import { QueryExecutionContext } from "@/models/queryExecutionContext";
+import { TreeViewContext } from "@/models/treeViewContext";
 import { QueryResponseContext } from "@/models/queryResponseContext";
 import { AppSnackbar } from "@/models/appSnackbar";
 import { QueryTabContent } from "@/models/queryTabContent";
@@ -114,7 +115,7 @@ export default new Vuex.Store({
           server: context.state.activeServer,
           database: context.state.activeDatabase,
           node: parent === undefined ? null : parent
-        } as QueryExecutionContext);
+        } as TreeViewContext);
         context.commit("pushNodes", { parent, nodes });
       }
     },
@@ -126,7 +127,7 @@ export default new Vuex.Store({
           server: context.state.activeServer,
           database: context.state.activeDatabase,
           node: context.state.activeNode
-        } as QueryExecutionContext);
+        } as TreeViewContext);
         context.commit("setActiveNodeMenuItems", menuItems);
       }
     },
