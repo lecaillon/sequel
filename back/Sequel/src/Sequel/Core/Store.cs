@@ -11,26 +11,26 @@ namespace Sequel.Core
     {
         private static readonly string FilePath = Path.Combine(Program.RootDirectory, typeof(T).Name.ToLower() + ".json");
         
-        public static async Task<List<T>> GetListAsync()
+        public static async Task<List<T>> GetList()
         {
             using var fs = OpenFile();
-            return await DeserializeListAsync(fs);
+            return await DeserializeList(fs);
         }
 
-        public static async Task InitAsync(IEnumerable<T> list)
+        public static async Task Init(IEnumerable<T> list)
         {
             Check.NotNull(list, nameof(list));
             
             using var fs = OpenFile(FileMode.Create);
-            await SaveFileAsync(fs, list);
+            await SaveFile(fs, list);
         }
 
-        public static async Task AddAsync<TIdentity>(TIdentity item) where TIdentity : Identity, T
+        public static async Task Add<TIdentity>(TIdentity item) where TIdentity : Identity, T
         {
             Check.NotNull(item, nameof(item));
 
             using var stream = OpenFile();
-            var list = await DeserializeListAsync(stream);
+            var list = await DeserializeList(stream);
 
             if (item.Id is null)
             {
@@ -41,17 +41,17 @@ namespace Sequel.Core
                 list.Remove(item);
             }
             list.Add(item);
-            await SaveFileAsync(stream, list);
+            await SaveFile(stream, list);
         }
 
-        public static async Task DeleteAsync(int id)
+        public static async Task Delete(int id)
         {
             using var stream = OpenFile();
-            var list = await DeserializeListAsync(stream);
+            var list = await DeserializeList(stream);
             T item = new T();
             (item as Identity)?.WithId(id);
             list.Remove(item);
-            await SaveFileAsync(stream, list);
+            await SaveFile(stream, list);
         }
 
         public static bool Exists() => File.Exists(FilePath);
@@ -62,10 +62,10 @@ namespace Sequel.Core
             return File.Open(FilePath, mode);
         }
 
-        private static async Task<List<T>> DeserializeListAsync(FileStream stream)
+        private static async Task<List<T>> DeserializeList(FileStream stream)
             => stream.Length > 0 ? await JsonSerializer.DeserializeAsync<List<T>>(stream) : new List<T>();
 
-        private static async Task SaveFileAsync(FileStream stream, IEnumerable<T> value)
+        private static async Task SaveFile(FileStream stream, IEnumerable<T> value)
         {
             stream.SetLength(0);
             await JsonSerializer.SerializeAsync(stream, value, new JsonSerializerOptions { WriteIndented = true });

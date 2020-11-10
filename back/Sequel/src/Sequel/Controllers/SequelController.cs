@@ -26,14 +26,14 @@ namespace Sequel.Controllers
         [Route("server-connections")]
         public async Task<ActionResult<List<ServerConnection>>> GetAllServerConnection()
         {
-            return Ok(await Store<ServerConnection>.GetListAsync());
+            return Ok(await Store<ServerConnection>.GetList());
         }
 
         [HttpPost]
         [Route("server-connections")]
         public async Task<IActionResult> AddServerConnection(ServerConnection server)
         {
-            await Store<ServerConnection>.AddAsync(server);
+            await Store<ServerConnection>.Add(server);
             return Ok();
         }
 
@@ -41,7 +41,7 @@ namespace Sequel.Controllers
         [Route("server-connections/{id}")]
         public async Task<IActionResult> DeleteServerConnection(int id)
         {
-            await Store<ServerConnection>.DeleteAsync(id);
+            await Store<ServerConnection>.Delete(id);
             return Ok();
         }
 
@@ -50,7 +50,7 @@ namespace Sequel.Controllers
 
         public async Task<IActionResult> TestServerConnection(ServerConnection server)
         {
-            await server.ValidateAsync();
+            await server.Validate();
             return Ok();
         }
 
@@ -58,14 +58,14 @@ namespace Sequel.Controllers
         [Route("databases")]
         public async Task<ActionResult<IEnumerable<string>>> GetDatabases(ServerConnection server)
         {
-            return Ok(await server.GetDatabaseSystem().LoadDatabasesAsync());
+            return Ok(await server.GetDatabaseSystem().LoadDatabases());
         }
 
         [HttpPost]
         [Route("nodes")]
         public async Task<ActionResult<IEnumerable<TreeViewNode>>> GetTreeViewNodes(QueryExecutionContext context)
         {
-            return Ok(await context.Server.GetDatabaseSystem().LoadTreeViewNodesAsync(context.Database, context.Node));
+            return Ok(await context.Server.GetDatabaseSystem().LoadTreeViewNodes(context.Database, context.Node));
         }
 
         [HttpPost]
@@ -88,7 +88,7 @@ namespace Sequel.Controllers
                 });
             }
 
-            return Ok(await context.Server.GetDatabaseSystem().LoadTreeViewMenuItemsAsync(context.Node!, context.Database, context.Server.Id!.Value));
+            return Ok(await context.Server.GetDatabaseSystem().LoadTreeViewMenuItems(context.Node!, context.Database, context.Server.Id!.Value));
         }
 
         [HttpPost]
@@ -115,7 +115,7 @@ namespace Sequel.Controllers
                 });
             }
 
-            return Ok(await QueryManager.ExecuteQueryAsync(context));
+            return Ok(await QueryManager.ExecuteQuery(context));
         }
 
         [HttpPost]
@@ -139,7 +139,7 @@ namespace Sequel.Controllers
         [Route("completion-items")]
         public async Task<ActionResult<IEnumerable<CompletionItem>>> GetCompletionItems(CompletionContext context)
         {
-            return Ok(await context.Server.GetDatabaseSystem().LoadCompletionItemsAsync(
+            return Ok(await context.Server.GetDatabaseSystem().LoadCompletionItems(
                 context.LineNumber,
                 context.Column,
                 context.TriggerCharacter,

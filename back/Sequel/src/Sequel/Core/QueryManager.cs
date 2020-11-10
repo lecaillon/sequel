@@ -4,12 +4,10 @@ using System.Data;
 using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Sequel.Core.Parser;
 using Sequel.Models;
 using static Sequel.Helper;
 
@@ -19,14 +17,14 @@ namespace Sequel.Core
     {
         private static readonly Dictionary<string, CancellationTokenSource> TokensByQueryId = new Dictionary<string, CancellationTokenSource>();
 
-        public static async Task<QueryResponseContext> ExecuteQueryAsync(QueryExecutionContext context)
+        public static async Task<QueryResponseContext> ExecuteQuery(QueryExecutionContext context)
         {
             string queryId = Check.NotNull(context.Id, nameof(context.Id));
             var cancellationToken = CreateToken(queryId);
 
             try
             {
-                return await context.ExecuteQueryAsync(cancellationToken);
+                return await context.ExecuteQuery(cancellationToken);
             }
             finally
             {
@@ -53,9 +51,9 @@ namespace Sequel.Core
             }
         }
 
-        private static async Task<QueryResponseContext> ExecuteQueryAsync(this QueryExecutionContext context, CancellationToken cancellationToken)
+        private static async Task<QueryResponseContext> ExecuteQuery(this QueryExecutionContext context, CancellationToken cancellationToken)
         {
-            return await context.Server.ExecuteAsync(context.Database, context.GetSqlStatement()!, async (dbCommand, ct) =>
+            return await context.Server.Execute(context.Database, context.GetSqlStatement()!, async (dbCommand, ct) =>
             {
                 var response = new QueryResponseContext(context.Id!);
                 var sw = new Stopwatch();
@@ -116,7 +114,7 @@ namespace Sequel.Core
                 finally
                 {
                     response.Elapsed = sw.ElapsedMilliseconds;
-                    await IgnoreErrorsAsync(() => History.SaveAsync(context, response));
+                    await IgnoreErrorsAsync(() => History.Save(context, response));
                 }
 
                 return response;
@@ -177,9 +175,9 @@ namespace Sequel.Core
                 ConnectionString = $@"Data Source={Path.Combine(Program.RootDirectory, typeof(QueryHistory).Name.ToLower() + ".db")};"
             };
 
-            public static async Task ConfigureAsync()
+            public static async Task Configure()
             {
-                if (await ServerConnection.QueryForLongAsync("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND tbl_name = 'data'") == 0)
+                if (await ServerConnection.QueryForLong("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND tbl_name = 'data'") == 0)
                 {
                     string sql = "CREATE TABLE [data] " +
                     "( " +
@@ -198,11 +196,11 @@ namespace Sequel.Core
                     ");" +
                     "CREATE UNIQUE INDEX idx_data_hash ON data (hash);";
 
-                    await ServerConnection.ExecuteNonQueryAsync(sql);
+                    await ServerConnection.ExecuteNonQuery(sql);
                 }
             }
 
-            public static async Task SaveAsync(QueryExecutionContext query, QueryResponseContext response)
+            public static async Task Save(QueryExecutionContext query, QueryResponseContext response)
             {
                 string? statement = NormalizeSql(query.GetSqlStatement());
                 if (statement is null)
@@ -212,7 +210,7 @@ namespace Sequel.Core
 
                 string sql;
                 string hash = ComputeHash(statement);
-                var history = await LoadByHashAsync(hash);
+                var history = await LoadByHash(hash);
                 if (history is null)
                 {
                     history = QueryHistory.Create(statement, hash, query, response);
@@ -245,17 +243,17 @@ namespace Sequel.Core
                          $"WHERE id = {history.Id};";
                 }
 
-                await ServerConnection.ExecuteNonQueryAsync(sql);
+                await ServerConnection.ExecuteNonQuery(sql);
             }
 
             public static async Task UpdateFavorite(int id, bool star)
-                => await ServerConnection.ExecuteNonQueryAsync($"UPDATE [data] SET star = {(star ? 1 : 0)} WHERE id = {id}");
+                => await ServerConnection.ExecuteNonQuery($"UPDATE [data] SET star = {(star ? 1 : 0)} WHERE id = {id}");
 
             public static async Task<IEnumerable<QueryHistory>> Load(QueryHistoryQuery query)
-                => await ServerConnection.QueryListAsync(SelectAllClause + query.BuildWhereClause() + OrderByClause, Map);
+                => await ServerConnection.QueryList(SelectAllClause + query.BuildWhereClause() + OrderByClause, Map);
 
-            private static async Task<QueryHistory?> LoadByHashAsync(string hash) 
-                => await ServerConnection.QueryAsync(SelectAllClause + $"WHERE hash = '{hash}'", Map);
+            private static async Task<QueryHistory?> LoadByHash(string hash) 
+                => await ServerConnection.Query(SelectAllClause + $"WHERE hash = '{hash}'", Map);
 
             private static string? NormalizeSql(string? sql) => sql?.TrimStart(CharsToTrimStart)?.TrimEnd(CharsToTrimEnd);
 

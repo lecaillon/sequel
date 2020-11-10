@@ -26,7 +26,7 @@ namespace Sequel.Core
             };
         }
 
-        public static async Task ValidateAsync(this ServerConnection server)
+        public static async Task Validate(this ServerConnection server)
         {
             using var dbConnection = server.CreateConnection();
 
@@ -44,9 +44,9 @@ namespace Sequel.Core
             };
         }
 
-        public static async Task<IEnumerable<string>> QueryStringListAsync(this ServerConnection server, string? database, string sql)
+        public static async Task<IEnumerable<string>> QueryStringList(this ServerConnection server, string? database, string sql)
         {
-            return await ExecuteAsync(server, database, sql, async (dbCommand, ct) =>
+            return await Execute(server, database, sql, async (dbCommand, ct) =>
             {
                 var list = new List<string>();
                 using var dataReader = await dbCommand.ExecuteReaderAsync();
@@ -63,42 +63,42 @@ namespace Sequel.Core
             });
         }
 
-        public static async Task<IEnumerable<string>> QueryStringListAsync(this ServerConnection server, string sql) 
-            => await QueryStringListAsync(server, null, sql);
+        public static async Task<IEnumerable<string>> QueryStringList(this ServerConnection server, string sql) 
+            => await QueryStringList(server, null, sql);
 
-        public static async Task<string?> QueryForStringAsync(this ServerConnection server, string? database, string sql)
+        public static async Task<string?> QueryForString(this ServerConnection server, string? database, string sql)
         {
-            return await ExecuteAsync(server, database, sql, async (dbCommand, ct) =>
+            return await Execute(server, database, sql, async (dbCommand, ct) =>
             {
                 return Convert.ToString(await dbCommand.ExecuteScalarAsync());
             });
         }
 
-        public static async Task<string?> QueryForStringAsync(this ServerConnection server, string sql) => await QueryForStringAsync(server, null, sql);
+        public static async Task<string?> QueryForString(this ServerConnection server, string sql) => await QueryForString(server, null, sql);
 
-        public static async Task<long> QueryForLongAsync(this ServerConnection server, string? database, string sql)
+        public static async Task<long> QueryForLong(this ServerConnection server, string? database, string sql)
         {
-            return await ExecuteAsync(server, database, sql, async (dbCommand, ct) =>
+            return await Execute(server, database, sql, async (dbCommand, ct) =>
             {
                 return Convert.ToInt64(await dbCommand.ExecuteScalarAsync());
             });
         }
 
-        public static async Task<long> QueryForLongAsync(this ServerConnection server, string sql) => await QueryForLongAsync(server, null, sql);
+        public static async Task<long> QueryForLong(this ServerConnection server, string sql) => await QueryForLong(server, null, sql);
 
-        public static async Task<bool> QueryForBoolAsync(this ServerConnection server, string? database, string sql)
+        public static async Task<bool> QueryForBool(this ServerConnection server, string? database, string sql)
         {
-            return await ExecuteAsync(server, database, sql, async (dbCommand, ct) =>
+            return await Execute(server, database, sql, async (dbCommand, ct) =>
             {
                 return (bool)(await dbCommand.ExecuteScalarAsync() ?? false);
             });
         }
 
-        public static async Task<bool> QueryForBoolAsync(this ServerConnection server, string sql) => await QueryForBoolAsync(server, null, sql);
+        public static async Task<bool> QueryForBool(this ServerConnection server, string sql) => await QueryForBool(server, null, sql);
 
-        public static async Task<IEnumerable<T>> QueryListAsync<T>(this ServerConnection server, string? database, string sql, Func<IDataReader, T> map)
+        public static async Task<IEnumerable<T>> QueryList<T>(this ServerConnection server, string? database, string sql, Func<IDataReader, T> map)
         {
-            return await ExecuteAsync(server, database, sql, async (dbCommand, ct) =>
+            return await Execute(server, database, sql, async (dbCommand, ct) =>
             {
                 var list = new List<T>();
                 using var dataReader = await dbCommand.ExecuteReaderAsync();
@@ -111,25 +111,25 @@ namespace Sequel.Core
             });
         }
 
-        public static async Task<IEnumerable<T>> QueryListAsync<T>(this ServerConnection server, string sql, Func<IDataReader, T> map) => await QueryListAsync(server, null, sql, map);
+        public static async Task<IEnumerable<T>> QueryList<T>(this ServerConnection server, string sql, Func<IDataReader, T> map) => await QueryList(server, null, sql, map);
 
-        public static async Task<T> QueryAsync<T>(this ServerConnection server, string? database, string sql, Func<IDataReader, T> map)
-            => (await QueryListAsync(server, database, sql, map)).FirstOrDefault();
+        public static async Task<T> Query<T>(this ServerConnection server, string? database, string sql, Func<IDataReader, T> map)
+            => (await QueryList(server, database, sql, map)).FirstOrDefault();
 
-        public static async Task<T> QueryAsync<T>(this ServerConnection server, string sql, Func<IDataReader, T> map)
-            => (await QueryListAsync(server, null, sql, map)).FirstOrDefault();
+        public static async Task<T> Query<T>(this ServerConnection server, string sql, Func<IDataReader, T> map)
+            => (await QueryList(server, null, sql, map)).FirstOrDefault();
 
-        public static async Task<int> ExecuteNonQueryAsync(this ServerConnection server, string? database, string sql)
+        public static async Task<int> ExecuteNonQuery(this ServerConnection server, string? database, string sql)
         {
-            return await ExecuteAsync(server, database, sql, async (dbCommand, ct) =>
+            return await Execute(server, database, sql, async (dbCommand, ct) =>
             {
                 return await dbCommand.ExecuteNonQueryAsync();
             });
         }
 
-        public static async Task<int> ExecuteNonQueryAsync(this ServerConnection server, string sql) => await ExecuteNonQueryAsync(server, null, sql);
+        public static async Task<int> ExecuteNonQuery(this ServerConnection server, string sql) => await ExecuteNonQuery(server, null, sql);
 
-        public static async Task<T> ExecuteAsync<T>(this ServerConnection server,
+        public static async Task<T> Execute<T>(this ServerConnection server,
                                                      string? database,
                                                      string sql,
                                                      Func<DbCommand, CancellationToken, Task<T>> query,                                                     

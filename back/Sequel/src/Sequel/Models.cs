@@ -94,7 +94,7 @@ namespace Sequel.Models
         {
             if (!Store<TreeViewMenuItem>.Exists())
             {
-                await Store<TreeViewMenuItem>.InitAsync(new List<TreeViewMenuItem>()
+                await Store<TreeViewMenuItem>.Init(new List<TreeViewMenuItem>()
                     .Union(PostgreSQL.TreeViewMenuItems)
                     .Union(SQLite.TreeViewMenuItems)
                     .OrderBy(x => x.Order));

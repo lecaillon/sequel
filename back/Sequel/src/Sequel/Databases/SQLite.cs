@@ -26,7 +26,7 @@ namespace Sequel.Databases
 
         public override Task<string?> GetCurrentSchema(string? database) => Task.FromResult<string?>("main");
 
-        public override async Task<IEnumerable<string>> LoadDatabasesAsync()
+        public override async Task<IEnumerable<string>> LoadDatabases()
         {
             string? database = IgnoreErrors(() => Path.GetFileName(_server.ConnectionString.Replace("Data Source=", "")));
             return database is null 
@@ -34,27 +34,27 @@ namespace Sequel.Databases
                 : await Task.FromResult(new List<string> { database });
         }
 
-        public override async Task<IEnumerable<TreeViewNode>> LoadTreeViewNodesAsync(string? database, TreeViewNode? node)
+        public override async Task<IEnumerable<TreeViewNode>> LoadTreeViewNodes(string? database, TreeViewNode? node)
         {
             return await Task.FromResult(new List<TreeViewNode>());
         }
 
-        protected override Task<Dictionary<string, string>> GetPlaceholdersAsync(TreeViewNode node)
+        protected override Task<Dictionary<string, string>> GetPlaceholders(TreeViewNode node)
         {
             return Task.FromResult(new Dictionary<string, string>());
         }
 
-        public override Task<IEnumerable<string>> LoadSchemasAsync(string? database)
+        public override Task<IEnumerable<string>> LoadSchemas(string? database)
         {
             throw new System.NotImplementedException();
         }
 
-        public override Task<IEnumerable<string>> LoadTablesAsync(string? database, string? schema)
+        public override Task<IEnumerable<string>> LoadTables(string? database, string? schema)
         {
             throw new System.NotImplementedException();
         }
 
-        public override Task<IEnumerable<string>> LoadColumnsAsync(string? database, string? schema, string table)
+        public override Task<IEnumerable<string>> LoadColumns(string? database, string? schema, string table)
         {
             throw new System.NotImplementedException();
         }

@@ -24,18 +24,18 @@ namespace Sequel.Databases
 
         public override DBMS Type => DBMS.PostgreSQL;
 
-        public override async Task<IEnumerable<string>> LoadDatabasesAsync()
+        public override async Task<IEnumerable<string>> LoadDatabases()
         {
-            return await _server.QueryStringListAsync(
+            return await _server.QueryStringList(
                 "SELECT datname " +
                 "FROM pg_database " +
                 "WHERE datistemplate = false " +
                 "ORDER BY datname");
         }
 
-        public override async Task<IEnumerable<string>> LoadSchemasAsync(string? database)
+        public override async Task<IEnumerable<string>> LoadSchemas(string? database)
         {
-            return await _server.QueryStringListAsync(database,
+            return await _server.QueryStringList(database,
                 "SELECT schema_name " +
                 "FROM information_schema.schemata " +
                 "WHERE schema_name NOT LIKE 'pg_%' " +
@@ -43,11 +43,11 @@ namespace Sequel.Databases
                 "ORDER BY schema_name");
         }
 
-        public override async Task<IEnumerable<string>> LoadTablesAsync(string? database, string? schema)
+        public override async Task<IEnumerable<string>> LoadTables(string? database, string? schema)
         {
             Check.NotNullOrEmpty(schema, nameof(schema));
 
-            return await _server.QueryStringListAsync(database,
+            return await _server.QueryStringList(database,
                 "SELECT t.table_name " +
                 "FROM information_schema.tables t " +
                 "LEFT JOIN pg_depend dep ON dep.objid = (quote_ident(t.table_schema)||'.'||quote_ident(t.table_name))::regclass::oid AND dep.deptype = 'e' " +
@@ -57,7 +57,7 @@ namespace Sequel.Databases
                 "AND NOT (SELECT EXISTS (SELECT inhrelid FROM pg_catalog.pg_inherits WHERE inhrelid = (quote_ident(t.table_schema)||'.'||quote_ident(t.table_name))::regclass::oid))");
         }
 
-        public override async Task<IEnumerable<TreeViewNode>> LoadTreeViewNodesAsync(string? database, TreeViewNode? parent)
+        public override async Task<IEnumerable<TreeViewNode>> LoadTreeViewNodes(string? database, TreeViewNode? parent)
         {
             Check.NotNull(database, nameof(database));
 
@@ -77,7 +77,7 @@ namespace Sequel.Databases
             };
         }
 
-        protected override Task<Dictionary<string, string>> GetPlaceholdersAsync(TreeViewNode node)
+        protected override Task<Dictionary<string, string>> GetPlaceholders(TreeViewNode node)
         {
             return Task.FromResult(new Dictionary<string, string>
             {
@@ -86,7 +86,7 @@ namespace Sequel.Databases
             });
         }
 
-        private async Task<long> GetVersion() => await _server.QueryForLongAsync("SHOW server_version_num");
+        private async Task<long> GetVersion() => await _server.QueryForLong("SHOW server_version_num");
 
         private IEnumerable<TreeViewNode> LoadDatabaseRootNode(string database)
         {
@@ -98,7 +98,7 @@ namespace Sequel.Databases
 
         private async Task<IEnumerable<TreeViewNode>> LoadSchemaNodesAsync(string database, TreeViewNode parent)
         {
-            return (await LoadSchemasAsync(database))
+            return (await LoadSchemas(database))
                 .Select(schema => new TreeViewNode(schema, Schema, parent, "mdi-hexagon-multiple-outline", "cyan"));
         }
 
@@ -113,7 +113,7 @@ namespace Sequel.Databases
 
         private async Task<IEnumerable<TreeViewNode>> LoadTableNodesAsync(string database, TreeViewNode parent)
         {
-            return (await LoadTablesAsync(database, GetSchema(parent)))
+            return (await LoadTables(database, GetSchema(parent)))
                 .Select(table => new TreeViewNode(table, Table, parent, "mdi-table", "blue"));
         }
 
@@ -125,11 +125,11 @@ namespace Sequel.Databases
             };
         }
 
-        public override async Task<IEnumerable<string>> LoadColumnsAsync(string? database, string? schema, string table)
+        public override async Task<IEnumerable<string>> LoadColumns(string? database, string? schema, string table)
         {
             Check.NotNull(schema, nameof(schema));
 
-            return await _server.QueryStringListAsync(database,
+            return await _server.QueryStringList(database,
                 "SELECT column_name " +
                 "FROM information_schema.columns " +
                $"WHERE table_schema = '{schema}' " +
@@ -144,9 +144,9 @@ namespace Sequel.Databases
                $"WHERE table_schema = '{GetSchema(parent)}' " +
                $"AND table_name = '{GetTable(parent)}'";
 
-            var list = await _server.QueryListAsync(database, sql, reader => new { Name = reader.GetString(0), Type = reader.GetString(1) });
+            var list = await _server.QueryList(database, sql, reader => new { Name = reader.GetString(0), Type = reader.GetString(1) });
 
-            return (await _server.QueryListAsync(database, sql, reader => new { Name = reader.GetString(0), Type = reader.GetString(1) }))
+            return (await _server.QueryList(database, sql, reader => new { Name = reader.GetString(0), Type = reader.GetString(1) }))
                 .Select(x => new TreeViewNode(x.Name, Column, parent, "mdi-table-column", "deep-purple",
                                                     details: new Dictionary<string, object> { ["type"] = x.Type }));
 
@@ -175,7 +175,7 @@ namespace Sequel.Databases
                      $"AND pg_proc.prokind = 'f'";
             }
 
-            return await _server.QueryListAsync(database, sql, reader => (Name: reader.GetString(0), Args: reader.GetString(1)));
+            return await _server.QueryList(database, sql, reader => (Name: reader.GetString(0), Args: reader.GetString(1)));
         }
 
         private async Task<IEnumerable<TreeViewNode>> LoadFunctionNodesAsync(string database, TreeViewNode parent)
@@ -190,7 +190,7 @@ namespace Sequel.Databases
         private static string GetTable(TreeViewNode node) => node.Id.Split(TreeViewNode.PathSeparator)[4];
 
         public override async Task<string?> GetCurrentSchema(string? database)
-            => CleanSchemaName(await _server.QueryForStringAsync(database, "SHOW search_path"));
+            => CleanSchemaName(await _server.QueryForString(database, "SHOW search_path"));
 
         private static string CleanSchemaName(string? schema)
         {
