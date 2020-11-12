@@ -56,6 +56,8 @@ namespace Sequel.Models
         public string Color { get; set; } = default!;
         public List<TreeViewNode> Children { get; } = new List<TreeViewNode>();
         public Dictionary<string, object> Details { get; } = new Dictionary<string, object>();
+
+        public string GetNameAtLevel(int level) => Id.Split(PathSeparator)[level];
     }
 
     public class TreeViewMenuItem
@@ -383,7 +385,7 @@ namespace Sequel.Models
         {
             if (string.IsNullOrWhiteSpace(Database) && Server.Type != DBMS.SQLite)
             {
-                yield return new ValidationResult($"The {nameof(QueryExecutionContext.Database)} field is required.", new[] { nameof(QueryExecutionContext.Database) });
+                yield return new ValidationResult($"The {nameof(Database)} field is required.", new[] { nameof(Database) });
             }
         }
     }

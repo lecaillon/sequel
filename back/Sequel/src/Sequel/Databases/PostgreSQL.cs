@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Sequel.Core;
 using Sequel.Models;
@@ -24,6 +23,9 @@ namespace Sequel.Databases
 
         public override DBMS Type => DBMS.PostgreSQL;
 
+        protected override async Task<string?> GetCurrentSchema(string? database)
+            => CleanSchemaName(await _server.QueryForString(database, "SHOW search_path"));
+
         public override async Task<IEnumerable<string>> LoadDatabases()
         {
             return await _server.QueryStringList(
@@ -33,7 +35,7 @@ namespace Sequel.Databases
                 "ORDER BY datname");
         }
 
-        public override async Task<IEnumerable<string>> LoadSchemas(string? database)
+        protected override async Task<IEnumerable<string>> LoadSchemas(string? database)
         {
             return await _server.QueryStringList(database,
                 "SELECT schema_name " +
@@ -43,7 +45,7 @@ namespace Sequel.Databases
                 "ORDER BY schema_name");
         }
 
-        public override async Task<IEnumerable<string>> LoadTables(string? database, string? schema)
+        protected override async Task<IEnumerable<string>> LoadTables(string? database, string? schema)
         {
             Check.NotNullOrEmpty(schema, nameof(schema));
 
@@ -57,75 +59,33 @@ namespace Sequel.Databases
                 "AND NOT (SELECT EXISTS (SELECT inhrelid FROM pg_catalog.pg_inherits WHERE inhrelid = (quote_ident(t.table_schema)||'.'||quote_ident(t.table_name))::regclass::oid))");
         }
 
-        public override async Task<IEnumerable<TreeViewNode>> LoadTreeViewNodes(string? database, TreeViewNode? parent)
+        protected override async Task<IEnumerable<string>> LoadFunctions(string database, string schema)
         {
-            Check.NotNull(database, nameof(database));
+            string sql;
 
-            return parent?.Type switch
+            if (await GetVersion() < 11000)
             {
-                null => LoadDatabaseRootNode(database),
-
-                Schemas => await LoadSchemaNodesAsync(database, parent),
-                Tables => await LoadTableNodesAsync(database, parent),
-                Functions => await LoadFunctionNodesAsync(database, parent),
-                Columns => await LoadColumnNodes(database, parent),
-
-                Schema => LoadSchemaGroupLabels(parent),
-                Table => LoadTableGroupLabels(parent),
-
-                _ => new List<TreeViewNode>()
-            };
-        }
-
-        protected override Task<Dictionary<string, string>> GetPlaceholders(TreeViewNode node)
-        {
-            return Task.FromResult(new Dictionary<string, string>
+                sql = "SELECT pg_proc.proname " +
+                      "FROM pg_proc INNER JOIN pg_namespace ns ON (pg_proc.pronamespace = ns.oid) " +
+                      "LEFT JOIN pg_depend dep ON dep.objid = pg_proc.oid AND dep.deptype = 'e' " +
+                     $"WHERE pg_proc.proisagg = false " +
+                     $"AND ns.nspname = '{schema}' " +
+                     $"AND dep.objid IS NULL";
+            }
+            else
             {
-                { "${schema}", GetSchema(node) },
-                { "${table}", GetTable(node) },
-            });
+                sql = "SELECT pg_proc.proname " +
+                      "FROM pg_proc INNER JOIN pg_namespace ns ON (pg_proc.pronamespace = ns.oid) " +
+                      "LEFT JOIN pg_depend dep ON dep.objid = pg_proc.oid AND dep.deptype = 'e' " +
+                     $"WHERE ns.nspname = '{schema}' " +
+                     $"AND dep.objid IS NULL " +
+                     $"AND pg_proc.prokind = 'f'";
+            }
+
+            return await _server.QueryStringList(database, sql);
         }
 
-        private async Task<long> GetVersion() => await _server.QueryForLong("SHOW server_version_num");
-
-        private IEnumerable<TreeViewNode> LoadDatabaseRootNode(string database)
-        {
-            var rootNode = new TreeViewNode(database, Database, parent: null, "mdi-database", "amber darken-1");
-            rootNode.Children.Add(new TreeViewNode(Schemas.ToString(), Schemas, rootNode, "mdi-hexagon-multiple-outline", "cyan"));
-
-            return new List<TreeViewNode> { rootNode };
-        }
-
-        private async Task<IEnumerable<TreeViewNode>> LoadSchemaNodesAsync(string database, TreeViewNode parent)
-        {
-            return (await LoadSchemas(database))
-                .Select(schema => new TreeViewNode(schema, Schema, parent, "mdi-hexagon-multiple-outline", "cyan"));
-        }
-
-        private IEnumerable<TreeViewNode> LoadSchemaGroupLabels(TreeViewNode parent)
-        {
-            return new List<TreeViewNode>
-            {
-                new TreeViewNode(Tables.ToString(), Tables, parent, "mdi-table", "blue"),
-                new TreeViewNode(Functions.ToString(), Functions, parent, "mdi-function", "teal")
-            };
-        }
-
-        private async Task<IEnumerable<TreeViewNode>> LoadTableNodesAsync(string database, TreeViewNode parent)
-        {
-            return (await LoadTables(database, GetSchema(parent)))
-                .Select(table => new TreeViewNode(table, Table, parent, "mdi-table", "blue"));
-        }
-
-        private IEnumerable<TreeViewNode> LoadTableGroupLabels(TreeViewNode parent)
-        {
-            return new List<TreeViewNode>
-            {
-                new TreeViewNode(Columns.ToString(), Columns, parent, "mdi-table-column", "deep-purple"),
-            };
-        }
-
-        public override async Task<IEnumerable<string>> LoadColumns(string? database, string? schema, string table)
+        protected override async Task<IEnumerable<string>> LoadColumns(string? database, string? schema, string table)
         {
             Check.NotNull(schema, nameof(schema));
 
@@ -136,61 +96,7 @@ namespace Sequel.Databases
                $"AND table_name = '{table}' ");
         }
 
-        private async Task<IEnumerable<TreeViewNode>> LoadColumnNodes(string database, TreeViewNode parent)
-        {
-            string sql = 
-                "SELECT column_name, data_type " +
-                "FROM information_schema.columns " +
-               $"WHERE table_schema = '{GetSchema(parent)}' " +
-               $"AND table_name = '{GetTable(parent)}'";
-
-            var list = await _server.QueryList(database, sql, reader => new { Name = reader.GetString(0), Type = reader.GetString(1) });
-
-            return (await _server.QueryList(database, sql, reader => new { Name = reader.GetString(0), Type = reader.GetString(1) }))
-                .Select(x => new TreeViewNode(x.Name, Column, parent, "mdi-table-column", "deep-purple",
-                                                    details: new Dictionary<string, object> { ["type"] = x.Type }));
-
-        }
-
-        private async Task<IEnumerable<(string Name, string Args)>> LoadFunctionsAsync(string database, string schema)
-        {
-            string sql;
-
-            if (await GetVersion() < 11000)
-            {
-                sql = "SELECT proname, oidvectortypes(proargtypes) AS args " +
-                      "FROM pg_proc INNER JOIN pg_namespace ns ON (pg_proc.pronamespace = ns.oid) " +
-                      "LEFT JOIN pg_depend dep ON dep.objid = pg_proc.oid AND dep.deptype = 'e' " +
-                     $"WHERE pg_proc.proisagg = false " +
-                     $"AND ns.nspname = '{schema}' " +
-                     $"AND dep.objid IS NULL";
-            }
-            else
-            {
-                sql = "SELECT proname, oidvectortypes(proargtypes) AS args " +
-                      "FROM pg_proc INNER JOIN pg_namespace ns ON (pg_proc.pronamespace = ns.oid) " +
-                      "LEFT JOIN pg_depend dep ON dep.objid = pg_proc.oid AND dep.deptype = 'e' " +
-                     $"WHERE ns.nspname = '{schema}' " +
-                     $"AND dep.objid IS NULL " +
-                     $"AND pg_proc.prokind = 'f'";
-            }
-
-            return await _server.QueryList(database, sql, reader => (Name: reader.GetString(0), Args: reader.GetString(1)));
-        }
-
-        private async Task<IEnumerable<TreeViewNode>> LoadFunctionNodesAsync(string database, TreeViewNode parent)
-        {
-            return (await LoadFunctionsAsync(database, GetSchema(parent)))
-                .Select(x => new TreeViewNode(x.Name, Function, parent, "mdi-function", "teal",
-                                                    details: new Dictionary<string, object> { ["args"] = x.Args }));
-        }
-
-        private static string GetSchema(TreeViewNode node) => node.Id.Split(TreeViewNode.PathSeparator)[2];
-
-        private static string GetTable(TreeViewNode node) => node.Id.Split(TreeViewNode.PathSeparator)[4];
-
-        public override async Task<string?> GetCurrentSchema(string? database)
-            => CleanSchemaName(await _server.QueryForString(database, "SHOW search_path"));
+        private async Task<long> GetVersion() => await _server.QueryForLong("SHOW server_version_num");
 
         private static string CleanSchemaName(string? schema)
         {

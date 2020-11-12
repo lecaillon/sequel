@@ -24,7 +24,7 @@ namespace Sequel.Databases
 
         public override DBMS Type => DBMS.SQLite;
 
-        public override Task<string?> GetCurrentSchema(string? database) => Task.FromResult<string?>("main");
+        protected override Task<string?> GetCurrentSchema(string? database) => Task.FromResult<string?>("main");
 
         public override async Task<IEnumerable<string>> LoadDatabases()
         {
@@ -39,22 +39,22 @@ namespace Sequel.Databases
             return await Task.FromResult(new List<TreeViewNode>());
         }
 
-        protected override Task<Dictionary<string, string>> GetPlaceholders(TreeViewNode node)
-        {
-            return Task.FromResult(new Dictionary<string, string>());
-        }
-
-        public override Task<IEnumerable<string>> LoadSchemas(string? database)
+        protected override Task<IEnumerable<string>> LoadSchemas(string? database)
         {
             throw new System.NotImplementedException();
         }
 
-        public override Task<IEnumerable<string>> LoadTables(string? database, string? schema)
+        protected override Task<IEnumerable<string>> LoadTables(string? database, string? schema)
         {
             throw new System.NotImplementedException();
         }
 
-        public override Task<IEnumerable<string>> LoadColumns(string? database, string? schema, string table)
+        protected override Task<IEnumerable<string>> LoadColumns(string? database, string? schema, string table)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        protected override Task<IEnumerable<string>> LoadFunctions(string database, string schema)
         {
             throw new System.NotImplementedException();
         }
