@@ -63,7 +63,7 @@ namespace Sequel.Core
         }
 
         private static async Task<List<T>> DeserializeList(FileStream stream)
-            => stream.Length > 0 ? await JsonSerializer.DeserializeAsync<List<T>>(stream) : new List<T>();
+            => stream.Length > 0 ? await JsonSerializer.DeserializeAsync<List<T>>(stream) ?? new List<T>() : new List<T>();
 
         private static async Task SaveFile(FileStream stream, IEnumerable<T> value)
         {

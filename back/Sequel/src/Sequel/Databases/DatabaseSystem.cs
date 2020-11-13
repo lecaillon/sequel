@@ -113,7 +113,7 @@ namespace Sequel.Databases
         {
             return await Helper.IgnoreErrorsAsync(async () =>
             {
-                var items = new List<CompletionItem>();
+                List<CompletionItem> items = new List<CompletionItem>();
 
                 var statement = new Splitter().Process(sql).GetStatementAtPosition(lineNumber, column);
                 if (statement is null)

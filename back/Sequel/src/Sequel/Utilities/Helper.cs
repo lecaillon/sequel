@@ -48,7 +48,8 @@ namespace Sequel
             return true;
         }
 
-        public static T IgnoreErrors<T>(Func<T> operation, T defaultValue = default)
+        [return: NotNullIfNotNull("defaultValue")]
+        public static T? IgnoreErrors<T>(Func<T> operation, T? defaultValue = default)
         {
             if (operation is null)
             {
@@ -69,7 +70,7 @@ namespace Sequel
             return result;
         }
 
-        public static async Task<T> IgnoreErrorsAsync<T>(Func<Task<T>> operation, T defaultValue = default)
+        public static async Task<T> IgnoreErrorsAsync<T>(Func<Task<T>> operation, T defaultValue)
         {
             if (operation is null)
             {

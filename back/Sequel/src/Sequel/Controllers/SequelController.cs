@@ -119,7 +119,7 @@ namespace Sequel.Controllers
                 });
             }
 
-            QueryManager.Cancel(queryId.ToString());
+            QueryManager.Cancel(queryId.ToString()!);
             return Ok();
         }
 

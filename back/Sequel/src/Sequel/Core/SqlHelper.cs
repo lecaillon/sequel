@@ -111,10 +111,10 @@ namespace Sequel.Core
 
         public static async Task<IEnumerable<T>> QueryList<T>(this ServerConnection server, string sql, Func<IDataReader, T> map) => await QueryList(server, null, sql, map);
 
-        public static async Task<T> Query<T>(this ServerConnection server, string? database, string sql, Func<IDataReader, T> map)
+        public static async Task<T?> Query<T>(this ServerConnection server, string? database, string sql, Func<IDataReader, T> map)
             => (await QueryList(server, database, sql, map)).FirstOrDefault();
 
-        public static async Task<T> Query<T>(this ServerConnection server, string sql, Func<IDataReader, T> map)
+        public static async Task<T?> Query<T>(this ServerConnection server, string sql, Func<IDataReader, T> map)
             => (await QueryList(server, null, sql, map)).FirstOrDefault();
 
         public static async Task<int> ExecuteNonQuery(this ServerConnection server, string? database, string sql)
