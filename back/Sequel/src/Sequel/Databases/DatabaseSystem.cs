@@ -12,14 +12,14 @@ namespace Sequel.Databases
     public abstract class DatabaseSystem
     {
         public abstract DBMS Type { get; }
-        protected abstract Task<string?> GetCurrentSchema(string? database);
+        protected abstract Task<string?> GetCurrentSchema(string database);
         public abstract Task<IEnumerable<string>> LoadDatabases();
-        protected abstract Task<IEnumerable<string>> LoadSchemas(string? database);
-        protected abstract Task<IEnumerable<string>> LoadTables(string? database, string? schema);
+        protected abstract Task<IEnumerable<string>> LoadSchemas(string database);
+        protected abstract Task<IEnumerable<string>> LoadTables(string database, string? schema);
         protected abstract Task<IEnumerable<string>> LoadFunctions(string database, string schema);
-        protected abstract Task<IEnumerable<string>> LoadColumns(string? database, string? schema, string table);
+        protected abstract Task<IEnumerable<string>> LoadColumns(string database, string? schema, string table);
 
-        public virtual async Task<IEnumerable<TreeViewNode>> LoadTreeViewNodes(string? database, TreeViewNode? parent)
+        public virtual async Task<IEnumerable<TreeViewNode>> LoadTreeViewNodes(string database, TreeViewNode? parent)
         {
             Check.NotNull(database, nameof(database));
 
@@ -82,7 +82,7 @@ namespace Sequel.Databases
             new TreeViewNode(Columns.ToString(), Columns, parent, "mdi-table-column", "deep-purple"),
         };
 
-        public virtual async Task<List<TreeViewMenuItem>> LoadTreeViewMenuItems(TreeViewNode node, string? database, int connectionId)
+        public virtual async Task<List<TreeViewMenuItem>> LoadTreeViewMenuItems(TreeViewNode node, string database, int connectionId)
         {
             var items = (await Store<TreeViewMenuItem>.GetList())
                 .Where(x => (x.Dbms.IsNullOrEmpty() || x.Dbms.Contains(Type))
@@ -109,7 +109,7 @@ namespace Sequel.Databases
             return items;
         }
 
-        public virtual async Task<IEnumerable<CompletionItem>> LoadCompletionItems(int lineNumber, int column, string? triggerCharacter, string? sql, string? database)
+        public virtual async Task<IEnumerable<CompletionItem>> LoadCompletionItems(int lineNumber, int column, string? triggerCharacter, string? sql, string database)
         {
             return await Helper.IgnoreErrorsAsync(async () =>
             {

@@ -23,7 +23,7 @@ namespace Sequel.Databases
 
         public override DBMS Type => DBMS.PostgreSQL;
 
-        protected override async Task<string?> GetCurrentSchema(string? database)
+        protected override async Task<string?> GetCurrentSchema(string database)
             => CleanSchemaName(await _server.QueryForString(database, "SHOW search_path"));
 
         public override async Task<IEnumerable<string>> LoadDatabases()
@@ -35,7 +35,7 @@ namespace Sequel.Databases
                 "ORDER BY datname");
         }
 
-        protected override async Task<IEnumerable<string>> LoadSchemas(string? database)
+        protected override async Task<IEnumerable<string>> LoadSchemas(string database)
         {
             return await _server.QueryStringList(database,
                 "SELECT schema_name " +
@@ -45,7 +45,7 @@ namespace Sequel.Databases
                 "ORDER BY schema_name");
         }
 
-        protected override async Task<IEnumerable<string>> LoadTables(string? database, string? schema)
+        protected override async Task<IEnumerable<string>> LoadTables(string database, string? schema)
         {
             Check.NotNullOrEmpty(schema, nameof(schema));
 
@@ -85,7 +85,7 @@ namespace Sequel.Databases
             return await _server.QueryStringList(database, sql);
         }
 
-        protected override async Task<IEnumerable<string>> LoadColumns(string? database, string? schema, string table)
+        protected override async Task<IEnumerable<string>> LoadColumns(string database, string? schema, string table)
         {
             Check.NotNull(schema, nameof(schema));
 

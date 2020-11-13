@@ -138,7 +138,7 @@ namespace Sequel.Core
         {
             using var cnn = server.CreateConnection();
             await cnn.OpenAsync(ct);
-            if (database != null)
+            if (database != null && server.Type != DBMS.SQLite)
             {
                 await cnn.ChangeDatabaseAsync(database, ct);
             }

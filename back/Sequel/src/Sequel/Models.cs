@@ -368,26 +368,13 @@ namespace Sequel.Models
         public override int GetHashCode() => Id.GetHashCode();
     }
 
-    public abstract class ContextBase : IValidatableObject
+    public abstract class ContextBase
     {
-        private string? _database;
-
         [Required]
         public ServerConnection Server { get; set; } = default!;
 
-        public string? Database
-        {
-            get { return Server.Type == DBMS.SQLite ? null : _database; }
-            set { _database = value; }
-        }
-
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            if (string.IsNullOrWhiteSpace(Database) && Server.Type != DBMS.SQLite)
-            {
-                yield return new ValidationResult($"The {nameof(Database)} field is required.", new[] { nameof(Database) });
-            }
-        }
+        [Required]
+        public string Database { get; set; } = default!;
     }
 
     public class QueryExecutionContext : ContextBase
