@@ -1,6 +1,4 @@
-﻿#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -49,8 +47,8 @@ namespace Sequel.Core
             return await Execute(server, database, sql, async (dbCommand, ct) =>
             {
                 var list = new List<string>();
-                using var dataReader = await dbCommand.ExecuteReaderAsync();
-                while (await dataReader.ReadAsync())
+                using var dataReader = await dbCommand.ExecuteReaderAsync(ct);
+                while (await dataReader.ReadAsync(ct))
                 {
                     string? item = dataReader[0].ToString();
                     if (item != null)
@@ -70,7 +68,7 @@ namespace Sequel.Core
         {
             return await Execute(server, database, sql, async (dbCommand, ct) =>
             {
-                return Convert.ToString(await dbCommand.ExecuteScalarAsync());
+                return Convert.ToString(await dbCommand.ExecuteScalarAsync(ct));
             });
         }
 
@@ -80,7 +78,7 @@ namespace Sequel.Core
         {
             return await Execute(server, database, sql, async (dbCommand, ct) =>
             {
-                return Convert.ToInt64(await dbCommand.ExecuteScalarAsync());
+                return Convert.ToInt64(await dbCommand.ExecuteScalarAsync(ct));
             });
         }
 
@@ -90,7 +88,7 @@ namespace Sequel.Core
         {
             return await Execute(server, database, sql, async (dbCommand, ct) =>
             {
-                return (bool)(await dbCommand.ExecuteScalarAsync() ?? false);
+                return (bool)(await dbCommand.ExecuteScalarAsync(ct) ?? false);
             });
         }
 
@@ -101,8 +99,8 @@ namespace Sequel.Core
             return await Execute(server, database, sql, async (dbCommand, ct) =>
             {
                 var list = new List<T>();
-                using var dataReader = await dbCommand.ExecuteReaderAsync();
-                while (await dataReader.ReadAsync())
+                using var dataReader = await dbCommand.ExecuteReaderAsync(ct);
+                while (await dataReader.ReadAsync(ct))
                 {
                     list.Add(map(dataReader));
                 }
@@ -123,7 +121,7 @@ namespace Sequel.Core
         {
             return await Execute(server, database, sql, async (dbCommand, ct) =>
             {
-                return await dbCommand.ExecuteNonQueryAsync();
+                return await dbCommand.ExecuteNonQueryAsync(ct);
             });
         }
 
