@@ -56,7 +56,8 @@ namespace Sequel.Databases
                $"WHERE table_schema = '{schema}' " +
                 "AND table_type='BASE TABLE' " +
                 "AND dep.objid IS NULL " +
-                "AND NOT (SELECT EXISTS (SELECT inhrelid FROM pg_catalog.pg_inherits WHERE inhrelid = (quote_ident(t.table_schema)||'.'||quote_ident(t.table_name))::regclass::oid))");
+                "AND NOT (SELECT EXISTS (SELECT inhrelid FROM pg_catalog.pg_inherits WHERE inhrelid = (quote_ident(t.table_schema)||'.'||quote_ident(t.table_name))::regclass::oid)) " +
+                "ORDER BY t.table_name");
         }
 
         protected override async Task<IEnumerable<string>> LoadFunctions(string database, string schema)
@@ -70,7 +71,8 @@ namespace Sequel.Databases
                       "LEFT JOIN pg_depend dep ON dep.objid = pg_proc.oid AND dep.deptype = 'e' " +
                      $"WHERE pg_proc.proisagg = false " +
                      $"AND ns.nspname = '{schema}' " +
-                     $"AND dep.objid IS NULL";
+                     $"AND dep.objid IS NULL " +
+                     $"ORDER BY pg_proc.proname";
             }
             else
             {
@@ -79,7 +81,8 @@ namespace Sequel.Databases
                       "LEFT JOIN pg_depend dep ON dep.objid = pg_proc.oid AND dep.deptype = 'e' " +
                      $"WHERE ns.nspname = '{schema}' " +
                      $"AND dep.objid IS NULL " +
-                     $"AND pg_proc.prokind = 'f'";
+                     $"AND pg_proc.prokind = 'f' " +
+                     $"ORDER BY pg_proc.proname";
             }
 
             return await _server.QueryStringList(database, sql);
@@ -93,7 +96,8 @@ namespace Sequel.Databases
                 "SELECT column_name " +
                 "FROM information_schema.columns " +
                $"WHERE table_schema = '{schema}' " +
-               $"AND table_name = '{table}' ");
+               $"AND table_name = '{table}' " +
+               $"ORDER BY column_name");
         }
 
         private async Task<long> GetVersion() => await _server.QueryForLong("SHOW server_version_num");
