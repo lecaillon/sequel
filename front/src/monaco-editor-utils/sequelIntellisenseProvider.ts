@@ -6,7 +6,7 @@ import store from '@/store';
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 export default class SequelIntellisenseProvider implements monaco.languages.CompletionItemProvider {
-    triggerCharacters?: string[] | undefined = ['.'];
+    triggerCharacters?: string[] | undefined = ['.', ' '];
     async provideCompletionItems(model: monaco.editor.ITextModel, position: monaco.Position, context: monaco.languages.CompletionContext, token: monaco.CancellationToken): Promise<monaco.languages.CompletionList> {
         let completionItems: monaco.languages.CompletionItem[] = [];
         if (store.getters.canExecuteQuery) {
