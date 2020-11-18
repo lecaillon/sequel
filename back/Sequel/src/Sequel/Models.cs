@@ -86,11 +86,11 @@ namespace Sequel.Models
         }
         public string? Confirmation { get; set; }
         // Targets
-        public List<DBMS>? Dbms { get; set; } = new List<DBMS>();
-        public List<TreeViewNodeType>? NodeTypes { get; set; } = new List<TreeViewNodeType>();
-        public List<int>? ConnectionIds { get; set; } = new List<int>();
-        public List<string>? Databases { get; set; } = new List<string>();
-        public List<string>? Nodes { get; set; } = new List<string>();
+        public List<DBMS> Dbms { get; set; } = new List<DBMS>();
+        public List<TreeViewNodeType> NodeTypes { get; set; } = new List<TreeViewNodeType>();
+        public List<int> ConnectionIds { get; set; } = new List<int>();
+        public List<string> Databases { get; set; } = new List<string>();
+        public List<string> Nodes { get; set; } = new List<string>();
 
         internal static async Task ConfigureAsync()
         {
@@ -279,6 +279,118 @@ namespace Sequel.Models
         public CompletionItemKind Kind { get; set; }
         public string InsertText { get; set; }
         public string? Detail { get; set; }
+    }
+
+    public class Snippet
+    {
+        public string Label { get; set; } = default!;
+        public CompletionItemKind? Kind { get; set; }
+        public string? InsertText { get; set; }
+        public string? Detail { get; set; }
+        public List<DBMS> Dbms { get; set; } = new List<DBMS>();
+        public List<int> ConnectionIds { get; set; } = new List<int>();
+        public List<string> Databases { get; set; } = new List<string>();
+
+        internal static async Task ConfigureAsync()
+        {
+            if (!Store<Snippet>.Exists())
+            {
+                var list = SqlKeywords.Select(x => new Snippet
+                {
+                    Label = x,
+                    Kind = CompletionItemKind.Keyword
+                }).ToList();
+
+                list.Add(new Snippet { Label = "s*", Kind = CompletionItemKind.Snippet, InsertText = "SELECT * FROM", Detail = "SELECT * FROM" });
+                list.Add(new Snippet { Label = "sc*", Kind = CompletionItemKind.Snippet, InsertText = "SELECT COUNT(*) FROM", Detail = "SELECT COUNT(*) FROM" });
+
+                await Store<Snippet>.Init(list);
+            }
+        }
+
+        private static readonly List<string> SqlKeywords = new()
+        {
+            "ADD",
+            "ADD CONSTRAINT",
+            "ALL",
+            "ALTER",
+            "ALTER COLUMN",
+            "ALTER TABLE",
+            "AND",
+            "ANY",
+            "AS",
+            "ASC",
+            "BACKUP DATABASE",
+            "BETWEEN",
+            "CASE",
+            "CHECK",
+            "COLUMN",
+            "CONSTRAINT",
+            "CREATE",
+            "CREATE DATABASE",
+            "CREATE INDEX",
+            "CREATE OR REPLACE VIEW",
+            "CREATE PROCEDURE",
+            "CREATE TABLE",
+            "CREATE UNIQUE INDEX",
+            "CREATE VIEW",
+            "DATABASE",
+            "DEFAULT",
+            "DELETE",
+            "DELETE FROM",
+            "DESC",
+            "DISTINCT",
+            "DROP",
+            "DROP COLUMN",
+            "DROP CONSTRAINT",
+            "DROP DATABASE",
+            "DROP DEFAULT",
+            "DROP INDEX",
+            "DROP TABLE",
+            "DROP VIEW",
+            "EXEC",
+            "EXISTS",
+            "FOREIGN KEY",
+            "FROM",
+            "FULL OUTER JOIN",
+            "GROUP BY",
+            "HAVING",
+            "IN",
+            "INDEX",
+            "INNER JOIN",
+            "INSERT INTO",
+            "INSERT INTO SELECT",
+            "IS NULL",
+            "IS NOT NULL",
+            "JOIN",
+            "LEFT JOIN",
+            "LIKE",
+            "LIMIT",
+            "NOT",
+            "NOT NULL",
+            "OR",
+            "ORDER BY",
+            "OUTER JOIN",
+            "PRIMARY KEY",
+            "PROCEDURE",
+            "RIGHT JOIN",
+            "ROWNUM",
+            "SELECT",
+            "SELECT DISTINCT",
+            "SELECT INTO",
+            "SELECT TOP",
+            "SET",
+            "TABLE",
+            "TOP",
+            "TRUNCATE TABLE",
+            "UNION",
+            "UNION ALL",
+            "UNIQUE",
+            "UPDATE",
+            "VALUES",
+            "VIEW",
+            "WHERE",
+        };
     }
 
     public class CodeLens

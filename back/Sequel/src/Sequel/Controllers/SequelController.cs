@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -124,8 +125,8 @@ namespace Sequel.Controllers
         }
 
         [HttpPost]
-        [Route("completion-items")]
-        public async Task<ActionResult<IEnumerable<CompletionItem>>> GetCompletionItems(CompletionContext context)
+        [Route("completion-items/intellisense")]
+        public async Task<ActionResult<IEnumerable<CompletionItem>>> GetIntellisense(CompletionContext context)
         {
             return Ok(await context.Server.GetDatabaseSystem().LoadCompletionItems(
                 context.LineNumber,
@@ -133,6 +134,19 @@ namespace Sequel.Controllers
                 context.TriggerCharacter,
                 context.Sql,
                 context.Database));
+        }
+
+        [HttpPost]
+        [Route("completion-items/snippet")]
+        public async Task<ActionResult<IEnumerable<CompletionItem>>> GeSnippet(CompletionContext context)
+        {
+            return Ok((await Store<Snippet>.GetList())
+                .Where(x => (x.Dbms.IsNullOrEmpty() || x.Dbms.Contains(context.Server.Type))
+                         && (x.ConnectionIds.IsNullOrEmpty() || x.ConnectionIds.Contains(context.Server.Id!.Value))
+                         && (x.Databases.IsNullOrEmpty() || context.Database is null || x.Databases.Contains(context.Database))
+                         &&  x.Kind is not null)
+                .Select(x => new CompletionItem(x.Label, x.Kind!.Value, x.InsertText, x.Detail))
+                .OrderBy(x => x.Label));
         }
 
         [HttpPost]

@@ -201,8 +201,8 @@ export default Vue.extend({
     showDbExplorer: true,
     showDbProperty: false,
     showFormServerConnection: false,
-    snippetProvider: {} as monaco.IDisposable,
-    intellisenseProvider: {} as monaco.IDisposable
+    intellisenseProvider: {} as monaco.IDisposable,
+    codeLensProvider: {} as monaco.IDisposable
   }),
   methods: {
     openQueryHistoryManager: () =>
@@ -241,11 +241,11 @@ export default Vue.extend({
     isQueryHistoryManagerOpened: () => store.state.isQueryHistoryManagerOpened
   },
   mounted() {
-    monaco.languages.registerCompletionItemProvider(
+    this.intellisenseProvider = monaco.languages.registerCompletionItemProvider(
       "sql",
       new SequelIntellisenseProvider()
     );
-    monaco.languages.registerCodeLensProvider(
+    this.codeLensProvider = monaco.languages.registerCodeLensProvider(
       "sql",
       new SequelCodeLensProvider()
     );
@@ -261,8 +261,8 @@ export default Vue.extend({
     );
   },
   beforeDestroy() {
-    this.snippetProvider.dispose();
     this.intellisenseProvider.dispose();
+    this.codeLensProvider.dispose();
   }
 });
 </script>

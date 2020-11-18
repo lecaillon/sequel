@@ -28,6 +28,7 @@ namespace Sequel
 
             await QueryManager.History.Configure();
             await TreeViewMenuItem.ConfigureAsync();
+            await Snippet.ConfigureAsync();
 
             if (Env.IsProduction())
             {
@@ -41,7 +42,7 @@ namespace Sequel
         {
             try
             {
-                string port = Configuration["urls"].Substring(Configuration["urls"].Length - 4);
+                string port = Configuration["urls"][^4..];
                 string url = $"http://localhost:{port}";
 
                 if (IsOSPlatform(Windows))

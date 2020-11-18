@@ -6,6 +6,7 @@ import { ServerConnection } from "@/models/serverConnection";
 import { TreeViewNode } from "@/models/treeViewNode";
 import { QueryExecutionContext } from "@/models/queryExecutionContext";
 import { TreeViewContext } from "@/models/treeViewContext";
+import { CompletionContext } from "@/models/completionContext";
 import { QueryResponseContext } from "@/models/queryResponseContext";
 import { AppSnackbar } from "@/models/appSnackbar";
 import { QueryTabContent } from "@/models/queryTabContent";
@@ -32,7 +33,8 @@ export default new Vuex.Store({
     activeQueryTabIndex: {} as number,
     queryTabs: [] as QueryTabContent[],
     history: {} as QueryHistoryContent,
-    isQueryHistoryManagerOpened: false as boolean
+    isQueryHistoryManagerOpened: false as boolean,
+    snippets: [] as monaco.languages.CompletionItem[]
   },
   getters: {
     activeQueryTab: state => state.queryTabs[state.activeQueryTabIndex],
@@ -92,8 +94,22 @@ export default new Vuex.Store({
     changeActiveDatabase: (context, database: string) => {
       context.commit("setActiveDatabase", database);
       context.dispatch("fetchTreeViewNodes");
+      context.dispatch("fetchSnippets");
       if (database && context.state.queryTabs.length == 0) {
         context.dispatch("openNewQueryTab");
+      }
+    },
+    fetchSnippets: async context => {
+      if (context.state.activeDatabase !== undefined) {
+        const snippets = await http.post<monaco.languages.CompletionItem[]>(`${BASE_URL}/sequel/completion-items/snippet`, {
+          server: context.state.activeServer,
+          database: context.state.activeDatabase,
+          lineNumber: 1,
+          column: 1
+        } as CompletionContext);
+        context.commit("setSnippets", snippets);
+      } else {
+        context.commit("setSnippets", new Array<monaco.languages.CompletionItem>());
       }
     },
     fetchHistory: async (context, query: QueryHistoryQuery) => {
@@ -257,6 +273,9 @@ export default new Vuex.Store({
     },
     setActiveDatabase(state, database: string) {
       state.activeDatabase = database;
+    },
+    setSnippets(state, snippets: monaco.languages.CompletionItem[]) {
+      state.snippets = snippets;
     },
     setHistory(state, history: QueryHistoryContent) {
       if (history.loading) {
