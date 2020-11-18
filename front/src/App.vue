@@ -65,27 +65,6 @@
         </template>
         <span>Open history</span>
       </v-tooltip>
-      <!-- <v-tooltip bottom>
-        <template v-slot:activator="{ on }">
-          <v-btn icon :disabled="!hasActiveNode" v-on="on">
-            <v-icon color="grey lighten-2">mdi-database-refresh</v-icon>
-          </v-btn>
-        </template>
-        <span>Todo: Refresh database tree node</span>
-      </v-tooltip>-->
-      <!-- <v-tooltip bottom>
-        <template v-slot:activator="{ on }">
-          <v-btn
-            icon
-            :disabled="!hasActiveNode"
-            v-on="on"
-            @click.stop="showDbProperty = !showDbProperty"
-          >
-            <v-icon color="grey lighten-2">mdi-wrench-outline</v-icon>
-          </v-btn>
-        </template>
-        <span>Todo: Show database property panel</span>
-      </v-tooltip>-->
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
           <v-btn
@@ -126,16 +105,6 @@
       style="overflow: visible;background-color: #1E1E1E"
     >
       <database-object-treeview />
-    </v-navigation-drawer>
-
-    <v-navigation-drawer app clipped right v-model="showDbProperty">
-      <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title class="title">table1</v-list-item-title>
-          <v-list-item-subtitle>Table</v-list-item-subtitle>
-        </v-list-item-content>
-      </v-list-item>
-      <v-divider></v-divider>
     </v-navigation-drawer>
 
     <v-main>
@@ -199,7 +168,6 @@ export default Vue.extend({
   },
   data: () => ({
     showDbExplorer: true,
-    showDbProperty: false,
     showFormServerConnection: false,
     intellisenseProvider: {} as monaco.IDisposable,
     codeLensProvider: {} as monaco.IDisposable
