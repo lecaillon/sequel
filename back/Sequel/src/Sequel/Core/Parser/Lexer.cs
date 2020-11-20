@@ -53,7 +53,7 @@ namespace Sequel.Core.Parser
 
                 // Fallback to TokenType.Name
                 tokens.Add(new Token(TokenType.Name, match.Value, tokens.LastOrDefault()));
-                startat += match.Length;
+                startat += match.Length == 0 ? 1 : match.Length;
             }
 
             return tokens;
