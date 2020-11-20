@@ -32,14 +32,17 @@ namespace Sequel
         Database,
         Schema,
         Table,
+        View,
         Function,
         Column,
 
         // Group label
         Schemas,
         Tables,
+        Views,
         Functions,
-        Columns,
+        TableColumns,
+        ViewColumns,
     }
 
     [JsonConverter(typeof(JsonStringEnumConverter))]

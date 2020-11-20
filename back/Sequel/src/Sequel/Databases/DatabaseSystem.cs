@@ -16,33 +16,33 @@ namespace Sequel.Databases
         public abstract Task<IEnumerable<string>> LoadDatabases();
         protected abstract Task<IEnumerable<string>> LoadSchemas(string database);
         protected abstract Task<IEnumerable<string>> LoadTables(string database, string? schema);
-        protected abstract Task<IEnumerable<string>> LoadFunctions(string database, string schema);
-        protected abstract Task<IEnumerable<string>> LoadColumns(string database, string? schema, string table);
+        protected abstract Task<IEnumerable<string>> LoadViews(string database, string? schema);
+        protected abstract Task<IEnumerable<string>> LoadFunctions(string database, string? schema);
+        protected abstract Task<IEnumerable<string>> LoadTableColumns(string database, string? schema, string table);
+        protected abstract Task<IEnumerable<string>> LoadViewColumns(string database, string? schema, string table);
 
-        public virtual async Task<IEnumerable<TreeViewNode>> LoadTreeViewNodes(string database, TreeViewNode? parent)
+        public virtual async Task<IEnumerable<TreeViewNode>> LoadTreeViewNodes(string database, TreeViewNode? parent) => parent?.Type switch
         {
-            Check.NotNull(database, nameof(database));
+            null => LoadDatabaseRootNode(database),
 
-            return parent?.Type switch
-            {
-                null => LoadDatabaseRootNode(database),
+            Schemas => await LoadSchemaNodes(database, parent),
+            Tables => await LoadTableNodes(database, parent),
+            Views => await LoadViewNodes(database, parent),
+            Functions => await LoadFunctionNodes(database, parent),
+            TableColumns => await LoadTableColumnNodes(database, parent),
+            ViewColumns => await LoadTableColumnNodes(database, parent),
 
-                Schemas => await LoadSchemaNodes(database, parent),
-                Tables => await LoadTableNodes(database, parent),
-                Functions => await LoadFunctionNodes(database, parent),
-                Columns => await LoadColumnNodes(database, parent),
+            Schema => LoadSchemaGroupLabels(parent),
+            Table => LoadTableGroupLabels(parent),
+            View => LoadViewGroupLabels(parent),
 
-                Schema => LoadSchemaGroupLabels(parent),
-                Table => LoadTableGroupLabels(parent),
-
-                _ => new List<TreeViewNode>()
-            };
-        }
+            _ => new List<TreeViewNode>()
+        };
 
         protected virtual IEnumerable<TreeViewNode> LoadDatabaseRootNode(string database)
         {
             var rootNode = new TreeViewNode(database, Database, parent: null, "mdi-database", "amber darken-1");
-            rootNode.Children.Add(new TreeViewNode(Schemas.ToString(), Schemas, rootNode, "mdi-hexagon-multiple-outline", "cyan"));
+            rootNode.Children.Add(new TreeViewNode("Schemas", Schemas, rootNode, "mdi-hexagon-multiple-outline", "cyan"));
 
             return new List<TreeViewNode> { rootNode };
         }
@@ -55,31 +55,43 @@ namespace Sequel.Databases
 
         protected virtual async Task<IEnumerable<TreeViewNode>> LoadTableNodes(string database, TreeViewNode parent)
         {
-            return (await LoadTables(database, parent.GetNameAtLevel(GetNodeTypeLevel(Schema))))
+            return (await LoadTables(database, Helper.IgnoreErrors(() => parent.GetNameAtLevel(GetNodeTypeLevel(Schema)))))
                 .Select(table => new TreeViewNode(table, Table, parent, "mdi-table", "blue"));
+        }
+
+        protected virtual async Task<IEnumerable<TreeViewNode>> LoadViewNodes(string database, TreeViewNode parent)
+        {
+            return (await LoadViews(database, Helper.IgnoreErrors(() => parent.GetNameAtLevel(GetNodeTypeLevel(Schema)))))
+                .Select(view => new TreeViewNode(view, View, parent, "mdi-group", "indigo"));
         }
 
         protected virtual async Task<IEnumerable<TreeViewNode>> LoadFunctionNodes(string database, TreeViewNode parent)
         {
-            return (await LoadFunctions(database, parent.GetNameAtLevel(GetNodeTypeLevel(Schema))))
+            return (await LoadFunctions(database, Helper.IgnoreErrors(() => parent.GetNameAtLevel(GetNodeTypeLevel(Schema)))))
                 .Select(function => new TreeViewNode(function, Function, parent, "mdi-function", "teal"));
         }
 
-        protected virtual async Task<IEnumerable<TreeViewNode>> LoadColumnNodes(string database, TreeViewNode parent)
+        protected virtual async Task<IEnumerable<TreeViewNode>> LoadTableColumnNodes(string database, TreeViewNode parent)
         {
-            return (await LoadColumns(database, parent.GetNameAtLevel(GetNodeTypeLevel(Schema)), parent.GetNameAtLevel(GetNodeTypeLevel(Table))))
+            return (await LoadTableColumns(database, Helper.IgnoreErrors(() => parent.GetNameAtLevel(GetNodeTypeLevel(Schema))), parent.GetNameAtLevel(GetNodeTypeLevel(Table))))
                 .Select(column => new TreeViewNode(column, Column, parent, "mdi-table-column", "deep-purple"));
         }
 
         protected virtual IEnumerable<TreeViewNode> LoadSchemaGroupLabels(TreeViewNode parent) => new[]
         {
-            new TreeViewNode(Tables.ToString(), Tables, parent, "mdi-table", "blue"),
-            new TreeViewNode(Functions.ToString(), Functions, parent, "mdi-function", "teal")
+            new TreeViewNode("Tables", Tables, parent, "mdi-table", "blue"),
+            new TreeViewNode("Views", Views, parent, "mdi-group", "indigo"),
+            new TreeViewNode("Functions", Functions, parent, "mdi-function", "teal")
         };
 
         protected virtual IEnumerable<TreeViewNode> LoadTableGroupLabels(TreeViewNode parent) => new[]
         {
-            new TreeViewNode(Columns.ToString(), Columns, parent, "mdi-table-column", "deep-purple"),
+            new TreeViewNode("Columns", TableColumns, parent, "mdi-table-column", "deep-purple"),
+        };
+
+        protected virtual IEnumerable<TreeViewNode> LoadViewGroupLabels(TreeViewNode parent) => new[]
+{
+            new TreeViewNode("Columns", ViewColumns, parent, "mdi-table-column", "deep-purple"),
         };
 
         public virtual async Task<List<TreeViewMenuItem>> LoadTreeViewMenuItems(TreeViewNode node, string database, int connectionId)
@@ -165,7 +177,7 @@ namespace Sequel.Databases
                             }
                             else
                             {
-                                var columns = await LoadColumns(database, tableAlias.Schema ?? await GetCurrentSchema(database), tableAlias.Table);
+                                var columns = await LoadTableColumns(database, tableAlias.Schema ?? await GetCurrentSchema(database), tableAlias.Table);
                                 items.AddRange(columns.Select(column => new CompletionItem(column, CompletionItemKind.Field)));
                             }
                         }

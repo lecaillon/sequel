@@ -23,9 +23,6 @@ namespace Sequel.Databases
 
         public override DBMS Type => DBMS.PostgreSQL;
 
-        protected override async Task<string?> GetCurrentSchema(string database)
-            => CleanSchemaName(await _server.QueryForString(database, "SHOW search_path"));
-
         public override async Task<IEnumerable<string>> LoadDatabases()
         {
             return await _server.QueryStringList(
@@ -34,6 +31,9 @@ namespace Sequel.Databases
                 "WHERE datistemplate = false " +
                 "ORDER BY datname");
         }
+
+        protected override async Task<string?> GetCurrentSchema(string database)
+            => CleanSchemaName(await _server.QueryForString(database, "SHOW search_path"));
 
         protected override async Task<IEnumerable<string>> LoadSchemas(string database)
         {
@@ -60,8 +60,22 @@ namespace Sequel.Databases
                 "ORDER BY t.table_name");
         }
 
-        protected override async Task<IEnumerable<string>> LoadFunctions(string database, string schema)
+        protected override async Task<IEnumerable<string>> LoadViews(string database, string? schema)
         {
+            Check.NotNullOrEmpty(schema, nameof(schema));
+
+            return await _server.QueryStringList(database,
+                "SELECT relname " +
+                "FROM pg_catalog.pg_class c " +
+                "JOIN pg_namespace n ON n.oid = c.relnamespace " +
+                "LEFT JOIN pg_depend dep ON dep.objid = c.oid AND dep.deptype = 'e' " +
+               $"WHERE c.relkind = 'v' AND  n.nspname = '{schema}' AND dep.objid IS NULL");
+        }
+
+        protected override async Task<IEnumerable<string>> LoadFunctions(string database, string? schema)
+        {
+            Check.NotNullOrEmpty(schema, nameof(schema));
+
             string sql;
 
             if (await GetVersion() < 11000)
@@ -88,7 +102,7 @@ namespace Sequel.Databases
             return await _server.QueryStringList(database, sql);
         }
 
-        protected override async Task<IEnumerable<string>> LoadColumns(string database, string? schema, string table)
+        protected override async Task<IEnumerable<string>> LoadTableColumns(string database, string? schema, string table)
         {
             Check.NotNull(schema, nameof(schema));
 
@@ -98,6 +112,17 @@ namespace Sequel.Databases
                $"WHERE table_schema = '{schema}' " +
                $"AND table_name = '{table}' " +
                $"ORDER BY column_name");
+        }
+
+        protected override async Task<IEnumerable<string>> LoadViewColumns(string database, string? schema, string view)
+        {
+            Check.NotNull(schema, nameof(schema));
+
+            return await _server.QueryStringList(database,
+                "SELECT attname" + //, format_type(atttypid, atttypmod) AS data_type
+                "FROM pg_attribute" +
+               $"WHERE attrelid = '{schema}.{view}'::regclass" +
+                "ORDER BY attnum");
         }
 
         private async Task<long> GetVersion() => await _server.QueryForLong("SHOW server_version_num");
