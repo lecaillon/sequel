@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Sequel.Core;
 using Sequel.Models;
 using static Sequel.Helper;
 using static Sequel.TreeViewNodeType;
@@ -24,39 +26,50 @@ namespace Sequel.Databases
 
         public override DBMS Type => DBMS.SQLite;
 
-        protected override Task<string?> GetCurrentSchema(string database) => Task.FromResult<string?>("main");
-
         public override async Task<IEnumerable<string>> LoadDatabases()
         {
             string? database = IgnoreErrors(() => Path.GetFileName(_server.ConnectionString.Replace("Data Source=", "")));
-            return database is null 
-                ? await Task.FromResult(Enumerable.Empty<string>()) 
+            return database is null
+                ? await Task.FromResult(Enumerable.Empty<string>())
                 : await Task.FromResult(new List<string> { database });
         }
 
-        public override async Task<IEnumerable<TreeViewNode>> LoadTreeViewNodes(string database, TreeViewNode? node)
-        {
-            return await Task.FromResult(new List<TreeViewNode>());
-        }
+        protected override Task<string?> GetCurrentSchema(string database)
+            => Task.FromResult<string?>("main");
 
         protected override Task<IEnumerable<string>> LoadSchemas(string database)
+            => Task.FromResult(Enumerable.Empty<string>());
+
+        protected override async Task<IEnumerable<string>> LoadTables(string database, string? schema)
+            => await _server.QueryStringList(database, $"SELECT tbl_name FROM sqlite_master WHERE type = 'table'");
+
+        protected override async Task<IEnumerable<string>> LoadViews(string database, string? schema)
+            => await _server.QueryStringList(database, $"SELECT tbl_name FROM sqlite_master WHERE type = 'view'");
+
+        protected override async Task<IEnumerable<string>> LoadTableColumns(string database, string? schema, string table)
+            => (await _server.QueryList(database, $"PRAGMA table_info({table})", r => r.GetString(1))).OrderBy(x => x);
+
+        protected override async Task<IEnumerable<string>> LoadViewColumns(string database, string? schema, string view)
+            => (await _server.QueryList(database, $"PRAGMA table_info({view})", r => r.GetString(1))).OrderBy(x => x);
+
+        protected override Task<IEnumerable<string>> LoadFunctions(string database, string? schema)
+            => throw new NotSupportedException();
+
+        protected override IEnumerable<TreeViewNode> LoadDatabaseRootNode(string database)
         {
-            throw new System.NotImplementedException();
+            var rootNode = new TreeViewNode(database, Database, parent: null, "mdi-database", "amber darken-1");
+            rootNode.Children.Add(new TreeViewNode("Tables", Tables, rootNode, "mdi-table", "blue"));
+            rootNode.Children.Add(new TreeViewNode("Views", Views, rootNode, "mdi-group", "indigo"));
+
+            return new List<TreeViewNode> { rootNode };
         }
 
-        protected override Task<IEnumerable<string>> LoadTables(string database, string? schema)
+        protected override int GetNodeTypeLevel(TreeViewNodeType node) => node switch
         {
-            throw new System.NotImplementedException();
-        }
-
-        protected override Task<IEnumerable<string>> LoadColumns(string database, string? schema, string table)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        protected override Task<IEnumerable<string>> LoadFunctions(string database, string schema)
-        {
-            throw new System.NotImplementedException();
-        }
+            Database => 0,
+            Table => 2,
+            Column => 4,
+            _ => throw new NotSupportedException($"TreeViewNodeType {node} not supported.")
+        };
     }
 }
