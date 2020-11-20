@@ -195,7 +195,7 @@ namespace Sequel.Core.Parser
                 if (currentToken.Depth == alias.Depth
                  && currentToken.UpperText == alias.UpperText
                  && GetPreviousToken(currentToken, skipMeaningless: false)?.IsMeaningless == true
-                 && GetNextToken(currentToken, skipMeaningless: false)?.IsMeaningless == true)
+                 && (GetNextToken(currentToken, skipMeaningless: false)?.IsMeaningless == true) || i + 1 == Count)
                 {
                     return currentToken;
                 }
