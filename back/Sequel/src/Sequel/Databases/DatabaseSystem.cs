@@ -18,6 +18,7 @@ namespace Sequel.Databases
         protected abstract Task<IEnumerable<string>> LoadTables(string database, string? schema);
         protected abstract Task<IEnumerable<string>> LoadViews(string database, string? schema);
         protected abstract Task<IEnumerable<string>> LoadFunctions(string database, string? schema);
+        protected abstract Task<IEnumerable<string>> LoadSequences(string database, string? schema);
         protected abstract Task<IEnumerable<string>> LoadTableColumns(string database, string? schema, string table);
         protected abstract Task<IEnumerable<string>> LoadViewColumns(string database, string? schema, string table);
 
@@ -29,6 +30,7 @@ namespace Sequel.Databases
             Tables => await LoadTableNodes(database, parent),
             Views => await LoadViewNodes(database, parent),
             Functions => await LoadFunctionNodes(database, parent),
+            Sequences => await LoadSequenceNodes(database, parent),
             TableColumns => await LoadTableColumnNodes(database, parent),
             ViewColumns => await LoadTableColumnNodes(database, parent),
 
@@ -71,6 +73,12 @@ namespace Sequel.Databases
                 .Select(function => new TreeViewNode(function, Function, parent, "mdi-function", "teal"));
         }
 
+        protected virtual async Task<IEnumerable<TreeViewNode>> LoadSequenceNodes(string database, TreeViewNode parent)
+        {
+            return (await LoadSequences(database, Helper.IgnoreErrors(() => parent.GetNameAtLevel(GetNodeTypeLevel(Schema)))))
+                .Select(seq => new TreeViewNode(seq, Sequence, parent, "mdi-numeric", "light-blue"));
+        }
+
         protected virtual async Task<IEnumerable<TreeViewNode>> LoadTableColumnNodes(string database, TreeViewNode parent)
         {
             return (await LoadTableColumns(database, Helper.IgnoreErrors(() => parent.GetNameAtLevel(GetNodeTypeLevel(Schema))), parent.GetNameAtLevel(GetNodeTypeLevel(Table))))
@@ -81,7 +89,8 @@ namespace Sequel.Databases
         {
             new TreeViewNode("Tables", Tables, parent, "mdi-table", "blue"),
             new TreeViewNode("Views", Views, parent, "mdi-group", "indigo"),
-            new TreeViewNode("Functions", Functions, parent, "mdi-function", "teal")
+            new TreeViewNode("Functions", Functions, parent, "mdi-function", "teal"),
+            new TreeViewNode("Sequences", Sequences, parent, "mdi-numeric", "light-blue")
         };
 
         protected virtual IEnumerable<TreeViewNode> LoadTableGroupLabels(TreeViewNode parent) => new[]

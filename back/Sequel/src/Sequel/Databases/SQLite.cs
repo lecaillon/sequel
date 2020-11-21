@@ -55,11 +55,15 @@ namespace Sequel.Databases
         protected override Task<IEnumerable<string>> LoadFunctions(string database, string? schema)
             => throw new NotSupportedException();
 
+        protected override async Task<IEnumerable<string>> LoadSequences(string database, string? schema)
+            => await _server.QueryStringList(database, $"SELECT name FROM sqlite_sequence ORDER BY name");
+
         protected override IEnumerable<TreeViewNode> LoadDatabaseRootNode(string database)
         {
             var rootNode = new TreeViewNode(database, Database, parent: null, "mdi-database", "amber darken-1");
             rootNode.Children.Add(new TreeViewNode("Tables", Tables, rootNode, "mdi-table", "blue"));
             rootNode.Children.Add(new TreeViewNode("Views", Views, rootNode, "mdi-group", "indigo"));
+            rootNode.Children.Add(new TreeViewNode("Sequences", Sequences, rootNode, "mdi-numeric", "light-blue"));
 
             return new List<TreeViewNode> { rootNode };
         }

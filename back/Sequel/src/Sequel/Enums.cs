@@ -33,6 +33,7 @@ namespace Sequel
         Schema,
         Table,
         View,
+        Sequence,
         Function,
         Column,
 
@@ -40,6 +41,7 @@ namespace Sequel
         Schemas,
         Tables,
         Views,
+        Sequences,
         Functions,
         TableColumns,
         ViewColumns,

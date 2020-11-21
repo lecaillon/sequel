@@ -83,10 +83,10 @@ namespace Sequel.Databases
                 sql = "SELECT pg_proc.proname " +
                       "FROM pg_proc INNER JOIN pg_namespace ns ON (pg_proc.pronamespace = ns.oid) " +
                       "LEFT JOIN pg_depend dep ON dep.objid = pg_proc.oid AND dep.deptype = 'e' " +
-                     $"WHERE pg_proc.proisagg = false " +
+                      "WHERE pg_proc.proisagg = false " +
                      $"AND ns.nspname = '{schema}' " +
-                     $"AND dep.objid IS NULL " +
-                     $"ORDER BY pg_proc.proname";
+                      "AND dep.objid IS NULL " +
+                      "ORDER BY pg_proc.proname";
             }
             else
             {
@@ -94,12 +94,23 @@ namespace Sequel.Databases
                       "FROM pg_proc INNER JOIN pg_namespace ns ON (pg_proc.pronamespace = ns.oid) " +
                       "LEFT JOIN pg_depend dep ON dep.objid = pg_proc.oid AND dep.deptype = 'e' " +
                      $"WHERE ns.nspname = '{schema}' " +
-                     $"AND dep.objid IS NULL " +
-                     $"AND pg_proc.prokind = 'f' " +
-                     $"ORDER BY pg_proc.proname";
+                      "AND dep.objid IS NULL " +
+                      "AND pg_proc.prokind = 'f' " +
+                      "ORDER BY pg_proc.proname";
             }
 
             return await _server.QueryStringList(database, sql);
+        }
+
+        protected override async Task<IEnumerable<string>> LoadSequences(string database, string? schema)
+        {
+            Check.NotNull(schema, nameof(schema));
+
+            return await _server.QueryStringList(database,
+                "SELECT sequence_name " +
+                "FROM information_schema.sequences " +
+               $"WHERE sequence_schema = '{schema}' " +
+                "ORDER BY sequence_name");
         }
 
         protected override async Task<IEnumerable<string>> LoadTableColumns(string database, string? schema, string table)
