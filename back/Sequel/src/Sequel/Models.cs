@@ -30,16 +30,16 @@ namespace Sequel.Models
         public TreeViewNode(string name,
                             TreeViewNodeType type,
                             TreeViewNode? parent,
-                            string icon,
-                            string color,
+                            string? icon = null,
+                            string? color = null,
                             List<TreeViewNode> children = null!,
                             Dictionary<string, object> details = null!)
         {
             Id = parent is null ? name : $"{parent.Id}{PathSeparator}{name}";
             Type = type;
             Name = name;
-            Icon = icon;
-            Color = color;
+            Icon = icon ?? Check.NotNullOrEmpty(parent?.Icon, nameof(parent.Icon));
+            Color = color ?? Check.NotNullOrEmpty(parent?.Color, nameof(parent.Color));
             Children = children ?? new List<TreeViewNode>();
             Details = details ?? new Dictionary<string, object>();
         }
