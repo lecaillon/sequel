@@ -1,6 +1,7 @@
 const MonacoEditorPlugin = require('monaco-editor-webpack-plugin')
 
 module.exports = {
+  productionSourceMap: false,
   transpileDependencies: ["vuetify"],
   configureWebpack: {
     plugins: [
