@@ -18,6 +18,7 @@ namespace Sequel.Databases
         protected abstract Task<IEnumerable<string>> LoadTables(string database, string? schema);
         protected abstract Task<IEnumerable<string>> LoadViews(string database, string? schema);
         protected abstract Task<IEnumerable<string>> LoadFunctions(string database, string? schema);
+        protected abstract Task<IEnumerable<string>> LoadProcedures(string database, string? schema);
         protected abstract Task<IEnumerable<string>> LoadSequences(string database, string? schema);
         protected abstract Task<IEnumerable<string>> LoadTableColumns(string database, string? schema, string table);
         protected abstract Task<IEnumerable<string>> LoadViewColumns(string database, string? schema, string table);
@@ -30,6 +31,7 @@ namespace Sequel.Databases
             Tables => await LoadTableNodes(database, parent),
             Views => await LoadViewNodes(database, parent),
             Functions => await LoadFunctionNodes(database, parent),
+            Procedures => await LoadProcedureNodes(database, parent),
             Sequences => await LoadSequenceNodes(database, parent),
             TableColumns => await LoadTableColumnNodes(database, parent),
             ViewColumns => await LoadTableColumnNodes(database, parent),
@@ -48,6 +50,25 @@ namespace Sequel.Databases
 
             return new List<TreeViewNode> { rootNode };
         }
+
+        protected virtual IEnumerable<TreeViewNode> LoadSchemaGroupLabels(TreeViewNode parent) => new[]
+{
+            new TreeViewNode("Tables", Tables, parent, "mdi-table", "blue"),
+            new TreeViewNode("Views", Views, parent, "mdi-group", "indigo"),
+            new TreeViewNode("Functions", Functions, parent, "mdi-function", "teal"),
+            new TreeViewNode("Procedures", Procedures, parent, "mdi-code-braces", "light-blue"),
+            new TreeViewNode("Sequences", Sequences, parent, "mdi-numeric", "lime")
+        };
+
+        protected virtual IEnumerable<TreeViewNode> LoadTableGroupLabels(TreeViewNode parent) => new[]
+        {
+            new TreeViewNode("Columns", TableColumns, parent, "mdi-table-column", "deep-purple"),
+        };
+
+        protected virtual IEnumerable<TreeViewNode> LoadViewGroupLabels(TreeViewNode parent) => new[]
+{
+            new TreeViewNode("Columns", ViewColumns, parent, "mdi-table-column", "deep-purple"),
+        };
 
         protected virtual async Task<IEnumerable<TreeViewNode>> LoadSchemaNodes(string database, TreeViewNode parent)
             => (await LoadSchemas(database)).Select(schema => new TreeViewNode(schema, Schema, parent));
@@ -70,6 +91,12 @@ namespace Sequel.Databases
                 .Select(function => new TreeViewNode(function, Function, parent));
         }
 
+        protected virtual async Task<IEnumerable<TreeViewNode>> LoadProcedureNodes(string database, TreeViewNode parent)
+        {
+            return (await LoadProcedures(database, Helper.IgnoreErrors(() => parent.GetNameAtLevel(GetNodeTypeLevel(Schema)))))
+                .Select(proc => new TreeViewNode(proc, Procedure, parent));
+        }
+
         protected virtual async Task<IEnumerable<TreeViewNode>> LoadSequenceNodes(string database, TreeViewNode parent)
         {
             return (await LoadSequences(database, Helper.IgnoreErrors(() => parent.GetNameAtLevel(GetNodeTypeLevel(Schema)))))
@@ -81,24 +108,6 @@ namespace Sequel.Databases
             return (await LoadTableColumns(database, Helper.IgnoreErrors(() => parent.GetNameAtLevel(GetNodeTypeLevel(Schema))), parent.GetNameAtLevel(GetNodeTypeLevel(Table))))
                 .Select(column => new TreeViewNode(column, Column, parent));
         }
-
-        protected virtual IEnumerable<TreeViewNode> LoadSchemaGroupLabels(TreeViewNode parent) => new[]
-        {
-            new TreeViewNode("Tables", Tables, parent, "mdi-table", "blue"),
-            new TreeViewNode("Views", Views, parent, "mdi-group", "indigo"),
-            new TreeViewNode("Functions", Functions, parent, "mdi-function", "teal"),
-            new TreeViewNode("Sequences", Sequences, parent, "mdi-numeric", "light-blue")
-        };
-
-        protected virtual IEnumerable<TreeViewNode> LoadTableGroupLabels(TreeViewNode parent) => new[]
-        {
-            new TreeViewNode("Columns", TableColumns, parent, "mdi-table-column", "deep-purple"),
-        };
-
-        protected virtual IEnumerable<TreeViewNode> LoadViewGroupLabels(TreeViewNode parent) => new[]
-{
-            new TreeViewNode("Columns", ViewColumns, parent, "mdi-table-column", "deep-purple"),
-        };
 
         public virtual async Task<List<TreeViewMenuItem>> LoadTreeViewMenuItems(TreeViewNode node, string database, int connectionId)
         {
@@ -208,7 +217,6 @@ namespace Sequel.Databases
             Schema => 2,
             Table => 4,
             Function => 4,
-            Column => 6,
             _ => throw new NotSupportedException($"TreeViewNodeType {node} not supported.")
         };
 

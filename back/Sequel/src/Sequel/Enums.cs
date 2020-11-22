@@ -35,6 +35,7 @@ namespace Sequel
         View,
         Sequence,
         Function,
+        Procedure,
         Column,
 
         // Group label
@@ -43,6 +44,7 @@ namespace Sequel
         Views,
         Sequences,
         Functions,
+        Procedures,
         TableColumns,
         ViewColumns,
     }

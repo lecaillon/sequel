@@ -102,6 +102,20 @@ namespace Sequel.Databases
             return await _server.QueryStringList(database, sql);
         }
 
+        protected override async Task<IEnumerable<string>> LoadProcedures(string database, string? schema)
+        {
+            Check.NotNull(schema, nameof(schema));
+
+            return await _server.QueryStringList(database,
+                "SELECT pg_proc.proname " +
+                "FROM pg_proc INNER JOIN pg_namespace ns ON (pg_proc.pronamespace = ns.oid) " +
+                "LEFT JOIN pg_depend dep ON dep.objid = pg_proc.oid AND dep.deptype = 'e' " +
+                $"WHERE ns.nspname = '{schema}' " +
+                "AND dep.objid IS NULL " +
+                "AND pg_proc.prokind = 'p' " +
+                "ORDER BY pg_proc.proname");
+        }
+
         protected override async Task<IEnumerable<string>> LoadSequences(string database, string? schema)
         {
             Check.NotNull(schema, nameof(schema));

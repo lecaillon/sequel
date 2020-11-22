@@ -34,6 +34,23 @@ namespace Sequel.Databases
                 : await Task.FromResult(new List<string> { database });
         }
 
+        protected override IEnumerable<TreeViewNode> LoadDatabaseRootNode(string database)
+        {
+            var rootNode = new TreeViewNode(database, Database, parent: null, "mdi-database", "amber darken-1");
+            rootNode.Children.Add(new TreeViewNode("Tables", Tables, rootNode, "mdi-table", "blue"));
+            rootNode.Children.Add(new TreeViewNode("Views", Views, rootNode, "mdi-group", "indigo"));
+            rootNode.Children.Add(new TreeViewNode("Sequences", Sequences, rootNode, "mdi-numeric", "light-blue"));
+
+            return new List<TreeViewNode> { rootNode };
+        }
+
+        protected override int GetNodeTypeLevel(TreeViewNodeType node) => node switch
+        {
+            Database => 0,
+            Table => 2,
+            _ => throw new NotSupportedException($"TreeViewNodeType {node} not supported.")
+        };
+
         protected override Task<string?> GetCurrentSchema(string database)
             => Task.FromResult<string?>("main");
 
@@ -58,22 +75,7 @@ namespace Sequel.Databases
         protected override async Task<IEnumerable<string>> LoadSequences(string database, string? schema)
             => await _server.QueryStringList(database, $"SELECT name FROM sqlite_sequence ORDER BY name");
 
-        protected override IEnumerable<TreeViewNode> LoadDatabaseRootNode(string database)
-        {
-            var rootNode = new TreeViewNode(database, Database, parent: null, "mdi-database", "amber darken-1");
-            rootNode.Children.Add(new TreeViewNode("Tables", Tables, rootNode, "mdi-table", "blue"));
-            rootNode.Children.Add(new TreeViewNode("Views", Views, rootNode, "mdi-group", "indigo"));
-            rootNode.Children.Add(new TreeViewNode("Sequences", Sequences, rootNode, "mdi-numeric", "light-blue"));
-
-            return new List<TreeViewNode> { rootNode };
-        }
-
-        protected override int GetNodeTypeLevel(TreeViewNodeType node) => node switch
-        {
-            Database => 0,
-            Table => 2,
-            Column => 4,
-            _ => throw new NotSupportedException($"TreeViewNodeType {node} not supported.")
-        };
+        protected override Task<IEnumerable<string>> LoadProcedures(string database, string? schema)
+            => throw new NotSupportedException();
     }
 }
