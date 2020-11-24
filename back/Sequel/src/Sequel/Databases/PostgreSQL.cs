@@ -139,6 +139,18 @@ namespace Sequel.Databases
                $"ORDER BY column_name");
         }
 
+        protected override async Task<IEnumerable<string>> LoadIndexes(string database, string? schema, string table)
+        {
+            Check.NotNull(schema, nameof(schema));
+
+            return await _server.QueryStringList(database,
+                "SELECT indexname " +
+                "FROM pg_indexes " +
+               $"WHERE schemaname = '{schema}' " +
+               $"AND tablename = '{table}' " +
+               $"ORDER BY indexname");
+        }
+
         protected override async Task<IEnumerable<string>> LoadViewColumns(string database, string? schema, string view)
         {
             Check.NotNull(schema, nameof(schema));

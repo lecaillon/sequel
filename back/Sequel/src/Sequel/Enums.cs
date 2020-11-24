@@ -37,6 +37,9 @@ namespace Sequel
         Function,
         Procedure,
         Column,
+        Index,
+        PrimaryKey,
+        ForeignKey,
 
         // Group label
         Schemas,
@@ -47,6 +50,8 @@ namespace Sequel
         Procedures,
         TableColumns,
         ViewColumns,
+        Indexes,
+        Constraints // FK, PK
     }
 
     [JsonConverter(typeof(JsonStringEnumConverter))]

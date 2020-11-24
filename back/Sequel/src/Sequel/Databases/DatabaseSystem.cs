@@ -21,6 +21,7 @@ namespace Sequel.Databases
         protected abstract Task<IEnumerable<string>> LoadProcedures(string database, string? schema);
         protected abstract Task<IEnumerable<string>> LoadSequences(string database, string? schema);
         protected abstract Task<IEnumerable<string>> LoadTableColumns(string database, string? schema, string table);
+        protected abstract Task<IEnumerable<string>> LoadIndexes(string database, string? schema, string table);
         protected abstract Task<IEnumerable<string>> LoadViewColumns(string database, string? schema, string table);
 
         public virtual async Task<IEnumerable<TreeViewNode>> LoadTreeViewNodes(string database, TreeViewNode? parent) => parent?.Type switch
@@ -33,7 +34,10 @@ namespace Sequel.Databases
             Functions => await LoadFunctionNodes(database, parent),
             Procedures => await LoadProcedureNodes(database, parent),
             Sequences => await LoadSequenceNodes(database, parent),
+
             TableColumns => await LoadTableColumnNodes(database, parent),
+            Indexes => await LoadIndexes(database, parent),
+            Constraints => await LoadConstraints(database, parent),
             ViewColumns => await LoadTableColumnNodes(database, parent),
 
             Schema => LoadSchemaGroupLabels(parent),
@@ -63,6 +67,8 @@ namespace Sequel.Databases
         protected virtual IEnumerable<TreeViewNode> LoadTableGroupLabels(TreeViewNode parent) => new[]
         {
             new TreeViewNode("Columns", TableColumns, parent, "mdi-table-column", "deep-purple"),
+            new TreeViewNode("Indexes", Indexes, parent, "mdi-sort-ascending", "deep-purple"),
+            new TreeViewNode("Constraints", Constraints, parent, "mdi-key", "deep-purple"),
         };
 
         protected virtual IEnumerable<TreeViewNode> LoadViewGroupLabels(TreeViewNode parent) => new[]
@@ -107,6 +113,17 @@ namespace Sequel.Databases
         {
             return (await LoadTableColumns(database, Helper.IgnoreErrors(() => parent.GetNameAtLevel(GetNodeTypeLevel(Schema))), parent.GetNameAtLevel(GetNodeTypeLevel(Table))))
                 .Select(column => new TreeViewNode(column, Column, parent));
+        }
+
+        protected virtual async Task<IEnumerable<TreeViewNode>> LoadIndexes(string database, TreeViewNode parent)
+        {
+            return (await LoadIndexes(database, Helper.IgnoreErrors(() => parent.GetNameAtLevel(GetNodeTypeLevel(Schema))), parent.GetNameAtLevel(GetNodeTypeLevel(Table))))
+                .Select(index => new TreeViewNode(index, TreeViewNodeType.Index, parent));
+        }
+
+        protected virtual async Task<IEnumerable<TreeViewNode>> LoadConstraints(string database, TreeViewNode parent)
+        {
+
         }
 
         public virtual async Task<List<TreeViewMenuItem>> LoadTreeViewMenuItems(TreeViewNode node, string database, int connectionId)

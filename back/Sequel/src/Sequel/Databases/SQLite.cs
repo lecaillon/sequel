@@ -64,10 +64,13 @@ namespace Sequel.Databases
             => await _server.QueryStringList(database, $"SELECT tbl_name FROM sqlite_master WHERE type = 'view'");
 
         protected override async Task<IEnumerable<string>> LoadTableColumns(string database, string? schema, string table)
-            => (await _server.QueryList(database, $"PRAGMA table_info({table})", r => r.GetString(1))).OrderBy(x => x);
+            => await _server.QueryStringList(database, $"SELECT name FROM pragma_table_info('{table}')");
+
+        protected override async Task<IEnumerable<string>> LoadIndexes(string database, string? schema, string table)
+            => await _server.QueryStringList(database, $"SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = '{table}' ORDER BY name");
 
         protected override async Task<IEnumerable<string>> LoadViewColumns(string database, string? schema, string view)
-            => (await _server.QueryList(database, $"PRAGMA table_info({view})", r => r.GetString(1))).OrderBy(x => x);
+            => await _server.QueryStringList(database, $"SELECT name FROM pragma_table_info('{view}')");
 
         protected override Task<IEnumerable<string>> LoadFunctions(string database, string? schema)
             => throw new NotSupportedException();
