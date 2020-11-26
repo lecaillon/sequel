@@ -69,6 +69,12 @@ namespace Sequel.Databases
         protected override async Task<IEnumerable<string>> LoadIndexes(string database, string? schema, string table)
             => await _server.QueryStringList(database, $"SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = '{table}' ORDER BY name");
 
+        protected override async Task<IEnumerable<string>> LoadPrimaryKeys(string database, string? schema, string table)
+            => await _server.QueryStringList(database, $"SELECT name FROM pragma_table_info('{table}') WHERE pk > 0");
+
+        protected override async Task<IEnumerable<string>> LoadForeignKeys(string database, string? schema, string table)
+            => (await _server.QueryList(database, $"PRAGMA foreign_key_list({table})", r => r.GetString(3)));
+
         protected override async Task<IEnumerable<string>> LoadViewColumns(string database, string? schema, string view)
             => await _server.QueryStringList(database, $"SELECT name FROM pragma_table_info('{view}')");
 

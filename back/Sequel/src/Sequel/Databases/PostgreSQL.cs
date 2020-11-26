@@ -151,6 +151,31 @@ namespace Sequel.Databases
                $"ORDER BY indexname");
         }
 
+        protected override async Task<IEnumerable<string>> LoadPrimaryKeys(string database, string? schema, string table)
+        {
+            Check.NotNull(schema, nameof(schema));
+
+            return await _server.QueryStringList(database,
+                "SELECT a.attname " +
+                "FROM pg_index i " +
+                "JOIN pg_attribute a ON a.attrelid = i.indrelid " +
+                "AND a.attnum = ANY(i.indkey) " +
+               $"WHERE i.indrelid = '{schema}.{table}'::regclass " +
+                "AND i.indisprimary");
+        }
+
+        protected override async Task<IEnumerable<string>> LoadForeignKeys(string database, string? schema, string table)
+        {
+            Check.NotNull(schema, nameof(schema));
+
+            return await _server.QueryStringList(database,
+                "SELECT constraint_name " +
+                "FROM information_schema.table_constraints " +
+                "WHERE constraint_type = 'FOREIGN KEY' " +
+               $"AND table_schema = '{schema}' " +
+               $"AND table_name = '{table}'");
+        }
+
         protected override async Task<IEnumerable<string>> LoadViewColumns(string database, string? schema, string view)
         {
             Check.NotNull(schema, nameof(schema));
