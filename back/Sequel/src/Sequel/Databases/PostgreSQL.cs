@@ -2,18 +2,11 @@
 using System.Threading.Tasks;
 using Sequel.Core;
 using Sequel.Models;
-using static Sequel.TreeViewNodeType;
 
 namespace Sequel.Databases
 {
     public class PostgreSQL : DatabaseSystem
     {
-        internal static readonly List<TreeViewMenuItem> TreeViewMenuItems = new List<TreeViewMenuItem>
-        {
-            new TreeViewMenuItem("All rows", "SELECT * FROM ${schema}.${table}", "mdi-database-search", 1000, new[] { DBMS.PostgreSQL }, new[] { Table }),
-            new TreeViewMenuItem("First 100 rows", "SELECT * FROM ${schema}.${table} LIMIT 100", "mdi-database-search", 1010, new[] { DBMS.PostgreSQL }, new[] { Table }),
-        };
-
         private readonly ServerConnection _server;
 
         public PostgreSQL(ServerConnection server)

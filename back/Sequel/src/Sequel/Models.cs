@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Sequel.Core;
 using Sequel.Core.Parser;
 using Sequel.Databases;
+using static Sequel.TreeViewNodeType;
 
 namespace Sequel.Models
 {
@@ -94,13 +95,44 @@ namespace Sequel.Models
 
         internal static async Task ConfigureAsync()
         {
-            if (!Store<TreeViewMenuItem>.Exists())
+            await Store<TreeViewMenuItem>.Init(new List<TreeViewMenuItem>()
+                .Union(Common.TreeViewMenuItems)
+                .Union(PostgreSQL.TreeViewMenuItems)
+                .Union(SqlServer.TreeViewMenuItems)
+                .Union(SQLite.TreeViewMenuItems)
+                .OrderBy(x => x.Order));
+        }
+
+        public static class Common
+        {
+            internal static readonly List<TreeViewMenuItem> TreeViewMenuItems = new List<TreeViewMenuItem>
             {
-                await Store<TreeViewMenuItem>.Init(new List<TreeViewMenuItem>()
-                    .Union(PostgreSQL.TreeViewMenuItems)
-                    .Union(SQLite.TreeViewMenuItems)
-                    .OrderBy(x => x.Order));
-            }
+                new TreeViewMenuItem("All rows", "SELECT * FROM ${schema}.${table}", "mdi-database-search", 1000, new[] { DBMS.PostgreSQL, DBMS.SQLServer }, new[] { Table }),
+            };
+        }
+
+        public static class PostgreSQL
+        {
+            internal static readonly List<TreeViewMenuItem> TreeViewMenuItems = new List<TreeViewMenuItem>
+            {
+                new TreeViewMenuItem("First 100 rows", "SELECT * FROM ${schema}.${table} LIMIT 100", "mdi-database-search", 2000, new[] { DBMS.PostgreSQL }, new[] { Table }),
+            };
+        }
+
+        public static class SqlServer
+        {
+            internal static readonly List<TreeViewMenuItem> TreeViewMenuItems = new List<TreeViewMenuItem>
+            {
+                new TreeViewMenuItem("First 100 rows", "SELECT TOP 100 * FROM ${schema}.${table}", "mdi-database-search", 3000, new[] { DBMS.SQLServer }, new[] { Table }),
+            };
+        }
+
+        public static class SQLite
+        {
+            internal static readonly List<TreeViewMenuItem> TreeViewMenuItems = new List<TreeViewMenuItem>
+            {
+                new TreeViewMenuItem("All rows", "SELECT * FROM ${table}", "mdi-database-search", 4000, new[] { DBMS.SQLite }, new[] { Table }),
+            };
         }
     }
 

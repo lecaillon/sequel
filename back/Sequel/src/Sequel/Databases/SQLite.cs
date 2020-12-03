@@ -12,11 +12,6 @@ namespace Sequel.Databases
 {
     public class SQLite : DatabaseSystem
     {
-        internal static readonly List<TreeViewMenuItem> TreeViewMenuItems = new List<TreeViewMenuItem>
-        {
-            new TreeViewMenuItem("All rows", "SELECT * FROM ${table}", "mdi-database-search", 4000, new[] { DBMS.SQLite }, new[] { Table }),
-        };
-
         private readonly ServerConnection _server;
 
         public SQLite(ServerConnection server)
