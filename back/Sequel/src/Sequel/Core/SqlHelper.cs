@@ -6,6 +6,7 @@ using System.Data.SQLite;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 using Npgsql;
 using Sequel.Databases;
 using Sequel.Models;
@@ -20,6 +21,7 @@ namespace Sequel.Core
             {
                 DBMS.PostgreSQL => new NpgsqlConnection(server.ConnectionString),
                 DBMS.SQLite => new SQLiteConnection(server.ConnectionString),
+                DBMS.SQLServer => new SqlConnection(server.ConnectionString),
                 _ => throw new NotSupportedException($"Unsupported database {server.Type}.")
             };
         }
@@ -36,6 +38,7 @@ namespace Sequel.Core
         {
             return server.Type switch
             {
+                DBMS.SQLServer => new SqlServer(server),
                 DBMS.PostgreSQL => new PostgreSQL(server),
                 DBMS.SQLite => new SQLite(server),
                 _ => throw new NotSupportedException($"Unsupported database system {server.Type}.")
