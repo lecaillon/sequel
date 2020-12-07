@@ -129,7 +129,7 @@ namespace Sequel.Databases
                 "FROM information_schema.columns " +
                $"WHERE table_schema = '{schema}' " +
                $"AND table_name = '{table}' " +
-               $"ORDER BY column_name");
+                "ORDER BY column_name");
         }
 
         protected override async Task<IEnumerable<string>> LoadIndexes(string database, string? schema, string table)
@@ -141,7 +141,7 @@ namespace Sequel.Databases
                 "FROM pg_indexes " +
                $"WHERE schemaname = '{schema}' " +
                $"AND tablename = '{table}' " +
-               $"ORDER BY indexname");
+                "ORDER BY indexname");
         }
 
         protected override async Task<IEnumerable<string>> LoadPrimaryKeys(string database, string? schema, string table)
