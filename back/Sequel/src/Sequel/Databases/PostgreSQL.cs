@@ -162,11 +162,14 @@ namespace Sequel.Databases
             Check.NotNull(schema, nameof(schema));
 
             return await _server.QueryStringList(database,
-                "SELECT constraint_name " +
-                "FROM information_schema.table_constraints " +
-                "WHERE constraint_type = 'FOREIGN KEY' " +
-               $"AND table_schema = '{schema}' " +
-               $"AND table_name = '{table}'");
+                "SELECT kcu.column_name " +
+                "FROM information_schema.table_constraints AS tc " +
+                "JOIN information_schema.key_column_usage AS kcu " +
+                "ON tc.constraint_name = kcu.constraint_name " +
+                "AND tc.table_schema = kcu.table_schema " +
+                "WHERE tc.constraint_type = 'FOREIGN KEY' " +
+               $"AND tc.table_schema = '{schema}' " +
+               $"AND tc.table_name = '{table}'");
         }
 
         protected override async Task<IEnumerable<string>> LoadViewColumns(string database, string? schema, string view)
