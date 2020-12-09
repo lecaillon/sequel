@@ -28,7 +28,8 @@ namespace Sequel.Databases
                 "FROM sys.schemas s " +
                 "INNER JOIN sys.sysusers u ON u.uid = s.principal_id " +
                 "WHERE u.issqluser = 1 " +
-                "AND u.name NOT IN ('sys', 'guest', 'INFORMATION_SCHEMA')");
+                "AND u.name NOT IN ('sys', 'guest', 'INFORMATION_SCHEMA') " +
+                "ORDER BY s.name");
 
         protected override async Task<IEnumerable<string>> LoadTables(string database, string? schema)
         {
