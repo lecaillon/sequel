@@ -39,7 +39,6 @@ namespace Sequel.Databases
 
             TableColumns => await LoadTableColumnNodes(database, parent),
             Indexes => await LoadIndexes(database, parent),
-            Constraints => await LoadConstraints(database, parent),
             ViewColumns => await LoadTableColumnNodes(database, parent),
 
             Schema => LoadSchemaGroupLabels(parent),
@@ -70,7 +69,6 @@ namespace Sequel.Databases
         {
             new TreeViewNode("Columns", TableColumns, parent, "mdi-table-column", "deep-purple"),
             new TreeViewNode("Indexes", Indexes, parent, "mdi-sort-ascending", "pink darken-4"),
-            new TreeViewNode("Constraints", Constraints, parent, "mdi-key", "yellow darken-3"),
         };
 
         protected virtual IEnumerable<TreeViewNode> LoadViewGroupLabels(TreeViewNode parent) => new[]
@@ -113,24 +111,26 @@ namespace Sequel.Databases
 
         protected virtual async Task<IEnumerable<TreeViewNode>> LoadTableColumnNodes(string database, TreeViewNode parent)
         {
-            return (await LoadTableColumns(database, Helper.IgnoreErrors(() => parent.GetNameAtLevel(GetNodeTypeLevel(Schema))), parent.GetNameAtLevel(GetNodeTypeLevel(Table))))
-                .Select(column => new TreeViewNode(column, Column, parent));
+            string? schema = Helper.IgnoreErrors(() => parent.GetNameAtLevel(GetNodeTypeLevel(Schema)));
+            string table = parent.GetNameAtLevel(GetNodeTypeLevel(Table));
+
+            var pks = await LoadPrimaryKeys(database, schema, table);
+            var fks = (await LoadForeignKeys(database, schema, table)).Except(pks);
+            var cols = (await LoadTableColumns(database, schema, table)).Except(pks).Except(fks);
+
+            var list = fks.Select(fk => new TreeViewNode(fk, ForeignKey, parent, "mdi-key", "blue-grey lighten-3")) // fks
+                .Union(cols.Select(column => new TreeViewNode(column, Column, parent))) // columns
+                .OrderBy(x => x.Name)
+                .ToList();
+
+            list.InsertRange(0, pks.Select(pk => new TreeViewNode(pk, PrimaryKey, parent, "mdi-key", "yellow darken-1"))); // pks
+            return list;
         }
 
         protected virtual async Task<IEnumerable<TreeViewNode>> LoadIndexes(string database, TreeViewNode parent)
         {
             return (await LoadIndexes(database, Helper.IgnoreErrors(() => parent.GetNameAtLevel(GetNodeTypeLevel(Schema))), parent.GetNameAtLevel(GetNodeTypeLevel(Table))))
                 .Select(index => new TreeViewNode(index, TreeViewNodeType.Index, parent));
-        }
-
-        protected virtual async Task<IEnumerable<TreeViewNode>> LoadConstraints(string database, TreeViewNode parent)
-        {
-            var constraints = (await LoadPrimaryKeys(database, Helper.IgnoreErrors(() => parent.GetNameAtLevel(GetNodeTypeLevel(Schema))), parent.GetNameAtLevel(GetNodeTypeLevel(Table))))
-                .Select(pk => new TreeViewNode(pk, PrimaryKey, parent, "mdi-key", "yellow darken-1"))
-                .ToList();
-
-            return constraints.Union((await LoadForeignKeys(database, Helper.IgnoreErrors(() => parent.GetNameAtLevel(GetNodeTypeLevel(Schema))), parent.GetNameAtLevel(GetNodeTypeLevel(Table))))
-                .Select(pk => new TreeViewNode(pk, PrimaryKey, parent, "mdi-key", "blue-grey lighten-3")));
         }
 
         public virtual async Task<List<TreeViewMenuItem>> LoadTreeViewMenuItems(TreeViewNode node, string database, int connectionId)

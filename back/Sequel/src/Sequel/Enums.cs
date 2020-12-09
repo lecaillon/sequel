@@ -50,8 +50,7 @@ namespace Sequel
         Procedures,
         TableColumns,
         ViewColumns,
-        Indexes,
-        Constraints // FK, PK
+        Indexes
     }
 
     [JsonConverter(typeof(JsonStringEnumConverter))]
