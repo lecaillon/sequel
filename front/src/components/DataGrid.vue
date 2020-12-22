@@ -95,6 +95,6 @@ export default Vue.extend({
   border-radius: 0px !important;
 }
 .ag-row {
-  font-size: 12px !important;
+  font-size: 13px !important;
 }
 </style>
