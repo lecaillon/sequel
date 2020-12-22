@@ -31,7 +31,7 @@
       <v-spacer></v-spacer>
       <v-list-item-action class="list-item-action-dense" @click.stop>
         <v-btn icon @click.stop.prevent="edit(item)">
-          <v-icon>mdi-pencil</v-icon>
+          <v-icon small>mdi-pencil</v-icon>
         </v-btn>
       </v-list-item-action>
     </template>
