@@ -72,8 +72,13 @@
                 @cell-focused="onCellFocused"
               ></data-grid>
             </v-col>
-            <v-col class="pa-0 pt-2" cols="12" md="7">
-              <v-sheet tile id="editor-history" style="height:100%"></v-sheet>
+            <v-col class="pa-0" cols="12" md="7">
+              <v-container dense style="height:50%">
+                PSG
+              </v-container>
+              <v-container dense style="height:50%">
+                <v-sheet tile id="editor-history" style="height:100%"></v-sheet>
+              </v-container>
             </v-col>
           </v-row>
         </v-container>
@@ -132,6 +137,7 @@ export default Vue.extend({
                 minimap: { enabled: false },
                 mouseWheelZoom: true,
                 scrollBeyondLastLine: false,
+                lineDecorationsWidth: 0,
                 automaticLayout: false,
                 find: {
                   addExtraSpaceOnTop: false
