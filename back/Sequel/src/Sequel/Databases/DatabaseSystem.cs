@@ -80,38 +80,23 @@ namespace Sequel.Databases
             => (await LoadSchemas(database)).Select(schema => new TreeViewNode(schema, Schema, parent));
 
         protected virtual async Task<IEnumerable<TreeViewNode>> LoadTableNodes(string database, TreeViewNode parent)
-        {
-            return (await LoadTables(database, Helper.IgnoreErrors(() => parent.GetNameAtLevel(GetNodeTypeLevel(Schema)))))
-                .Select(table => new TreeViewNode(table, Table, parent));
-        }
+            => (await LoadTables(database, GetSchema(parent))).Select(table => new TreeViewNode(table, Table, parent));
 
         protected virtual async Task<IEnumerable<TreeViewNode>> LoadViewNodes(string database, TreeViewNode parent)
-        {
-            return (await LoadViews(database, Helper.IgnoreErrors(() => parent.GetNameAtLevel(GetNodeTypeLevel(Schema)))))
-                .Select(view => new TreeViewNode(view, View, parent));
-        }
+            => (await LoadViews(database, GetSchema(parent))).Select(view => new TreeViewNode(view, View, parent));
 
         protected virtual async Task<IEnumerable<TreeViewNode>> LoadFunctionNodes(string database, TreeViewNode parent)
-        {
-            return (await LoadFunctions(database, Helper.IgnoreErrors(() => parent.GetNameAtLevel(GetNodeTypeLevel(Schema)))))
-                .Select(function => new TreeViewNode(function, Function, parent));
-        }
+            => (await LoadFunctions(database, GetSchema(parent))).Select(function => new TreeViewNode(function, Function, parent));
 
         protected virtual async Task<IEnumerable<TreeViewNode>> LoadProcedureNodes(string database, TreeViewNode parent)
-        {
-            return (await LoadProcedures(database, Helper.IgnoreErrors(() => parent.GetNameAtLevel(GetNodeTypeLevel(Schema)))))
-                .Select(proc => new TreeViewNode(proc, Procedure, parent));
-        }
+            => (await LoadProcedures(database, GetSchema(parent))).Select(proc => new TreeViewNode(proc, Procedure, parent));
 
         protected virtual async Task<IEnumerable<TreeViewNode>> LoadSequenceNodes(string database, TreeViewNode parent)
-        {
-            return (await LoadSequences(database, Helper.IgnoreErrors(() => parent.GetNameAtLevel(GetNodeTypeLevel(Schema)))))
-                .Select(seq => new TreeViewNode(seq, Sequence, parent));
-        }
+            => (await LoadSequences(database, GetSchema(parent))).Select(seq => new TreeViewNode(seq, Sequence, parent));
 
         protected virtual async Task<IEnumerable<TreeViewNode>> LoadTableColumnNodes(string database, TreeViewNode parent)
         {
-            string? schema = Helper.IgnoreErrors(() => parent.GetNameAtLevel(GetNodeTypeLevel(Schema)));
+            string? schema = GetSchema(parent);
             string table = parent.GetNameAtLevel(GetNodeTypeLevel(Table));
 
             var pks = await LoadPrimaryKeys(database, schema, table);
@@ -129,7 +114,7 @@ namespace Sequel.Databases
 
         protected virtual async Task<IEnumerable<TreeViewNode>> LoadIndexes(string database, TreeViewNode parent)
         {
-            return (await LoadIndexes(database, Helper.IgnoreErrors(() => parent.GetNameAtLevel(GetNodeTypeLevel(Schema))), parent.GetNameAtLevel(GetNodeTypeLevel(Table))))
+            return (await LoadIndexes(database, GetSchema(parent), parent.GetNameAtLevel(GetNodeTypeLevel(Table))))
                 .Select(index => new TreeViewNode(index, TreeViewNodeType.Index, parent));
         }
 
@@ -248,9 +233,11 @@ namespace Sequel.Databases
         {
             return Task.FromResult(new Dictionary<string, string>
             { // Depending the database, some TreeViewNodeType could be undefined.
-                { "${schema}", Helper.IgnoreErrors(() => node.GetNameAtLevel(GetNodeTypeLevel(Schema)), "${schema}") },
-                { "${table}", Helper.IgnoreErrors(() => node.GetNameAtLevel(GetNodeTypeLevel(Table)), "${table}") },
+                { "${schema}", Helper.IgnoreErrors(() => node.GetNameAtLevel(GetNodeTypeLevel(Schema)), "${schema}", logErrors: false) },
+                { "${table}", Helper.IgnoreErrors(() => node.GetNameAtLevel(GetNodeTypeLevel(Table)), "${table}", logErrors: false) },
             });
         }
+
+        private string? GetSchema(TreeViewNode node) => Helper.IgnoreErrors(() => node.GetNameAtLevel(GetNodeTypeLevel(Schema)), logErrors: false);
     }
 }

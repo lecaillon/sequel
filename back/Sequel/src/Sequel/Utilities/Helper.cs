@@ -49,7 +49,7 @@ namespace Sequel
         }
 
         [return: NotNullIfNotNull("defaultValue")]
-        public static T? IgnoreErrors<T>(Func<T> operation, T? defaultValue = default)
+        public static T? IgnoreErrors<T>(Func<T> operation, T? defaultValue = default, bool logErrors = true)
         {
             if (operation is null)
             {
@@ -63,7 +63,10 @@ namespace Sequel
             }
             catch(Exception ex)
             {
-                ex.LogWarning();
+                if (logErrors)
+                {
+                    ex.LogWarning();
+                }
                 result = defaultValue;
             }
 
