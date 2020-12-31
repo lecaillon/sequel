@@ -190,43 +190,81 @@ namespace Sequel.Models
 
     public class QueryHistory
     {
-        public int Id { get; set; }
-        public DBMS Type { get; set; }
-        public string ServerConnection { get; set; } = default!;
-        public string Sql { get; set; } = default!;
-        public string Hash { get; set; } = default!;
-        public DateTime ExecutedOn { get; set; }
-        public QueryResponseStatus Status { get; set; }
-        public long Elapsed { get; set; }
-        public int RowCount { get; set; }
-        public int RecordsAffected { get; set; }
-        public int ExecutionCount { get; set; }
-        public bool Star { get; set; }
-
-        public static QueryHistory Create(string sql, string hash, QueryExecutionContext query, QueryResponseContext response) => new QueryHistory
+        public QueryHistory(string code, DBMS type, string sql, bool star, int executionCount, DateTime lastExecutedOn, string? name, string? keywords)
         {
-            Type = query.Server.Type,
-            ServerConnection = query.Server.Name,
-            Sql = sql,
-            Hash = hash,
-            ExecutedOn = DateTime.Now,
-            Status = response.Status,
-            Elapsed = response.Elapsed,
-            RowCount = response.RowCount,
-            RecordsAffected = response.RecordsAffected,
-            ExecutionCount = 1,
-            Star = false
-        };
+            Code = Check.NotNullOrEmpty(code, nameof(code));
+            Type = type;
+            Sql = Check.NotNullOrEmpty(sql, nameof(sql)); ;
+            Star = star;
+            ExecutionCount = executionCount;
+            LastExecutedOn = lastExecutedOn;
+            Name = name;
+            Keywords = keywords?.Split(';').ToList() ?? new();
+        }
+
+        public string Code { get; }
+        public DBMS Type { get; }
+        public string Sql { get; }
+        public bool Star { get; }
+        public int ExecutionCount { get; private set; }
+        public DateTime LastExecutedOn { get; private set; }
+        public string? Name { get; }
+        public List<string> Keywords { get; }
+
+        public List<QueryStat> Stats { get; } = new();
+
+        public static string GetCode(string hash, DBMS type) => hash + type;
+
+        public static QueryHistory Create(string code, string sql, QueryExecutionContext query, QueryResponseContext response)
+        {
+            var history = new QueryHistory(code,
+                                           query.Server.Type,
+                                           sql,
+                                           star: false,
+                                           executionCount: 0,
+                                           lastExecutedOn: DateTime.Now,
+                                           name: null,
+                                           keywords: null);
+
+            history.UpdateStatistics(query, response);
+            return history;
+        }
 
         public void UpdateStatistics(QueryExecutionContext query, QueryResponseContext response)
         {
-            ServerConnection = query.Server.Name;
-            ExecutedOn = DateTime.Now;
-            Status = response.Status;
-            Elapsed = response.Elapsed;
-            RowCount = response.RowCount;
-            RecordsAffected = response.RecordsAffected;
             ExecutionCount++;
+            Stats.Add(new (response.Status,
+                           executedOn: DateTime.Now,
+                           query.Server.Environment.ToString(),
+                           query.Database,
+                           query.Server.Name,
+                           response.Elapsed,
+                           response.RecordsAffected,
+                           response.RowCount));
+        }
+
+        public class QueryStat
+        {
+            public QueryStat(QueryResponseStatus status, DateTime executedOn, string environment, string database, string serverConnection, long elapsed, int rowCount, int recordsAffected)
+            {
+                Status = status;
+                ExecutedOn = executedOn;
+                Environment = Check.NotNullOrEmpty(environment, nameof(environment));
+                Database = Check.NotNullOrEmpty(database, nameof(database));
+                ServerConnection = Check.NotNullOrEmpty(serverConnection, nameof(serverConnection));
+                Elapsed = elapsed;
+                RowCount = rowCount;
+                RecordsAffected = recordsAffected;
+            }
+
+            public QueryResponseStatus Status { get; }
+            public DateTime ExecutedOn { get; }
+            public string Environment { get; }
+            public string Database { get; }
+            public string ServerConnection { get; }
+            public long Elapsed { get; }
+            public int RowCount { get; }
+            public int RecordsAffected { get; }
         }
     }
 

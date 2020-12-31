@@ -15,7 +15,7 @@ namespace Sequel.Core
 {
     public static class SqlHelper
     {
-        private static DbConnection CreateConnection(this ServerConnection server)
+        public static DbConnection CreateConnection(this ServerConnection server)
         {
             return server.Type switch
             {

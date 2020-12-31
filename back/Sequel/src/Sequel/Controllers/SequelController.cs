@@ -165,18 +165,13 @@ namespace Sequel.Controllers
 
         private static readonly List<ColumnDefinition> QueryHistoryColumns = new List<ColumnDefinition>
         {
-            new ColumnDefinition("id", "int", "Id") { Editable = false },
-            new ColumnDefinition("type", "text", "DBMS") { Editable = false, CellRenderer = "cellRendererDbms" },
-            new ColumnDefinition("serverConnection", "text", "Connection") { Editable = false },
-            new ColumnDefinition("sql", "text") { Hide = true },
-            new ColumnDefinition("hash", "text") { Hide = true },
-            new ColumnDefinition("executedOn", "date", "Last execution") { Editable = false, ValueFormatter = "new Date(value).toLocaleDateString() + ' ' + new Date(value).toLocaleTimeString()" },
-            new ColumnDefinition("status", "text", "Status") { Editable = false, Filter = false, CellRenderer = "cellRendererQueryStatus" },
-            new ColumnDefinition("elapsed", "int", "Elapsed (ms)") { Hide = true },
-            new ColumnDefinition("rowCount", "int", "Row count") { Hide = true },
-            new ColumnDefinition("recordsAffected", "int", "Records affected") { Hide = true },
-            new ColumnDefinition("executionCount", "int", "Execution Count") { Hide = true },
+            new ColumnDefinition("code", "text", "Code") { Hide = true },
+         // new ColumnDefinition("status", "text", "Status") { Editable = false, Filter = false, CellRenderer = "cellRendererQueryStatus" },
             new ColumnDefinition("star", "bool", "Favorite") { Editable = false, Filter = false, CellRenderer = "cellRendererStar" },
+            new ColumnDefinition("type", "text", "DBMS") { Editable = false, CellRenderer = "cellRendererDbms" },
+            new ColumnDefinition("executionCount", "int", "Execution Count") { Editable = false },
+            new ColumnDefinition("last_executed_on", "date", "Last execution") { Editable = false, ValueFormatter = "new Date(value).toLocaleDateString() + ' ' + new Date(value).toLocaleTimeString()" },
+            new ColumnDefinition("name", "text", "Name") { Editable = false },
         };
 
         [HttpGet]
@@ -201,10 +196,10 @@ namespace Sequel.Controllers
         }
 
         [HttpPost]
-        [Route("history/favorites/{id}")]
-        public async Task<IActionResult> UpdateHistoryFavorite(int id, QueryHistoryQuery query)
+        [Route("history/favorites/{code}")]
+        public async Task<IActionResult> UpdateHistoryFavorite(string code, QueryHistoryQuery query)
         {
-            await QueryManager.History.UpdateFavorite(id, query.Star);
+            await QueryManager.History.UpdateFavorite(code, query.Star);
             return Ok();
         }
     }

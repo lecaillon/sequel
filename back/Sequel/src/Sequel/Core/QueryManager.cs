@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -146,28 +146,8 @@ namespace Sequel.Core
 
         public static class History
         {
-            private const string SelectAllClause = "SELECT id, type, server_connection, sql, hash, executed_on, status, elapsed, row_count, records_affected, execution_count, star FROM [data] ";
-            private const string OrderByClause = " ORDER BY executed_on DESC ";
             private static readonly char[] CharsToTrimStart = { '\r', '\n' };
             private static readonly char[] CharsToTrimEnd = { '\r', '\n', '\t', ' ' };
-            private static readonly Func<IDataReader, QueryHistory> Map = r =>
-            {
-                return new QueryHistory
-                {
-                    Id = r.GetInt32(0),
-                    Type = (DBMS)r.GetInt32(1),
-                    ServerConnection = r.GetString(2),
-                    Sql = r.GetString(3),
-                    Hash = r.GetString(4),
-                    ExecutedOn = r.GetDateTime(5),
-                    Status = (QueryResponseStatus)r.GetInt32(6),
-                    Elapsed = r.GetInt32(7),
-                    RowCount = r.GetInt32(8),
-                    RecordsAffected = r.GetInt32(9),
-                    ExecutionCount = r.GetInt32(10),
-                    Star = r.GetBoolean(11)
-                };
-            };
             private static readonly ServerConnection ServerConnection = new ServerConnection
             {
                 Name = "QueryHistory Sqlite database connection",
@@ -177,24 +157,43 @@ namespace Sequel.Core
 
             public static async Task Configure()
             {
-                if (await ServerConnection.QueryForLong("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND tbl_name = 'data'") == 0)
+                if (await ServerConnection.QueryForLong("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND tbl_name = 'data'") == 1)
                 {
-                    string sql = "CREATE TABLE [data] " +
+                    await ServerConnection.ExecuteNonQuery("DROP TABLE [data]");
+                }
+
+                if (await ServerConnection.QueryForLong("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND tbl_name = 'query'") == 0)
+                {
+                    string sql =
+                    "CREATE TABLE query " +
                     "( " +
-                        "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "code TEXT PRIMARY KEY NOT NULL, " +
                         "type INTEGER NOT NULL, " +
-                        "server_connection TEXT NOT NULL, " +
                         "sql TEXT NOT NULL, " +
-                        "hash TEXT NOT NULL, " +
-                        "executed_on TEXT NOT NULL, " +
+                        "star BOOLEAN NOT NULL, " +
+                        "execution_count INTEGER NOT NULL, " +
+                        "last_executed_on TEXT NOT NULL, " +
+                        "name TEXT, " +
+                        "keywords TEXT " +
+                    ");" +
+
+                    "CREATE INDEX idx_query_star ON query (star);" +
+                    "CREATE INDEX idx_query_name ON query (name);" +
+
+                    "CREATE TABLE stat " +
+                    "( " +
+                        "code TEXT PRIMARY KEY NOT NULL, " +
                         "status INTEGER NOT NULL, " +
+                        "executed_on TEXT NOT NULL, " +
+                        "environment TEXT NOT NULL, " +
+                        "database TEXT NOT NULL, " +
+                        "server_connection TEXT NOT NULL, " +
                         "elapsed INTEGER NOT NULL, " +
                         "row_count INTEGER NOT NULL, " +
-                        "records_affected INTEGER NOT NULL, " +
-                        "execution_count INTEGER NOT NULL, " +
-                        "star BOOLEAN NOT NULL " +
+                        "records_affected INTEGER NOT NULL " +
                     ");" +
-                    "CREATE UNIQUE INDEX idx_data_hash ON data (hash);";
+
+                    "CREATE INDEX idx_stat_code ON stat (code);";
 
                     await ServerConnection.ExecuteNonQuery(sql);
                 }
@@ -209,51 +208,101 @@ namespace Sequel.Core
                 }
 
                 string sql;
-                string hash = ComputeHash(statement);
-                var history = await LoadByHash(hash);
+                string code = QueryHistory.GetCode(ComputeHash(statement), query.Server.Type);
+                var history = await LoadByCode(code);
                 if (history is null)
                 {
-                    history = QueryHistory.Create(statement, hash, query, response);
-                    sql = "INSERT INTO [data] (type, server_connection, sql, hash, executed_on, status, elapsed, row_count, records_affected, execution_count, star) VALUES " +
+                    history = QueryHistory.Create(code, statement, query, response);
+                    sql = "INSERT INTO query (code, type, sql, star, execution_count, last_executed_on) VALUES " +
                     "( " +
+                       $"'{history.Code}', " +
                        $"{(int)history.Type}, " +
-                       $"'{history.ServerConnection}', " +
                        $"'{history.Sql.Replace("'", "''")}', " +
-                       $"'{history.Hash}', " +
-                       $"'{history.ExecutedOn:yyyy-MM-dd HH:mm:ss}', " +
-                       $"{(int)history.Status}, " +
-                       $"{history.Elapsed}, " +
-                       $"{history.RowCount}, " +
-                       $"{history.RecordsAffected}, " +
+                       $"{(history.Star ? 1 : 0)}, " +
                        $"{history.ExecutionCount}, " +
-                       $"{(history.Star ? 1 : 0)}" +
+                       $"'{history.LastExecutedOn:yyyy-MM-dd HH:mm:ss}' " +
                     ");";
                 }
                 else
                 {
                     history.UpdateStatistics(query, response);
-                    sql = "UPDATE [data] " +
-                         $"SET server_connection = '{history.ServerConnection}', " +
-                             $"executed_on = '{history.ExecutedOn:yyyy-MM-dd HH:mm:ss}', " +
-                             $"status = {(int)history.Status}, " +
-                             $"elapsed = {history.Elapsed}, " +
-                             $"row_count = {history.RowCount}, " +
-                             $"records_affected = {history.RecordsAffected}, " +
-                             $"execution_count = {history.ExecutionCount} " +
-                         $"WHERE id = {history.Id};";
+                    sql = $"UPDATE query SET " +
+                             $"execution_count = {history.ExecutionCount}, " +
+                             $"last_executed_on = '{history.LastExecutedOn:yyyy-MM-dd HH:mm:ss}' " +
+                          $"WHERE id = {history.Code};";
                 }
+
+                var stat = history.Stats.Last();
+                sql += "INSERT INTO stat (code, status, executed_on, environment, database, server_connection, elapsed, row_count, records_affected) VALUES " +
+                "( " +
+                   $"'{history.Code}', " +
+                   $"{(int)stat.Status}, " +
+                   $"'{stat.ExecutedOn:yyyy-MM-dd HH:mm:ss}', " +
+                   $"'{stat.Environment}', " +
+                   $"'{stat.Database}', " +
+                   $"'{stat.ServerConnection}', " +
+                   $"{stat.Elapsed}, " +
+                   $"{stat.RowCount}, " +
+                   $"{stat.RecordsAffected}" +
+                ");";
 
                 await ServerConnection.ExecuteNonQuery(sql);
             }
 
-            public static async Task UpdateFavorite(int id, bool star)
-                => await ServerConnection.ExecuteNonQuery($"UPDATE [data] SET star = {(star ? 1 : 0)} WHERE id = {id}");
+            public static async Task UpdateFavorite(string code, bool star)
+                => await ServerConnection.ExecuteNonQuery($"UPDATE query SET star = {(star ? 1 : 0)} WHERE code = '{code}'");
 
             public static async Task<IEnumerable<QueryHistory>> Load(QueryHistoryQuery query)
-                => await ServerConnection.QueryList(SelectAllClause + query.BuildWhereClause() + OrderByClause, Map);
+                => await QueryList(query.BuildWhereClause());
 
-            private static async Task<QueryHistory?> LoadByHash(string hash) 
-                => await ServerConnection.Query(SelectAllClause + $"WHERE hash = '{hash}'", Map);
+            private static async Task<QueryHistory?> LoadByCode(string code)
+                => (await QueryList($"WHERE code = '{code}'")).FirstOrDefault();
+
+            private static async Task<List<QueryHistory>> QueryList(string where)
+            {
+                var list = new List<QueryHistory>();
+                string sql = "SELECT q.code, type, sql, star, execution_count, last_executed_on, name, keywords, " +
+                             "status, executed_on, environment, database, server_connection, elapsed, row_count, records_affected " +
+                             "FROM query q INNER JOIN stat s ON q.code = s.code " +
+                            $"{where} " +
+                             "ORDER BY q.code, last_executed_on DESC";
+
+                using var cnn = ServerConnection.CreateConnection();
+                await cnn.OpenAsync();
+                using var dbCommand = cnn.CreateCommand();
+                dbCommand.CommandText = sql;
+                using var dataReader = await dbCommand.ExecuteReaderAsync();
+
+                string previousCode = "";
+                QueryHistory history = default!;
+                while (await dataReader.ReadAsync())
+                {
+                    string code = dataReader.GetString(0);
+                    if (code != previousCode)
+                    {
+                        previousCode = code;
+                        history = new(code,
+                                      type: (DBMS)dataReader.GetInt32(1),
+                                      sql: dataReader.GetString(2),
+                                      star: dataReader.GetBoolean(3),
+                                      executionCount: dataReader.GetInt32(4),
+                                      lastExecutedOn: dataReader.GetDateTime(5),
+                                      name: dataReader.GetString(6),
+                                      keywords: dataReader.GetString(7));
+                    }
+
+                    history.Stats.Add(new(status: (QueryResponseStatus)dataReader.GetInt32(8),
+                                          executedOn: dataReader.GetDateTime(9),
+                                          environment: dataReader.GetString(10),
+                                          database: dataReader.GetString(11),
+                                          serverConnection: dataReader.GetString(12),
+                                          elapsed: dataReader.GetInt32(13),
+                                          rowCount: dataReader.GetInt32(14),
+                                          recordsAffected: dataReader.GetInt32(15)));
+                }
+
+                return list;
+            }
 
             private static string? NormalizeSql(string? sql) => sql?.TrimStart(CharsToTrimStart)?.TrimEnd(CharsToTrimEnd);
 
