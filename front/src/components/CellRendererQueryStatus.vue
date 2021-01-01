@@ -25,7 +25,7 @@ export default Vue.extend({
       } else if (this.params.value === "Canceled") {
         return "mdi-pause-circle";
       } else if (this.params.value === "Failed") {
-        return "";
+        return "mdi-close-circle";
       } else {
         return "";
       }
@@ -36,7 +36,7 @@ export default Vue.extend({
       } else if (this.params.value === "Canceled") {
         return "grey lighten-2";
       } else if (this.params.value === "Failed") {
-        return "";
+        return "red";
       } else {
         return "";
       }

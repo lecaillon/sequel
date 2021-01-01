@@ -190,9 +190,10 @@ namespace Sequel.Models
 
     public class QueryHistory
     {
-        public QueryHistory(string code, DBMS type, string sql, bool star, int executionCount, DateTime lastExecutedOn, string? name, string? keywords)
+        public QueryHistory(string code, QueryResponseStatus status, DBMS type, string sql, bool star, int executionCount, DateTime lastExecutedOn, string? name, string? keywords)
         {
             Code = Check.NotNullOrEmpty(code, nameof(code));
+            Status = status;
             Type = type;
             Sql = Check.NotNullOrEmpty(sql, nameof(sql)); ;
             Star = star;
@@ -203,6 +204,7 @@ namespace Sequel.Models
         }
 
         public string Code { get; }
+        public QueryResponseStatus Status { get; private set; }
         public DBMS Type { get; }
         public string Sql { get; }
         public bool Star { get; }
@@ -213,11 +215,12 @@ namespace Sequel.Models
 
         public List<QueryStat> Stats { get; } = new();
 
-        public static string GetCode(string hash, DBMS type) => hash + type;
+        public static string GetCode(string hash, DBMS type) => hash + (int)type;
 
         public static QueryHistory Create(string code, string sql, QueryExecutionContext query, QueryResponseContext response)
         {
             var history = new QueryHistory(code,
+                                           response.Status,
                                            query.Server.Type,
                                            sql,
                                            star: false,
@@ -232,9 +235,16 @@ namespace Sequel.Models
 
         public void UpdateStatistics(QueryExecutionContext query, QueryResponseContext response)
         {
+            var now = DateTime.Now;
+
+            if (Status != QueryResponseStatus.Succeeded)
+            {
+                Status = response.Status;
+            }
             ExecutionCount++;
+            LastExecutedOn = now;
             Stats.Add(new (response.Status,
-                           executedOn: DateTime.Now,
+                           executedOn: now,
                            query.Server.Environment.ToString(),
                            query.Database,
                            query.Server.Name,

@@ -168,6 +168,7 @@ namespace Sequel.Core
                     "CREATE TABLE query " +
                     "( " +
                         "code TEXT PRIMARY KEY NOT NULL, " +
+                        "status INTEGER NOT NULL, " +
                         "type INTEGER NOT NULL, " +
                         "sql TEXT NOT NULL, " +
                         "star BOOLEAN NOT NULL, " +
@@ -177,12 +178,13 @@ namespace Sequel.Core
                         "keywords TEXT " +
                     ");" +
 
+                    "CREATE INDEX idx_query_status ON query (status);" +
                     "CREATE INDEX idx_query_star ON query (star);" +
                     "CREATE INDEX idx_query_name ON query (name);" +
 
                     "CREATE TABLE stat " +
                     "( " +
-                        "code TEXT PRIMARY KEY NOT NULL, " +
+                        "code TEXT NOT NULL, " +
                         "status INTEGER NOT NULL, " +
                         "executed_on TEXT NOT NULL, " +
                         "environment TEXT NOT NULL, " +
@@ -213,9 +215,10 @@ namespace Sequel.Core
                 if (history is null)
                 {
                     history = QueryHistory.Create(code, statement, query, response);
-                    sql = "INSERT INTO query (code, type, sql, star, execution_count, last_executed_on) VALUES " +
+                    sql = "INSERT INTO query (code, status, type, sql, star, execution_count, last_executed_on) VALUES " +
                     "( " +
                        $"'{history.Code}', " +
+                       $"{(int)history.Status}, " +
                        $"{(int)history.Type}, " +
                        $"'{history.Sql.Replace("'", "''")}', " +
                        $"{(history.Star ? 1 : 0)}, " +
@@ -227,9 +230,10 @@ namespace Sequel.Core
                 {
                     history.UpdateStatistics(query, response);
                     sql = $"UPDATE query SET " +
+                             $"status = {(int)history.Status}, " +
                              $"execution_count = {history.ExecutionCount}, " +
                              $"last_executed_on = '{history.LastExecutedOn:yyyy-MM-dd HH:mm:ss}' " +
-                          $"WHERE id = {history.Code};";
+                          $"WHERE code = '{history.Code}';";
                 }
 
                 var stat = history.Stats.Last();
@@ -256,13 +260,13 @@ namespace Sequel.Core
                 => await QueryList(query.BuildWhereClause());
 
             private static async Task<QueryHistory?> LoadByCode(string code)
-                => (await QueryList($"WHERE code = '{code}'")).FirstOrDefault();
+                => (await QueryList($"WHERE q.code = '{code}'")).FirstOrDefault();
 
             private static async Task<List<QueryHistory>> QueryList(string where)
             {
                 var list = new List<QueryHistory>();
-                string sql = "SELECT q.code, type, sql, star, execution_count, last_executed_on, name, keywords, " +
-                             "status, executed_on, environment, database, server_connection, elapsed, row_count, records_affected " +
+                string sql = "SELECT q.code, q.status as status1, type, sql, star, execution_count, last_executed_on, name, keywords, " +
+                             "s.status as status2, executed_on, environment, database, server_connection, elapsed, row_count, records_affected " +
                              "FROM query q INNER JOIN stat s ON q.code = s.code " +
                             $"{where} " +
                              "ORDER BY q.code, last_executed_on DESC";
@@ -282,23 +286,26 @@ namespace Sequel.Core
                     {
                         previousCode = code;
                         history = new(code,
-                                      type: (DBMS)dataReader.GetInt32(1),
-                                      sql: dataReader.GetString(2),
-                                      star: dataReader.GetBoolean(3),
-                                      executionCount: dataReader.GetInt32(4),
-                                      lastExecutedOn: dataReader.GetDateTime(5),
-                                      name: dataReader.GetString(6),
-                                      keywords: dataReader.GetString(7));
+                                      status: (QueryResponseStatus)dataReader.GetInt32(1),
+                                      type: (DBMS)dataReader.GetInt32(2),
+                                      sql: dataReader.GetString(3),
+                                      star: dataReader.GetBoolean(4),
+                                      executionCount: dataReader.GetInt32(5),
+                                      lastExecutedOn: dataReader.GetDateTime(6),
+                                      name: dataReader[7] as string ?? null,
+                                      keywords: dataReader[8] as string ?? null);
+
+                        list.Add(history);
                     }
 
-                    history.Stats.Add(new(status: (QueryResponseStatus)dataReader.GetInt32(8),
-                                          executedOn: dataReader.GetDateTime(9),
-                                          environment: dataReader.GetString(10),
-                                          database: dataReader.GetString(11),
-                                          serverConnection: dataReader.GetString(12),
-                                          elapsed: dataReader.GetInt32(13),
-                                          rowCount: dataReader.GetInt32(14),
-                                          recordsAffected: dataReader.GetInt32(15)));
+                    history.Stats.Add(new(status: (QueryResponseStatus)dataReader.GetInt32(9),
+                                          executedOn: dataReader.GetDateTime(10),
+                                          environment: dataReader.GetString(11),
+                                          database: dataReader.GetString(12),
+                                          serverConnection: dataReader.GetString(13),
+                                          elapsed: dataReader.GetInt32(14),
+                                          rowCount: dataReader.GetInt32(15),
+                                          recordsAffected: dataReader.GetInt32(16)));
                 }
 
                 return list;
@@ -327,9 +334,13 @@ namespace Sequel.Core
             {
                 sql += $" {WhereOrAnd()} sql LIKE '%{query.Sql}%' ";
             }
-            if (!query.ShowErrors)
+            if (query.ShowErrors)
             {
-                sql += $" {WhereOrAnd()} status = {(int)QueryResponseStatus.Succeeded} ";
+                sql += $" {WhereOrAnd()} q.status = {(int)QueryResponseStatus.Failed} ";
+            }
+            else
+            {
+                sql += $" {WhereOrAnd()} q.status IN ({(int)QueryResponseStatus.Succeeded}, {(int)QueryResponseStatus.Canceled}) ";
             }
             if (query.ShowFavorites)
             {
