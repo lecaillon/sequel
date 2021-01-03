@@ -73,8 +73,72 @@
               ></data-grid>
             </v-col>
             <v-col class="pa-0" cols="12" md="7">
-              <v-container dense style="height:50%">
-                PSG
+              <v-container  class="py-0"  style="height:50%">
+          <v-row>
+
+                <v-col cols="1" class="d-flex align-center justify-center">
+                  <v-tooltip bottom>
+                    <template v-slot:activator="{ on }">
+                      <v-btn icon v-on="on" @click.stop="updateFavorite()">
+                        <v-icon color="orange">mdi-star</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>Add / Remove favorites</span>
+                  </v-tooltip>
+                </v-col>
+
+                <v-col  cols="11" sm="5"  >
+                  <v-text-field label="Query name"></v-text-field>
+                </v-col>
+
+                <v-col cols="12" sm="6">
+                  <v-combobox
+                    clearable
+                    label="Topics"
+                    multiple
+                  >
+                    <template v-slot:selection="{ attrs, item, select, selected }">
+                    <v-chip  small
+                      v-bind="attrs"
+                      :input-value="selected"
+                      close
+                      @click="select"
+                      @click:close="remove(item)"
+                    >
+                      {{ item }}
+                    </v-chip>
+                    </template>
+                  </v-combobox>
+                </v-col>
+
+              <v-col cols="12">
+                <v-window v-if="queryHistory" show-arrows v-model="statIndex">
+                  <v-window-item
+                    v-for="(stat,i) in queryHistory.stats"
+                    :key="i"
+                  >
+                    <v-row>
+                      <v-col cols="12">
+                        <v-icon class="mr-1">
+                          mdi-heart
+                        </v-icon>
+                        <span class="body-2 mr-2">{{ new Date(stat.executedOn).toLocaleDateString() + ' ' + new Date(stat.executedOn).toLocaleTimeString() }}</span>
+                      </v-col>
+                      <v-col cols="12">
+                        <v-icon class="mr-1">
+                          mdi-heart
+                        </v-icon>
+                        <span class="body-2 mr-2">{{ new Date(stat.executedOn).toLocaleDateString() + ' ' + new Date(stat.executedOn).toLocaleTimeString() }}</span>
+                      </v-col>
+                    </v-row>
+                  </v-window-item>
+                </v-window>
+              </v-col>
+
+
+          </v-row>
+
+
               </v-container>
               <v-container dense style="height:50%">
                 <v-sheet tile id="editor-history" style="height:100%"></v-sheet>
@@ -111,7 +175,9 @@ export default Vue.extend({
     gridApi: {} as GridApi,
     rowSelected: false as boolean,
     sql: "" as string,
-    id: 0 as number,
+    code: "" as string,
+    queryHistory: null as any,
+    statIndex: null as number | null,
     showErrors: false as boolean,
     showFavorites: false as boolean
   }),
@@ -165,7 +231,9 @@ export default Vue.extend({
     },
     onSelectionChanged() {
       this.sql = this.gridApi.getSelectedRows()[0].sql;
-      this.id = this.gridApi.getSelectedRows()[0].id;
+      this.code = this.gridApi.getSelectedRows()[0].code;
+      this.queryHistory = this.gridApi.getSelectedRows()[0];
+      this.statIndex = this.queryHistory.stats.length - 1;
       this.editor?.getModel()?.setValue(this.sql);
       this.rowSelected = true;
     },
@@ -204,7 +272,7 @@ export default Vue.extend({
     },
     updateFavorite() {
       const star = !this.gridApi.getSelectedRows()[0].star;
-      store.dispatch("updateFavorite", { id: this.id, star: star });
+      store.dispatch("updateFavorite", { code: this.code, star: star });
       this.gridApi.getSelectedRows()[0].star = star;
       this.gridApi.refreshCells({
         rowNodes: this.gridApi.getSelectedNodes(),

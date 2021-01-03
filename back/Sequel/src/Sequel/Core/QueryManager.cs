@@ -269,7 +269,7 @@ namespace Sequel.Core
                              "s.status as status2, executed_on, environment, database, server_connection, elapsed, row_count, records_affected " +
                              "FROM query q INNER JOIN stat s ON q.code = s.code " +
                             $"{where} " +
-                             "ORDER BY q.code, last_executed_on DESC";
+                             "ORDER BY q.code, last_executed_on DESC, executed_on ASC";
 
                 using var cnn = ServerConnection.CreateConnection();
                 await cnn.OpenAsync();
