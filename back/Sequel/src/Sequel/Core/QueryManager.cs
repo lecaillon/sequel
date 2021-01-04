@@ -258,7 +258,7 @@ namespace Sequel.Core
                 => await ServerConnection.ExecuteNonQuery($"UPDATE query SET star = {(star ? 1 : 0)} WHERE code = '{code}'");
 
             public static async Task<IEnumerable<QueryHistory>> Load(QueryHistoryQuery query)
-                => await QueryList(query.BuildWhereClause());
+                => await QueryList(BuildWhereClause(query));
 
             private static async Task<QueryHistory?> LoadByCode(string code)
                 => (await QueryList($"WHERE q.code = '{code}'")).FirstOrDefault();
@@ -326,31 +326,31 @@ namespace Sequel.Core
 
                 return builder.ToString();
             }
-        }
 
-        private static string BuildWhereClause(this QueryHistoryQuery query)
-        {
-            string sql = "";
-            if (query.Sql != null)
+            private static string BuildWhereClause(QueryHistoryQuery query)
             {
-                sql += $" {WhereOrAnd()} sql LIKE '%{query.Sql}%' ";
-            }
-            if (query.ShowErrors)
-            {
-                sql += $" {WhereOrAnd()} q.status = {(int)QueryResponseStatus.Failed} ";
-            }
-            else
-            {
-                sql += $" {WhereOrAnd()} q.status IN ({(int)QueryResponseStatus.Succeeded}, {(int)QueryResponseStatus.Canceled}) ";
-            }
-            if (query.ShowFavorites)
-            {
-                sql += $" {WhereOrAnd()} star = 1 ";
-            }
+                string sql = "";
+                if (query.Sql != null)
+                {
+                    sql += $" {WhereOrAnd()} sql LIKE '%{query.Sql}%' ";
+                }
+                if (query.ShowErrors)
+                {
+                    sql += $" {WhereOrAnd()} q.status = {(int)QueryResponseStatus.Failed} ";
+                }
+                else
+                {
+                    sql += $" {WhereOrAnd()} q.status IN ({(int)QueryResponseStatus.Succeeded}, {(int)QueryResponseStatus.Canceled}) ";
+                }
+                if (query.ShowFavorites)
+                {
+                    sql += $" {WhereOrAnd()} star = 1 ";
+                }
 
-            return sql;
+                return sql;
 
-            string WhereOrAnd() => string.IsNullOrEmpty(sql) ? " WHERE " : " AND ";
+                string WhereOrAnd() => string.IsNullOrEmpty(sql) ? " WHERE " : " AND ";
+            }
         }
     }
 }

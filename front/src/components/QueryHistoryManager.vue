@@ -73,10 +73,10 @@
               ></data-grid>
             </v-col>
             <v-col class="pa-0" cols="12" md="7">
-              <v-container  class="py-0"  style="height:50%">
+              <v-container  class="py-2"  style="height:50%">
 
                <v-row dense>
-                <v-col cols="1" class="d-flex align-center justify-center">
+                <v-col cols="1" >
                   <v-tooltip bottom>
                     <template v-slot:activator="{ on }">
                       <v-btn icon v-on="on" @click.stop="updateFavorite()">
@@ -88,11 +88,12 @@
                 </v-col>
 
                 <v-col  cols="11" sm="5"  >
-                  <v-text-field label="Query name"></v-text-field>
+                  <v-text-field dense solo single-line label="Query name"></v-text-field>
                 </v-col>
 
                 <v-col cols="12" sm="6">
-                  <v-combobox
+                  <v-combobox dense solo  
+                    single-line
                     clearable
                     label="Topics"
                     multiple
@@ -127,17 +128,74 @@
 
                       <v-col cols="12" sm="3">
                         <v-icon class="mr-1">
-                          mdi-heart
+                          mdi-calendar-alert
                         </v-icon>
-                        <span class="v-label mr-2">{{ new Date(stat.executedOn).toLocaleDateString() + ' ' + new Date(stat.executedOn).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }}</span>
+                        <v-label class="mr-2">{{ new Date(stat.executedOn).toLocaleDateString([], {day: '2-digit', month: '2-digit', year: '2-digit'}) + ' - ' + new Date(stat.executedOn).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }}</v-label>
                       </v-col>
 
                       <v-col cols="12" sm="5">
                         <v-icon class="mr-1">
-                          mdi-heart
+                          mdi-database
                         </v-icon>
-                        <span class="v-label mr-2">{{ stat.database }}</span>
+                        <v-label class="mr-2">{{ stat.database }}</v-label>
                       </v-col>
+
+                      <v-col cols="3">
+                        <v-list two-line>
+                          <v-list-item>
+                            <v-list-item-avatar>
+                              <v-icon size="34">
+                                mdi-timer
+                              </v-icon>
+                            </v-list-item-avatar>
+
+                            <v-list-item-content>
+                              <v-list-item-title>{{ stat.elapsed }} ms</v-list-item-title>
+
+                              <v-list-item-subtitle><v-label>Elapsed time</v-label></v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                        </v-list>
+                      </v-col>
+
+                      <v-col cols="3">
+                        <v-list two-line>
+                          <v-list-item>
+                            <v-list-item-avatar>
+                              <v-icon size="34">
+                                mdi-timer
+                              </v-icon>
+                            </v-list-item-avatar>
+
+                            <v-list-item-content>
+                              <v-list-item-title>{{ stat.rowCount }}</v-list-item-title>
+
+                              <v-list-item-subtitle><v-label>Row count</v-label></v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                        </v-list>
+                      </v-col>
+
+                      <v-col cols="3">
+                        <v-list two-line>
+                          <v-list-item>
+                            <v-list-item-avatar>
+                              <v-icon size="34">
+                                mdi-timer
+                              </v-icon>
+                            </v-list-item-avatar>
+
+                            <v-list-item-content>
+                              <v-list-item-title>{{ stat.recordsAffected }}</v-list-item-title>
+
+                              <v-list-item-subtitle><v-label>Record(s) affected</v-label></v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                        </v-list>
+                      </v-col>
+
+
+
                     </v-row>
                   </v-window-item>
                 </v-window>

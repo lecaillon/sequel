@@ -249,8 +249,8 @@ namespace Sequel.Models
                            query.Database,
                            query.Server.Name,
                            response.Elapsed,
-                           response.RecordsAffected,
-                           response.RowCount));
+                           response.RowCount,
+                           response.RecordsAffected));
         }
 
         public class QueryStat
