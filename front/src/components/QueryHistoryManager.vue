@@ -118,83 +118,98 @@
                     v-for="(stat,i) in queryHistory.stats"
                     :key="i"
                   >
-                    <v-row dense justify="center">
+                    <v-row no-gutters >
 
-                      <v-col cols="4" sm="2">
+                      <v-col cols="3" offset="1">
+                        <v-list two-line dense>
+                          <v-list-item>
+                            <v-list-item-avatar>
+                              <v-icon size="26">
+                                mdi-calendar-alert
+                              </v-icon>
+                            </v-list-item-avatar>
+
+                            <v-list-item-content>
+                              <v-list-item-title class="font-weight-regular">{{ new Date(stat.executedOn).toLocaleDateString() }}</v-list-item-title>
+                              <v-list-item-subtitle class="font-weight-regular">{{ new Date(stat.executedOn).toLocaleTimeString() }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                        </v-list>
+                      </v-col>
+
+                      <v-col cols="3">
+                        <v-list two-line dense>
+                          <v-list-item>
+                            <v-list-item-avatar>
+                              <v-icon size="26">
+                                mdi-database
+                              </v-icon>
+                            </v-list-item-avatar>
+
+                            <v-list-item-content>
+                              <v-list-item-title class="font-weight-regular">{{ stat.database }}</v-list-item-title>
+                              <v-list-item-subtitle class="font-weight-regular">{{ stat.serverConnection }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                        </v-list>
+                      </v-col>
+
+                      <v-col cols="3" align-self="center">
                         <v-chip label small color="red">
                           {{ stat.environment }}
                         </v-chip>
                       </v-col>
 
-                      <v-col cols="12" sm="3">
-                        <v-icon class="mr-1">
-                          mdi-calendar-alert
-                        </v-icon>
-                        <v-label class="mr-2">{{ new Date(stat.executedOn).toLocaleDateString([], {day: '2-digit', month: '2-digit', year: '2-digit'}) + ' - ' + new Date(stat.executedOn).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }}</v-label>
-                      </v-col>
-
-                      <v-col cols="12" sm="5">
-                        <v-icon class="mr-1">
-                          mdi-database
-                        </v-icon>
-                        <v-label class="mr-2">{{ stat.database }}</v-label>
-                      </v-col>
-
-                      <v-col cols="3">
-                        <v-list two-line>
+                      <v-col cols="3" offset="1">
+                        <v-list two-line dense>
                           <v-list-item>
                             <v-list-item-avatar>
-                              <v-icon size="34">
+                              <v-icon size="26">
                                 mdi-timer
                               </v-icon>
                             </v-list-item-avatar>
 
                             <v-list-item-content>
-                              <v-list-item-title>{{ stat.elapsed }} ms</v-list-item-title>
-
-                              <v-list-item-subtitle><v-label>Elapsed time</v-label></v-list-item-subtitle>
+                              <v-list-item-title class="font-weight-regular">{{ stat.elapsed }} ms</v-list-item-title>
+                              <v-list-item-subtitle class="font-weight-regular">Elapsed time</v-list-item-subtitle>
                             </v-list-item-content>
                           </v-list-item>
                         </v-list>
                       </v-col>
 
                       <v-col cols="3">
-                        <v-list two-line>
+                        <v-list two-line dense>
                           <v-list-item>
                             <v-list-item-avatar>
-                              <v-icon size="34">
-                                mdi-timer
+                              <v-icon size="26">
+                                mdi-format-list-numbered
                               </v-icon>
                             </v-list-item-avatar>
 
                             <v-list-item-content>
-                              <v-list-item-title>{{ stat.rowCount }}</v-list-item-title>
-
-                              <v-list-item-subtitle><v-label>Row count</v-label></v-list-item-subtitle>
+                              <v-list-item-title class="font-weight-regular">{{ stat.rowCount }}</v-list-item-title>
+                              <v-list-item-subtitle class="font-weight-regular">Row count</v-list-item-subtitle>
                             </v-list-item-content>
                           </v-list-item>
                         </v-list>
                       </v-col>
 
                       <v-col cols="3">
-                        <v-list two-line>
+                        <v-list two-line dense>
                           <v-list-item>
                             <v-list-item-avatar>
-                              <v-icon size="34">
-                                mdi-timer
+                              <v-icon size="26">
+                                mdi-content-save-outline
                               </v-icon>
                             </v-list-item-avatar>
 
                             <v-list-item-content>
-                              <v-list-item-title>{{ stat.recordsAffected }}</v-list-item-title>
-
-                              <v-list-item-subtitle><v-label>Record(s) affected</v-label></v-list-item-subtitle>
+                              <v-list-item-title class="font-weight-regular">{{ stat.recordsAffected }}</v-list-item-title>
+                              <v-list-item-subtitle class="font-weight-regular">Record(s) affected</v-list-item-subtitle>
                             </v-list-item-content>
                           </v-list-item>
                         </v-list>
                       </v-col>
-
-
 
                     </v-row>
                   </v-window-item>
