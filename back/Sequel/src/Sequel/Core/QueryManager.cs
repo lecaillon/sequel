@@ -178,6 +178,7 @@ namespace Sequel.Core
                         "keywords TEXT " +
                     ");" +
 
+                    "CREATE INDEX idx_query_last_executed_on ON query (last_executed_on);" +
                     "CREATE INDEX idx_query_status ON query (status);" +
                     "CREATE INDEX idx_query_star ON query (star);" +
                     "CREATE INDEX idx_query_name ON query (name);" +
@@ -269,7 +270,7 @@ namespace Sequel.Core
                              "s.status as status2, executed_on, environment, database, server_connection, elapsed, row_count, records_affected " +
                              "FROM query q INNER JOIN stat s ON q.code = s.code " +
                             $"{where} " +
-                             "ORDER BY q.code, last_executed_on DESC, executed_on ASC";
+                             "ORDER BY last_executed_on DESC, executed_on ASC";
 
                 using var cnn = ServerConnection.CreateConnection();
                 await cnn.OpenAsync();

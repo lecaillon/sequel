@@ -74,8 +74,8 @@
             </v-col>
             <v-col class="pa-0" cols="12" md="7">
               <v-container  class="py-0"  style="height:50%">
-          <v-row>
 
+               <v-row dense>
                 <v-col cols="1" class="d-flex align-center justify-center">
                   <v-tooltip bottom>
                     <template v-slot:activator="{ on }">
@@ -117,18 +117,26 @@
                     v-for="(stat,i) in queryHistory.stats"
                     :key="i"
                   >
-                    <v-row>
-                      <v-col cols="12">
-                        <v-icon class="mr-1">
-                          mdi-heart
-                        </v-icon>
-                        <span class="body-2 mr-2">{{ new Date(stat.executedOn).toLocaleDateString() + ' ' + new Date(stat.executedOn).toLocaleTimeString() }}</span>
+                    <v-row dense justify="center">
+
+                      <v-col cols="4" sm="2">
+                        <v-chip label small color="red">
+                          {{ stat.environment }}
+                        </v-chip>
                       </v-col>
-                      <v-col cols="12">
+
+                      <v-col cols="12" sm="3">
                         <v-icon class="mr-1">
                           mdi-heart
                         </v-icon>
-                        <span class="body-2 mr-2">{{ new Date(stat.executedOn).toLocaleDateString() + ' ' + new Date(stat.executedOn).toLocaleTimeString() }}</span>
+                        <span class="v-label mr-2">{{ new Date(stat.executedOn).toLocaleDateString() + ' ' + new Date(stat.executedOn).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }}</span>
+                      </v-col>
+
+                      <v-col cols="12" sm="5">
+                        <v-icon class="mr-1">
+                          mdi-heart
+                        </v-icon>
+                        <span class="v-label mr-2">{{ stat.database }}</span>
                       </v-col>
                     </v-row>
                   </v-window-item>
@@ -307,5 +315,8 @@ export default Vue.extend({
 <style lang="scss">
 .v-dialog-history {
   height: 75%;
+}
+.v-window__prev, .v-window__next {
+  margin: 0 !important;
 }
 </style>
