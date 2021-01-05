@@ -76,7 +76,7 @@
               <v-container  class="py-2"  style="height:50%">
 
                <v-row dense>
-                <v-col cols="1" >
+                <v-col cols="1">
                   <v-tooltip bottom>
                     <template v-slot:activator="{ on }">
                       <v-btn icon v-on="on" @click.stop="updateFavorite()">
@@ -87,7 +87,7 @@
                   </v-tooltip>
                 </v-col>
 
-                <v-col  cols="11" sm="5"  >
+                <v-col cols="11" sm="5">
                   <v-text-field dense solo single-line label="Query name"></v-text-field>
                 </v-col>
 
@@ -121,8 +121,7 @@
                     <v-row no-gutters >
 
                       <v-col cols="3" offset="1">
-                        <v-list two-line dense>
-                          <v-list-item>
+                          <v-list-item two-line dense>
                             <v-list-item-avatar>
                               <v-icon size="26">
                                 mdi-calendar-alert
@@ -134,12 +133,10 @@
                               <v-list-item-subtitle class="font-weight-regular">{{ new Date(stat.executedOn).toLocaleTimeString() }}</v-list-item-subtitle>
                             </v-list-item-content>
                           </v-list-item>
-                        </v-list>
                       </v-col>
 
                       <v-col cols="3">
-                        <v-list two-line dense>
-                          <v-list-item>
+                          <v-list-item two-line dense>
                             <v-list-item-avatar>
                               <v-icon size="26">
                                 mdi-database
@@ -151,7 +148,6 @@
                               <v-list-item-subtitle class="font-weight-regular">{{ stat.serverConnection }}</v-list-item-subtitle>
                             </v-list-item-content>
                           </v-list-item>
-                        </v-list>
                       </v-col>
 
                       <v-col cols="3" align-self="center">
@@ -161,8 +157,7 @@
                       </v-col>
 
                       <v-col cols="3" offset="1">
-                        <v-list two-line dense>
-                          <v-list-item>
+                          <v-list-item two-line dense>
                             <v-list-item-avatar>
                               <v-icon size="26">
                                 mdi-timer
@@ -174,12 +169,10 @@
                               <v-list-item-subtitle class="font-weight-regular">Elapsed time</v-list-item-subtitle>
                             </v-list-item-content>
                           </v-list-item>
-                        </v-list>
                       </v-col>
 
                       <v-col cols="3">
-                        <v-list two-line dense>
-                          <v-list-item>
+                          <v-list-item two-line dense>
                             <v-list-item-avatar>
                               <v-icon size="26">
                                 mdi-format-list-numbered
@@ -191,12 +184,10 @@
                               <v-list-item-subtitle class="font-weight-regular">Row count</v-list-item-subtitle>
                             </v-list-item-content>
                           </v-list-item>
-                        </v-list>
                       </v-col>
 
                       <v-col cols="3">
-                        <v-list two-line dense>
-                          <v-list-item>
+                          <v-list-item two-line dense>
                             <v-list-item-avatar>
                               <v-icon size="26">
                                 mdi-content-save-outline
@@ -208,7 +199,6 @@
                               <v-list-item-subtitle class="font-weight-regular">Record(s) affected</v-list-item-subtitle>
                             </v-list-item-content>
                           </v-list-item>
-                        </v-list>
                       </v-col>
 
                     </v-row>
