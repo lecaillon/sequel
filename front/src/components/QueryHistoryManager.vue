@@ -88,11 +88,11 @@
                 </v-col>
 
                 <v-col cols="11" sm="5">
-                  <v-text-field dense solo single-line label="Query name"></v-text-field>
+                  <v-text-field hide-details="auto" dense solo single-line label="Query name"></v-text-field>
                 </v-col>
 
                 <v-col cols="12" sm="6">
-                  <v-combobox dense solo  
+                  <v-combobox hide-details="auto" dense solo  
                     single-line
                     clearable
                     label="Topics"
