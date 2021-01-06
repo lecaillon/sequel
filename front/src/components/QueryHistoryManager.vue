@@ -67,36 +67,28 @@
                 :columns="history.response.columns"
                 :rows="history.response.rows"
                 :loading="history.loading"
+                style="min-height: 150px"
                 @created="gridCreated"
                 @selection-changed="onSelectionChanged"
                 @cell-focused="onCellFocused"
               ></data-grid>
             </v-col>
             <v-col class="pa-0" cols="12" md="7">
-              <v-container  class="py-2"  style="height:50%">
+              <v-container class="py-0" style="height:35%">
 
                <v-row dense>
-                <v-col cols="1">
-                  <v-tooltip bottom>
-                    <template v-slot:activator="{ on }">
-                      <v-btn icon v-on="on" @click.stop="updateFavorite()">
-                        <v-icon color="orange">mdi-star</v-icon>
-                      </v-btn>
-                    </template>
-                    <span>Add / Remove favorites</span>
-                  </v-tooltip>
+
+                <v-col cols="12" md="6">
+                  <v-text-field hide-details="auto" height="27" single-line label="Query name" ></v-text-field>
                 </v-col>
 
-                <v-col cols="11" sm="5">
-                  <v-text-field hide-details="auto" dense solo single-line label="Query name"></v-text-field>
-                </v-col>
-
-                <v-col cols="12" sm="6">
-                  <v-combobox hide-details="auto" dense solo  
+                <v-col cols="12" md="6">
+                  <v-combobox hide-details="auto"    
                     single-line
                     clearable
                     label="Topics"
                     multiple
+                    height="27"
                   >
                     <template v-slot:selection="{ attrs, item, select, selected }">
                     <v-chip  small
@@ -113,15 +105,15 @@
                 </v-col>
 
               <v-col cols="12">
-                <v-window v-if="queryHistory" show-arrows v-model="statIndex">
+                <v-window v-if="queryHistory" show-arrows>
                   <v-window-item
                     v-for="(stat,i) in queryHistory.stats"
                     :key="i"
                   >
-                    <v-row no-gutters >
+                    <v-row no-gutters>
 
-                      <v-col cols="3" offset="1">
-                          <v-list-item two-line dense>
+                      <v-col cols="6" md="4">
+                          <v-list-item two-line dense >
                             <v-list-item-avatar>
                               <v-icon size="26">
                                 mdi-calendar-alert
@@ -135,7 +127,7 @@
                           </v-list-item>
                       </v-col>
 
-                      <v-col cols="3">
+                      <v-col cols="6" md="4">
                           <v-list-item two-line dense>
                             <v-list-item-avatar>
                               <v-icon size="26">
@@ -150,13 +142,13 @@
                           </v-list-item>
                       </v-col>
 
-                      <v-col cols="3" align-self="center">
-                        <v-chip label small color="red">
+                      <v-col cols="6" md="4" align-self="center" >
+                        <v-chip label small color="red" class="ml-6 pa-4">
                           {{ stat.environment }}
                         </v-chip>
                       </v-col>
 
-                      <v-col cols="3" offset="1">
+                      <v-col cols="6" md="4">
                           <v-list-item two-line dense>
                             <v-list-item-avatar>
                               <v-icon size="26">
@@ -171,7 +163,7 @@
                           </v-list-item>
                       </v-col>
 
-                      <v-col cols="3">
+                      <v-col cols="6" md="4">
                           <v-list-item two-line dense>
                             <v-list-item-avatar>
                               <v-icon size="26">
@@ -186,7 +178,7 @@
                           </v-list-item>
                       </v-col>
 
-                      <v-col cols="3">
+                      <v-col cols="6" md="4">
                           <v-list-item two-line dense>
                             <v-list-item-avatar>
                               <v-icon size="26">
@@ -208,12 +200,14 @@
 
 
           </v-row>
-
+          
 
               </v-container>
-              <v-container dense style="height:50%">
+              
+              <v-container class="pa-0" style="height:65%">
                 <v-sheet tile id="editor-history" style="height:100%"></v-sheet>
               </v-container>
+            
             </v-col>
           </v-row>
         </v-container>
@@ -248,7 +242,6 @@ export default Vue.extend({
     sql: "" as string,
     code: "" as string,
     queryHistory: null as any,
-    statIndex: null as number | null,
     showErrors: false as boolean,
     showFavorites: false as boolean
   }),
@@ -292,11 +285,6 @@ export default Vue.extend({
     close() {
       this.$emit("close");
     },
-    onResize() {
-      if (Object.keys(this.editor).length > 0) {
-        this.editor.layout();
-      }
-    },
     gridCreated(id: string, grid: GridApi) {
       this.gridApi = grid;
     },
@@ -304,7 +292,6 @@ export default Vue.extend({
       this.sql = this.gridApi.getSelectedRows()[0].sql;
       this.code = this.gridApi.getSelectedRows()[0].code;
       this.queryHistory = this.gridApi.getSelectedRows()[0];
-      this.statIndex = this.queryHistory.stats.length - 1;
       this.editor?.getModel()?.setValue(this.sql);
       this.rowSelected = true;
     },
