@@ -268,7 +268,7 @@ export default Vue.extend({
                 mouseWheelZoom: true,
                 scrollBeyondLastLine: false,
                 lineDecorationsWidth: 0,
-                automaticLayout: false,
+                automaticLayout: true,
                 find: {
                   addExtraSpaceOnTop: false
                 }
