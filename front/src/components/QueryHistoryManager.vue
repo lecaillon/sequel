@@ -1,13 +1,28 @@
 <template>
-  <v-dialog width="90%" v-model="show" @click:outside="close" @keydown.esc="close" content-class="v-dialog-history">
-    <textarea id="sql-copy" readonly style="left:-9999px; position:absolute"></textarea>
-    <v-card style="height:100%">
+  <v-dialog
+    width="90%"
+    v-model="show"
+    @click:outside="close"
+    @keydown.esc="close"
+    content-class="v-dialog-history"
+  >
+    <textarea
+      id="sql-copy"
+      readonly
+      style="left: -9999px; position: absolute"
+    ></textarea>
+    <v-card style="height: 100%">
       <v-toolbar dark dense flat>
         <v-toolbar-title>Query history</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
-            <v-btn icon :disabled="!rowSelected" v-on="on" @click.stop="copySql()">
+            <v-btn
+              icon
+              :disabled="!rowSelected"
+              v-on="on"
+              @click.stop="copySql()"
+            >
               <v-icon small color="grey lighten-2">mdi-content-copy</v-icon>
             </v-btn>
           </template>
@@ -15,7 +30,12 @@
         </v-tooltip>
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
-            <v-btn icon :disabled="!rowSelected" v-on="on" @click.stop="pasteSql()">
+            <v-btn
+              icon
+              :disabled="!rowSelected"
+              v-on="on"
+              @click.stop="pasteSql()"
+            >
               <v-icon small color="grey lighten-2">mdi-content-paste</v-icon>
             </v-btn>
           </template>
@@ -33,16 +53,38 @@
         <v-divider vertical inset />
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
-            <v-btn icon v-on="on" @click.stop="showErrors=!showErrors; fetchHistory()">
-              <v-icon small :color="getShowErrorsIconColor">mdi-close-circle</v-icon>
+            <v-btn
+              icon
+              v-on="on"
+              @click.stop="
+                showErrors = !showErrors;
+                fetchHistory();
+              "
+            >
+              <v-icon small :color="getShowErrorsIconColor"
+                >mdi-close-circle</v-icon
+              >
             </v-btn>
           </template>
-          <span>{{ this.showErrors ? 'Hide failed and canceled queries' : 'Show failed and canceled queries' }}</span>
+          <span>{{
+            this.showErrors
+              ? "Hide failed and canceled queries"
+              : "Show failed and canceled queries"
+          }}</span>
         </v-tooltip>
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
-            <v-btn icon v-on="on" @click.stop="showFavorites=!showFavorites; fetchHistory()">
-              <v-icon small :color="getShowFavoritesIconColor">mdi-playlist-star</v-icon>
+            <v-btn
+              icon
+              v-on="on"
+              @click.stop="
+                showFavorites = !showFavorites;
+                fetchHistory();
+              "
+            >
+              <v-icon small :color="getShowFavoritesIconColor"
+                >mdi-playlist-star</v-icon
+              >
             </v-btn>
           </template>
           <span>Show favorites only</span>
@@ -58,9 +100,9 @@
           prepend-inner-icon="mdi-magnify"
         ></v-text-field>
       </v-toolbar>
-      <v-card-text class="pa-0 pr-1" style="height:calc(100% - 64px)">
-        <v-container fluid class="pa-0" fill-height>
-          <v-row dense style="height:100%">
+      <v-card-text class="pa-0 pr-1" style="height: calc(100% - 64px)">
+        <v-container fluid fill-height class="pa-0">
+          <v-row dense style="height: 100%">
             <v-col class="pa-0" cols="12" md="5">
               <data-grid
                 v-if="history.response"
@@ -73,141 +115,192 @@
                 @cell-focused="onCellFocused"
               ></data-grid>
             </v-col>
+
             <v-col class="pa-0" cols="12" md="7">
-              <v-container class="py-0" style="height:35%">
+              <v-container
+                fill-height
+                class="py-0"
+                style="flex-direction: column; align-items: initial"
+              >
+                <v-row v-if="queryHistory" dense style="flex: 0 1 auto">
+                  <v-col cols="12" md="5" class="pb-3">
+                    <v-text-field
+                      label="Query name"
+                      single-line
+                      hide-details="auto"
+                      height="27"
+                    ></v-text-field>
+                  </v-col>
 
-               <v-row dense>
-
-                <v-col cols="12" md="6">
-                  <v-text-field hide-details="auto" height="27" single-line label="Query name" ></v-text-field>
-                </v-col>
-
-                <v-col cols="12" md="6">
-                  <v-combobox hide-details="auto"    
-                    single-line
-                    clearable
-                    label="Topics"
-                    multiple
-                    height="27"
-                  >
-                    <template v-slot:selection="{ attrs, item, select, selected }">
-                    <v-chip  small
-                      v-bind="attrs"
-                      :input-value="selected"
-                      close
-                      @click="select"
-                      @click:close="remove(item)"
+                  <v-col cols="12" md="7">
+                    <v-combobox
+                      hide-details="auto"
+                      single-line
+                      clearable
+                      label="Topics"
+                      multiple
+                      height="27"
                     >
-                      {{ item }}
-                    </v-chip>
-                    </template>
-                  </v-combobox>
-                </v-col>
-
-              <v-col cols="12">
-                <v-window v-if="queryHistory" show-arrows>
-                  <v-window-item
-                    v-for="(stat,i) in queryHistory.stats"
-                    :key="i"
-                  >
-                    <v-row no-gutters>
-
-                      <v-col cols="6" md="4">
-                          <v-list-item two-line dense >
-                            <v-list-item-avatar>
-                              <v-icon size="26">
-                                mdi-calendar-alert
-                              </v-icon>
-                            </v-list-item-avatar>
-
-                            <v-list-item-content>
-                              <v-list-item-title class="font-weight-regular">{{ new Date(stat.executedOn).toLocaleDateString() }}</v-list-item-title>
-                              <v-list-item-subtitle class="font-weight-regular">{{ new Date(stat.executedOn).toLocaleTimeString() }}</v-list-item-subtitle>
-                            </v-list-item-content>
-                          </v-list-item>
-                      </v-col>
-
-                      <v-col cols="6" md="4">
-                          <v-list-item two-line dense>
-                            <v-list-item-avatar>
-                              <v-icon size="26">
-                                mdi-database
-                              </v-icon>
-                            </v-list-item-avatar>
-
-                            <v-list-item-content>
-                              <v-list-item-title class="font-weight-regular">{{ stat.database }}</v-list-item-title>
-                              <v-list-item-subtitle class="font-weight-regular">{{ stat.serverConnection }}</v-list-item-subtitle>
-                            </v-list-item-content>
-                          </v-list-item>
-                      </v-col>
-
-                      <v-col cols="6" md="4" align-self="center" >
-                        <v-chip label small color="red" class="ml-6 pa-4">
-                          {{ stat.environment }}
+                      <template
+                        v-slot:selection="{ attrs, item, select, selected }"
+                      >
+                        <v-chip
+                          small
+                          v-bind="attrs"
+                          :input-value="selected"
+                          close
+                          @click="select"
+                          @click:close="remove(item)"
+                        >
+                          {{ item }}
                         </v-chip>
-                      </v-col>
+                      </template>
+                    </v-combobox>
+                  </v-col>
 
-                      <v-col cols="6" md="4">
-                          <v-list-item two-line dense>
-                            <v-list-item-avatar>
-                              <v-icon size="26">
-                                mdi-timer
-                              </v-icon>
-                            </v-list-item-avatar>
+                  <v-col cols="12" class="pb-4">
+                    <v-window v-resize="onResize" show-arrows>
+                      <v-window-item
+                        v-for="(stat, i) in queryHistory.stats"
+                        :key="i"
+                      >
+                        <v-row no-gutters>
+                          <v-col cols="6" md="4">
+                            <v-list-item two-line dense class="pl-0">
+                              <v-list-item-avatar size="26">
+                                <v-icon size="26"> mdi-calendar-alert </v-icon>
+                              </v-list-item-avatar>
 
-                            <v-list-item-content>
-                              <v-list-item-title class="font-weight-regular">{{ stat.elapsed }} ms</v-list-item-title>
-                              <v-list-item-subtitle class="font-weight-regular">Elapsed time</v-list-item-subtitle>
-                            </v-list-item-content>
-                          </v-list-item>
-                      </v-col>
+                              <v-list-item-content>
+                                <v-list-item-title
+                                  class="font-weight-regular"
+                                  >{{
+                                    new Date(
+                                      stat.executedOn
+                                    ).toLocaleDateString()
+                                  }}</v-list-item-title
+                                >
+                                <v-list-item-subtitle
+                                  class="font-weight-regular"
+                                  >{{
+                                    new Date(
+                                      stat.executedOn
+                                    ).toLocaleTimeString()
+                                  }}</v-list-item-subtitle
+                                >
+                              </v-list-item-content>
+                            </v-list-item>
+                          </v-col>
 
-                      <v-col cols="6" md="4">
-                          <v-list-item two-line dense>
-                            <v-list-item-avatar>
-                              <v-icon size="26">
-                                mdi-format-list-numbered
-                              </v-icon>
-                            </v-list-item-avatar>
+                          <v-col cols="6" md="4">
+                            <v-list-item two-line dense class="pl-0">
+                              <v-list-item-avatar size="26">
+                                <v-icon size="26"> mdi-database </v-icon>
+                              </v-list-item-avatar>
 
-                            <v-list-item-content>
-                              <v-list-item-title class="font-weight-regular">{{ stat.rowCount }}</v-list-item-title>
-                              <v-list-item-subtitle class="font-weight-regular">Row count</v-list-item-subtitle>
-                            </v-list-item-content>
-                          </v-list-item>
-                      </v-col>
+                              <v-list-item-content>
+                                <v-list-item-title
+                                  class="font-weight-regular"
+                                  >{{ stat.database }}</v-list-item-title
+                                >
+                                <v-list-item-subtitle
+                                  class="font-weight-regular"
+                                  >{{
+                                    stat.serverConnection
+                                  }}</v-list-item-subtitle
+                                >
+                              </v-list-item-content>
+                            </v-list-item>
+                          </v-col>
 
-                      <v-col cols="6" md="4">
-                          <v-list-item two-line dense>
-                            <v-list-item-avatar>
-                              <v-icon size="26">
-                                mdi-content-save-outline
-                              </v-icon>
-                            </v-list-item-avatar>
+                          <v-col cols="6" md="4" align-self="center">
+                            <v-chip label small color="red">
+                              {{ stat.environment }}
+                            </v-chip>
+                          </v-col>
 
-                            <v-list-item-content>
-                              <v-list-item-title class="font-weight-regular">{{ stat.recordsAffected }}</v-list-item-title>
-                              <v-list-item-subtitle class="font-weight-regular">Record(s) affected</v-list-item-subtitle>
-                            </v-list-item-content>
-                          </v-list-item>
-                      </v-col>
+                          <v-col cols="6" md="4">
+                            <v-list-item two-line dense class="pl-0">
+                              <v-list-item-avatar size="26">
+                                <v-icon size="26"> mdi-timer </v-icon>
+                              </v-list-item-avatar>
 
-                    </v-row>
-                  </v-window-item>
-                </v-window>
-              </v-col>
+                              <v-list-item-content>
+                                <v-list-item-title class="font-weight-regular"
+                                  >{{ stat.elapsed }} ms</v-list-item-title
+                                >
+                                <v-list-item-subtitle
+                                  class="font-weight-regular"
+                                  >Elapsed time</v-list-item-subtitle
+                                >
+                              </v-list-item-content>
+                            </v-list-item>
+                          </v-col>
 
+                          <v-col cols="6" md="4">
+                            <v-list-item two-line dense class="pl-0">
+                              <v-list-item-avatar size="26">
+                                <v-icon size="26">
+                                  mdi-format-list-numbered
+                                </v-icon>
+                              </v-list-item-avatar>
 
-          </v-row>
-          
+                              <v-list-item-content>
+                                <v-list-item-title
+                                  class="font-weight-regular"
+                                  >{{ stat.rowCount }}</v-list-item-title
+                                >
+                                <v-list-item-subtitle
+                                  class="font-weight-regular"
+                                  >Row count</v-list-item-subtitle
+                                >
+                              </v-list-item-content>
+                            </v-list-item>
+                          </v-col>
+
+                          <v-col cols="6" md="4">
+                            <v-list-item two-line dense class="pl-0">
+                              <v-list-item-avatar size="26">
+                                <v-icon size="26">
+                                  mdi-content-save-outline
+                                </v-icon>
+                              </v-list-item-avatar>
+
+                              <v-list-item-content>
+                                <v-list-item-title
+                                  class="font-weight-regular"
+                                  >{{ stat.recordsAffected }}</v-list-item-title
+                                >
+                                <v-list-item-subtitle
+                                  class="font-weight-regular"
+                                  >Record(s) affected</v-list-item-subtitle
+                                >
+                              </v-list-item-content>
+                            </v-list-item>
+                          </v-col>
+                        </v-row>
+                      </v-window-item>
+                    </v-window>
+                  </v-col>
+                </v-row>
+
+                <v-row v-if="queryHistory" style="flex: 1 1 auto">
+                  <v-col cols="12" class="pl-0">
+                    <v-sheet
+                      tile
+                      id="editor-history"
+                      style="height: 100%"
+                    ></v-sheet>
+                  </v-col>
+                </v-row>
+
+                <v-row v-if="queryHistory" dense style="flex: 0 1 auto">
+                  <v-col cols="12" class="pl-0">
+                    Action buttons
+                  </v-col>
+                </v-row>
 
               </v-container>
-              
-              <v-container class="pa-0" style="height:65%">
-                <v-sheet tile id="editor-history" style="height:100%"></v-sheet>
-              </v-container>
-            
             </v-col>
           </v-row>
         </v-container>
@@ -228,13 +321,13 @@ import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 export default Vue.extend({
   name: "QueryHistoryManager",
   props: {
-    show: Boolean
+    show: Boolean,
   },
   components: {
-    DataGrid
+    DataGrid,
   },
   data: () => ({
-    editor: {} as monaco.editor.IStandaloneCodeEditor,
+    editor: null as monaco.editor.IStandaloneCodeEditor | null,
     debouncedSearch: "" as string,
     timeout: null as number | null,
     gridApi: {} as GridApi,
@@ -243,45 +336,23 @@ export default Vue.extend({
     code: "" as string,
     queryHistory: null as any,
     showErrors: false as boolean,
-    showFavorites: false as boolean
+    showFavorites: false as boolean,
   }),
   watch: {
-    search: function() {
+    search: function () {
       this.fetchHistory();
     },
-    show: function(showForm: boolean) {
+    show: function (showForm: boolean) {
       if (showForm) {
         this.rowSelected = false;
         this.fetchHistory();
-        setTimeout(
-          () =>
-            (this.editor = monaco.editor.create(
-              document.getElementById("editor-history")!,
-              {
-                value: "",
-                readOnly: true,
-                fontSize: 13,
-                language: "sql",
-                theme: "vs-dark",
-                lineNumbers: "off",
-                minimap: { enabled: false },
-                mouseWheelZoom: true,
-                scrollBeyondLastLine: false,
-                lineDecorationsWidth: 0,
-                automaticLayout: true,
-                find: {
-                  addExtraSpaceOnTop: false
-                }
-              }
-            )),
-          250
-        );
-      } else {
-        this.editor.dispose();
       }
-    }
+    },
   },
   methods: {
+    onResize() {
+      this.editor?.layout();
+    },
     close() {
       this.$emit("close");
     },
@@ -292,7 +363,33 @@ export default Vue.extend({
       this.sql = this.gridApi.getSelectedRows()[0].sql;
       this.code = this.gridApi.getSelectedRows()[0].code;
       this.queryHistory = this.gridApi.getSelectedRows()[0];
-      this.editor?.getModel()?.setValue(this.sql);
+
+      if (this.editor == null) {
+        setTimeout(() => {
+          this.editor = monaco.editor.create(
+            document.getElementById("editor-history")!,
+            {
+              value: "",
+              readOnly: true,
+              fontSize: 13,
+              language: "sql",
+              theme: "vs-dark",
+              lineNumbers: "off",
+              minimap: { enabled: false },
+              mouseWheelZoom: true,
+              scrollBeyondLastLine: false,
+              lineDecorationsWidth: 0,
+              automaticLayout: false,
+              find: {
+                addExtraSpaceOnTop: false,
+              },
+            }
+          );
+          this.editor.getModel()?.setValue(this.sql);
+        }, 100);
+      } else {
+        this.editor.getModel()?.setValue(this.sql);
+      }
       this.rowSelected = true;
     },
     onCellFocused() {
@@ -304,7 +401,7 @@ export default Vue.extend({
       store.dispatch("fetchHistory", {
         sql: this.search,
         showErrors: this.showErrors,
-        showFavorites: this.showFavorites
+        showFavorites: this.showFavorites,
       } as QueryHistoryQuery);
     },
     copySql() {
@@ -317,7 +414,7 @@ export default Vue.extend({
       document.execCommand("copy");
       store.dispatch("showAppSnackbar", {
         message: "SQL statement added to your clipboard",
-        color: "success"
+        color: "success",
       } as AppSnackbar);
       this.close();
     },
@@ -335,9 +432,9 @@ export default Vue.extend({
       this.gridApi.refreshCells({
         rowNodes: this.gridApi.getSelectedNodes(),
         force: true,
-        suppressFlash: true
+        suppressFlash: true,
       } as RefreshCellsParams);
-    }
+    },
   },
   computed: {
     history: () => store.state.history,
@@ -356,9 +453,9 @@ export default Vue.extend({
         this.timeout = setTimeout(() => {
           this.debouncedSearch = val;
         }, 600);
-      }
-    }
-  }
+      },
+    },
+  },
 });
 </script>
 
@@ -366,7 +463,8 @@ export default Vue.extend({
 .v-dialog-history {
   height: 75%;
 }
-.v-window__prev, .v-window__next {
+.v-window__prev,
+.v-window__next {
   margin: 0 !important;
 }
 </style>
