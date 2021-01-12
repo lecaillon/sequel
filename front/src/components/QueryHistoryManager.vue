@@ -129,6 +129,7 @@
                       single-line
                       hide-details="auto"
                       height="27"
+                      class="subtitle-1"
                     ></v-text-field>
                   </v-col>
 
@@ -173,7 +174,7 @@
 
                               <v-list-item-content>
                                 <v-list-item-title
-                                  class="font-weight-regular"
+                                  class="font-weight-regular subtitle-2"
                                   >{{
                                     new Date(
                                       stat.executedOn
@@ -200,7 +201,7 @@
 
                               <v-list-item-content>
                                 <v-list-item-title
-                                  class="font-weight-regular"
+                                  class="font-weight-regular subtitle-2"
                                   >{{ stat.database }}</v-list-item-title
                                 >
                                 <v-list-item-subtitle
@@ -214,7 +215,7 @@
                           </v-col>
 
                           <v-col cols="6" md="4" align-self="center">
-                            <v-chip label small color="red">
+                            <v-chip label small outlined color="red">
                               {{ stat.environment }}
                             </v-chip>
                           </v-col>
@@ -226,7 +227,8 @@
                               </v-list-item-avatar>
 
                               <v-list-item-content>
-                                <v-list-item-title class="font-weight-regular"
+                                <v-list-item-title
+                                  class="font-weight-regular subtitle-2"
                                   >{{ stat.elapsed }} ms</v-list-item-title
                                 >
                                 <v-list-item-subtitle
@@ -247,7 +249,7 @@
 
                               <v-list-item-content>
                                 <v-list-item-title
-                                  class="font-weight-regular"
+                                  class="font-weight-regular subtitle-2"
                                   >{{ stat.rowCount }}</v-list-item-title
                                 >
                                 <v-list-item-subtitle
@@ -268,7 +270,7 @@
 
                               <v-list-item-content>
                                 <v-list-item-title
-                                  class="font-weight-regular"
+                                  class="font-weight-regular subtitle-2"
                                   >{{ stat.recordsAffected }}</v-list-item-title
                                 >
                                 <v-list-item-subtitle
@@ -295,11 +297,18 @@
                 </v-row>
 
                 <v-row v-if="queryHistory" dense style="flex: 0 1 auto">
-                  <v-col cols="12" class="pl-0">
-                    Action buttons
-                  </v-col>
+                  <v-tooltip bottom>
+                    <template v-slot:activator="{ on }">
+                      <v-btn v-on="on" @click.stop="copySql()">
+                        <v-icon color="orange" small class="mr-1"
+                          >mdi-star</v-icon
+                        >
+                        <span class="mt-1">Star</span>
+                      </v-btn>
+                    </template>
+                    <span>Add / Remove favorites</span>
+                  </v-tooltip>
                 </v-row>
-
               </v-container>
             </v-col>
           </v-row>
@@ -466,5 +475,8 @@ export default Vue.extend({
 .v-window__prev,
 .v-window__next {
   margin: 0 !important;
+}
+.theme--dark.v-chip::before {
+  opacity: 0.08;
 }
 </style>
