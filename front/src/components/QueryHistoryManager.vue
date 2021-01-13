@@ -15,42 +15,25 @@
       <v-toolbar dark dense flat>
         <v-toolbar-title>Query history</v-toolbar-title>
         <v-spacer></v-spacer>
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on }">
-            <v-btn
-              icon
-              :disabled="!rowSelected"
-              v-on="on"
-              @click.stop="copySql()"
-            >
-              <v-icon small color="grey lighten-2">mdi-content-copy</v-icon>
-            </v-btn>
-          </template>
-          <span>Copy</span>
-        </v-tooltip>
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on }">
-            <v-btn
-              icon
-              :disabled="!rowSelected"
-              v-on="on"
-              @click.stop="pasteSql()"
-            >
-              <v-icon small color="grey lighten-2">mdi-content-paste</v-icon>
-            </v-btn>
-          </template>
-          <span>Paste in active tab</span>
-        </v-tooltip>
-        <v-divider vertical inset />
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on }">
-            <v-btn icon v-on="on" @click.stop="updateFavorite()">
-              <v-icon small color="orange">mdi-star</v-icon>
-            </v-btn>
-          </template>
-          <span>Add / Remove favorites</span>
-        </v-tooltip>
-        <v-divider vertical inset />
+
+        <v-btn-toggle rounded dense group>
+          <v-btn>
+            <v-avatar size="22" tile>
+              <v-img :src="require('../assets/db/PostgreSQL.png')"></v-img>
+            </v-avatar>
+          </v-btn>
+          <v-btn>
+            <v-avatar size="22" tile>
+              <v-img :src="require('../assets/db/SQLServer.png')"></v-img>
+            </v-avatar>
+          </v-btn>
+          <v-btn>
+            <v-avatar size="22" tile>
+              <v-img :src="require('../assets/db/SQLite.png')"></v-img>
+            </v-avatar>
+          </v-btn>
+        </v-btn-toggle>
+
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
             <v-btn
@@ -66,12 +49,9 @@
               >
             </v-btn>
           </template>
-          <span>{{
-            this.showErrors
-              ? "Hide failed and canceled queries"
-              : "Show failed and canceled queries"
-          }}</span>
+          <span>{{ "Show failed queries only" }}</span>
         </v-tooltip>
+
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
             <v-btn
@@ -89,6 +69,25 @@
           </template>
           <span>Show favorites only</span>
         </v-tooltip>
+
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on }">
+            <v-btn
+              icon
+              v-on="on"
+              @click.stop="
+                showFavorites = !showFavorites;
+                fetchHistory();
+              "
+            >
+              <v-icon small :color="getShowFavoritesIconColor"
+                >mdi-playlist-check</v-icon
+              >
+            </v-btn>
+          </template>
+          <span>Show named queryies only</span>
+        </v-tooltip>
+
         <v-text-field
           v-model="search"
           solo
@@ -98,12 +97,13 @@
           hide-details
           label="Filter SQL statements"
           prepend-inner-icon="mdi-magnify"
+          style="max-width: 400px"
         ></v-text-field>
       </v-toolbar>
       <v-card-text class="pa-0 pr-1" style="height: calc(100% - 64px)">
         <v-container fluid fill-height class="pa-0">
           <v-row dense style="height: 100%">
-            <v-col class="pa-0" cols="12" md="5">
+            <v-col class="pa-0" cols="12" md="6">
               <data-grid
                 v-if="history.response"
                 :columns="history.response.columns"
@@ -116,7 +116,7 @@
               ></data-grid>
             </v-col>
 
-            <v-col class="pa-0" cols="12" md="7">
+            <v-col class="pa-0" cols="12" md="6">
               <v-container
                 fill-height
                 class="py-0"
@@ -126,7 +126,6 @@
                   <v-col cols="12" md="5" class="pb-3">
                     <v-text-field
                       label="Query name"
-                      single-line
                       hide-details="auto"
                       height="27"
                       class="subtitle-1"
@@ -286,7 +285,7 @@
                   </v-col>
                 </v-row>
 
-                <v-row v-if="queryHistory" style="flex: 1 1 auto">
+                <v-row v-if="queryHistory" class="pb-5" style="flex: 1 1 auto">
                   <v-col cols="12" class="pl-0">
                     <v-sheet
                       tile
@@ -296,17 +295,69 @@
                   </v-col>
                 </v-row>
 
-                <v-row v-if="queryHistory" dense style="flex: 0 1 auto">
+                <v-row
+                  v-if="queryHistory"
+                  dense
+                  class="mr-2 mb-1"
+                  style="flex: 0 1 auto"
+                >
+                  <v-spacer></v-spacer>
+
                   <v-tooltip bottom>
                     <template v-slot:activator="{ on }">
-                      <v-btn v-on="on" @click.stop="copySql()">
+                      <v-btn
+                        elevation="2"
+                        v-on="on"
+                        @click.stop="updateFavorite()"
+                      >
                         <v-icon color="orange" small class="mr-1"
                           >mdi-star</v-icon
                         >
-                        <span class="mt-1">Star</span>
+                        <span>Star</span>
                       </v-btn>
                     </template>
                     <span>Add / Remove favorites</span>
+                  </v-tooltip>
+
+                  <v-btn elevation="2" class="ml-3" @click.stop="copySql()">
+                    <v-icon color="grey lighten-2" small class="mr-1"
+                      >mdi-content-copy</v-icon
+                    >
+                    <span>Copy</span>
+                  </v-btn>
+
+                  <v-tooltip bottom>
+                    <template v-slot:activator="{ on }">
+                      <v-btn
+                        elevation="2"
+                        class="ml-3"
+                        v-on="on"
+                        @click.stop="pasteSql()"
+                      >
+                        <v-icon color="grey lighten-2" small class="mr-1"
+                          >mdi-content-paste</v-icon
+                        >
+                        <span>Paste</span>
+                      </v-btn>
+                    </template>
+                    <span>Paste in active tab</span>
+                  </v-tooltip>
+
+                  <v-tooltip bottom>
+                    <template v-slot:activator="{ on }">
+                      <v-btn
+                        elevation="2"
+                        class="ml-3"
+                        v-on="on"
+                        @click.stop="copySql()"
+                      >
+                        <v-icon color="red" small class="mr-1"
+                          >mdi-delete-forever</v-icon
+                        >
+                        <span>Delete</span>
+                      </v-btn>
+                    </template>
+                    <span>Remove query from history</span>
                   </v-tooltip>
                 </v-row>
               </v-container>
@@ -340,7 +391,6 @@ export default Vue.extend({
     debouncedSearch: "" as string,
     timeout: null as number | null,
     gridApi: {} as GridApi,
-    rowSelected: false as boolean,
     sql: "" as string,
     code: "" as string,
     queryHistory: null as any,
@@ -352,8 +402,7 @@ export default Vue.extend({
       this.fetchHistory();
     },
     show: function (showForm: boolean) {
-      if (showForm) {
-        this.rowSelected = false;
+      if (showForm && this.queryHistory == null) {
         this.fetchHistory();
       }
     },
@@ -399,7 +448,6 @@ export default Vue.extend({
       } else {
         this.editor.getModel()?.setValue(this.sql);
       }
-      this.rowSelected = true;
     },
     onCellFocused() {
       this.gridApi
@@ -414,9 +462,6 @@ export default Vue.extend({
       } as QueryHistoryQuery);
     },
     copySql() {
-      if (!this.rowSelected) {
-        return;
-      }
       const el = document.getElementById("sql-copy") as HTMLInputElement;
       el.value = this.sql;
       el.select();
@@ -428,9 +473,6 @@ export default Vue.extend({
       this.close();
     },
     pasteSql() {
-      if (!this.rowSelected) {
-        return;
-      }
       store.dispatch("pasteSqlInActiveTab", this.sql);
       this.close();
     },
