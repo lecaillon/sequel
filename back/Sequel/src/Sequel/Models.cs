@@ -190,7 +190,7 @@ namespace Sequel.Models
 
     public class QueryHistory
     {
-        public QueryHistory(string code, QueryResponseStatus status, DBMS type, string sql, bool star, int executionCount, DateTime lastExecutedOn, string? name, string? keywords)
+        public QueryHistory(string code, QueryResponseStatus status, DBMS type, string sql, bool star, int executionCount, DateTime lastExecutedOn, string lastEnvironment, string lastDatabase, string? name, string? keywords)
         {
             Code = Check.NotNullOrEmpty(code, nameof(code));
             Status = status;
@@ -199,6 +199,8 @@ namespace Sequel.Models
             Star = star;
             ExecutionCount = executionCount;
             LastExecutedOn = lastExecutedOn;
+            LastEnvironment = lastEnvironment;
+            LastDatabase = lastDatabase;
             Name = name;
             Keywords = keywords?.Split(';').ToList() ?? new();
         }
@@ -210,10 +212,12 @@ namespace Sequel.Models
         public bool Star { get; }
         public int ExecutionCount { get; private set; }
         public DateTime LastExecutedOn { get; private set; }
+        public string LastEnvironment { get; private set; }
+        public string LastDatabase { get; private set; }
         public string? Name { get; }
         public List<string> Keywords { get; }
 
-        public List<QueryStat> Stats { get; } = new();
+        public List<QueryHistoryStat> Stats { get; } = new();
 
         public static string GetCode(string hash, DBMS type) => hash + (int)type;
 
@@ -226,6 +230,8 @@ namespace Sequel.Models
                                            star: false,
                                            executionCount: 0,
                                            lastExecutedOn: DateTime.Now,
+                                           lastEnvironment: query.Server.Environment.ToString(),
+                                           lastDatabase: query.Database,
                                            name: null,
                                            keywords: null);
 
@@ -235,27 +241,28 @@ namespace Sequel.Models
 
         public void UpdateStatistics(QueryExecutionContext query, QueryResponseContext response)
         {
-            var now = DateTime.Now;
-
             if (Status != QueryResponseStatus.Succeeded)
             {
                 Status = response.Status;
             }
             ExecutionCount++;
-            LastExecutedOn = now;
+            LastExecutedOn = DateTime.Now;
+            LastEnvironment = query.Server.Environment.ToString();
+            LastDatabase = query.Database;
+
             Stats.Add(new (response.Status,
-                           executedOn: now,
-                           query.Server.Environment.ToString(),
-                           query.Database,
+                           LastExecutedOn,
+                           LastEnvironment,
+                           LastDatabase,
                            query.Server.Name,
                            response.Elapsed,
                            response.RowCount,
                            response.RecordsAffected));
         }
 
-        public class QueryStat
+        public class QueryHistoryStat
         {
-            public QueryStat(QueryResponseStatus status, DateTime executedOn, string environment, string database, string serverConnection, long elapsed, int rowCount, int recordsAffected)
+            public QueryHistoryStat(QueryResponseStatus status, DateTime executedOn, string environment, string database, string serverConnection, long elapsed, int rowCount, int recordsAffected)
             {
                 Status = status;
                 ExecutedOn = executedOn;

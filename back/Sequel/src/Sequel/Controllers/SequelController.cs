@@ -170,7 +170,9 @@ namespace Sequel.Controllers
             new ColumnDefinition("type", "text", "DBMS") { Editable = false, Filter = false, CellRenderer = "cellRendererDbms" },
             new ColumnDefinition("status", "text", "Status") { Editable = false, Filter = false, CellRenderer = "cellRendererQueryStatus" },
             new ColumnDefinition("executionCount", "int", "Execution Count") { Editable = false, Filter = false },
-            new ColumnDefinition("lastExecutedOn", "date", "Last execution") { Editable = false, ValueFormatter = "new Date(value).toLocaleDateString()" },
+            new ColumnDefinition("lastExecutedOn", "date", "Executed On") { Editable = false, ValueFormatter = "new Date(value).toLocaleDateString()" },
+            new ColumnDefinition("lastEnvironment", "text", "Environment") { Editable = false, Filter = false },
+            new ColumnDefinition("lastDatabase", "text", "Database") { Editable = false, Filter = false },
             new ColumnDefinition("name", "text", "Name") { Editable = false, Filter = false },
         };
 
