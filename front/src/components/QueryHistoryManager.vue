@@ -374,6 +374,7 @@ import Vue from "vue";
 import store from "@/store";
 import { AppSnackbar } from "@/models/appSnackbar";
 import { QueryHistoryQuery } from "@/models/queryHistoryQuery";
+import { QueryHistory } from "@/models/queryHistory";
 import DataGrid from "@/components/DataGrid.vue";
 import { GridApi, RefreshCellsParams } from "ag-grid-community";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
@@ -393,7 +394,7 @@ export default Vue.extend({
     gridApi: {} as GridApi,
     sql: "" as string,
     code: "" as string,
-    queryHistory: null as any,
+    queryHistory: null as QueryHistory | null,
     showErrors: false as boolean,
     showFavorites: false as boolean,
   }),
