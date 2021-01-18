@@ -16,7 +16,7 @@
         <v-toolbar-title>Query history</v-toolbar-title>
         <v-spacer></v-spacer>
 
-        <v-btn-toggle rounded dense group>
+        <v-btn-toggle dense group>
           <v-btn>
             <v-avatar size="22" tile>
               <v-img :src="require('../assets/db/PostgreSQL.png')"></v-img>
@@ -34,59 +34,50 @@
           </v-btn>
         </v-btn-toggle>
 
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on }">
-            <v-btn
-              icon
-              v-on="on"
-              @click.stop="
-                showErrors = !showErrors;
-                fetchHistory();
-              "
-            >
-              <v-icon small :color="getShowErrorsIconColor"
-                >mdi-close-circle</v-icon
+        <v-btn-toggle dense group multiple>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on }">
+              <v-btn
+                v-on="on"
+                @click.stop="
+                  showErrors = !showErrors;
+                  fetchHistory();
+                "
               >
-            </v-btn>
-          </template>
-          <span>{{ "Show failed queries only" }}</span>
-        </v-tooltip>
-
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on }">
-            <v-btn
-              icon
-              v-on="on"
-              @click.stop="
-                showFavorites = !showFavorites;
-                fetchHistory();
-              "
-            >
-              <v-icon small :color="getShowFavoritesIconColor"
-                >mdi-playlist-star</v-icon
+                <v-icon color="grey lighten-2">mdi-playlist-remove</v-icon>
+              </v-btn>
+            </template>
+            <span>Show failed queries only</span>
+          </v-tooltip>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on }">
+              <v-btn
+                v-on="on"
+                @click.stop="
+                  showFavorites = !showFavorites;
+                  fetchHistory();
+                "
               >
-            </v-btn>
-          </template>
-          <span>Show favorites only</span>
-        </v-tooltip>
-
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on }">
-            <v-btn
-              icon
-              v-on="on"
-              @click.stop="
-                showFavorites = !showFavorites;
-                fetchHistory();
-              "
-            >
-              <v-icon small :color="getShowFavoritesIconColor"
-                >mdi-playlist-check</v-icon
+                <v-icon color="grey lighten-2">mdi-playlist-star</v-icon>
+              </v-btn>
+            </template>
+            <span>Show favorites only</span>
+          </v-tooltip>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on }">
+              <v-btn
+                v-on="on"
+                @click.stop="
+                  showFavorites = !showFavorites;
+                  fetchHistory();
+                "
               >
-            </v-btn>
-          </template>
-          <span>Show named queryies only</span>
-        </v-tooltip>
+                <v-icon color="grey lighten-2">mdi-playlist-check</v-icon>
+              </v-btn>
+            </template>
+            <span>Show named queryies only</span>
+          </v-tooltip>
+        </v-btn-toggle>
 
         <v-text-field
           v-model="search"
@@ -98,6 +89,7 @@
           label="Filter SQL statements"
           prepend-inner-icon="mdi-magnify"
           style="max-width: 400px"
+          class="ml-1"
         ></v-text-field>
       </v-toolbar>
       <v-card-text class="pa-0 pr-1" style="height: calc(100% - 64px)">
@@ -490,12 +482,6 @@ export default Vue.extend({
   },
   computed: {
     history: () => store.state.history,
-    getShowErrorsIconColor() {
-      return this.showErrors ? "red" : "grey lighten-2";
-    },
-    getShowFavoritesIconColor() {
-      return this.showFavorites ? "orange" : "grey lighten-2";
-    },
     search: {
       get() {
         return this.debouncedSearch ?? "";
