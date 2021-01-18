@@ -68,7 +68,7 @@
               <v-btn
                 v-on="on"
                 @click.stop="
-                  showFavorites = !showFavorites;
+                  showNamedQueries = !showNamedQueries;
                   fetchHistory();
                 "
               >
@@ -389,6 +389,7 @@ export default Vue.extend({
     queryHistory: null as QueryHistory | null,
     showErrors: false as boolean,
     showFavorites: false as boolean,
+    showNamedQueries: false as boolean,
   }),
   watch: {
     search: function () {
@@ -452,6 +453,7 @@ export default Vue.extend({
         sql: this.search,
         showErrors: this.showErrors,
         showFavorites: this.showFavorites,
+        showNamedQueries: this.showNamedQueries,
       } as QueryHistoryQuery);
     },
     copySql() {

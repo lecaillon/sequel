@@ -356,6 +356,10 @@ namespace Sequel.Core
                 {
                     sql += $" {WhereOrAnd()} star = 1 ";
                 }
+                if (query.ShowNamedQueries)
+                {
+                    sql += $" {WhereOrAnd()} name IS NOT NULL ";
+                }
 
                 return sql;
 

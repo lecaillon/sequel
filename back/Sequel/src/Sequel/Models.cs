@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Sequel.Core;
 using Sequel.Core.Parser;
-using Sequel.Databases;
 using static Sequel.TreeViewNodeType;
 
 namespace Sequel.Models
@@ -290,6 +289,7 @@ namespace Sequel.Models
         public string? Sql { get; set; }
         public bool ShowErrors { get; set; }
         public bool ShowFavorites { get; set; }
+        public bool ShowNamedQueries { get; set; }
         public bool Star { get; set; } // used to add or remove a favorite
     }
 
