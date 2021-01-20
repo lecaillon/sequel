@@ -265,6 +265,12 @@ namespace Sequel.Core
             public static async Task UpdateFavorite(string code, bool star)
                 => await ServerConnection.ExecuteNonQuery($"UPDATE query SET star = {(star ? 1 : 0)} WHERE code = '{code}'");
 
+            public static async Task UpdateName(string code, string? name)
+                => await ServerConnection.ExecuteNonQuery($"UPDATE query SET name = '{name ?? ""}' WHERE code = '{code}'");
+
+            public static async Task UpdateKeywords(string code, List<string> keywords)
+                => await ServerConnection.ExecuteNonQuery($"UPDATE query SET keywords = '{string.Join(';', keywords)}' WHERE code = '{code}'");
+
             public static async Task<IEnumerable<QueryHistory>> Load(QueryHistoryQuery query)
                 => await QueryList(BuildWhereClause(query));
 

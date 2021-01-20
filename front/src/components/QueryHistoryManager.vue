@@ -118,6 +118,8 @@
                   <v-col cols="12" md="5" class="pb-3">
                     <v-text-field
                       label="Query name"
+                      v-model="queryHistory.name"
+                      @change="updateName"
                       hide-details="auto"
                       height="27"
                       class="subtitle-1"
@@ -126,10 +128,12 @@
 
                   <v-col cols="12" md="7">
                     <v-combobox
+                      label="Topics"
+                      v-model="queryHistory.keywords"
+                      @change="updateKeywords"
                       hide-details="auto"
                       single-line
                       clearable
-                      label="Topics"
                       multiple
                       height="27"
                     >
@@ -142,7 +146,7 @@
                           :input-value="selected"
                           close
                           @click="select"
-                          @click:close="remove(item)"
+                          @click:close="removeKeyword(item)"
                         >
                           {{ item }}
                         </v-chip>
@@ -472,9 +476,37 @@ export default Vue.extend({
       this.close();
     },
     updateFavorite() {
-      const star = !this.gridApi.getSelectedRows()[0].star;
-      store.dispatch("updateFavorite", { code: this.code, star: star });
-      this.gridApi.getSelectedRows()[0].star = star;
+      this.queryHistory!.star = !this.queryHistory!.star;
+      store.dispatch("updateHistoryFavorite", {
+        code: this.code,
+        star: this.queryHistory!.star,
+      });
+      this.refreshDatagrid();
+    },
+    updateName() {
+      store.dispatch("updateHistoryName", {
+        code: this.code,
+        name: this.queryHistory?.name ?? "",
+      });
+      this.refreshDatagrid();
+    },
+    updateKeywords() {
+      store.dispatch("updateHistoryKeywords", {
+        code: this.code,
+        keywords: this.queryHistory?.keywords ?? "",
+      });
+    },
+    removeKeyword(item: any) {
+      if (this.queryHistory?.keywords != null) {
+        this.queryHistory.keywords.splice(
+          this.queryHistory.keywords.indexOf(item),
+          1
+        );
+        this.queryHistory.keywords = [...this.queryHistory.keywords];
+        this.updateKeywords();
+      }
+    },
+    refreshDatagrid() {
       this.gridApi.refreshCells({
         rowNodes: this.gridApi.getSelectedNodes(),
         force: true,

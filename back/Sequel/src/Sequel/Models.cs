@@ -201,7 +201,7 @@ namespace Sequel.Models
             LastEnvironment = lastEnvironment;
             LastDatabase = lastDatabase;
             Name = name;
-            Keywords = keywords?.Split(';').ToList() ?? new();
+            Keywords = string.IsNullOrWhiteSpace(keywords) ? new() : keywords.Split(';').ToList();
         }
 
         public string Code { get; }
@@ -286,11 +286,16 @@ namespace Sequel.Models
 
     public class QueryHistoryQuery
     {
+        // Filter
         public string? Sql { get; set; }
         public bool ShowErrors { get; set; }
         public bool ShowFavorites { get; set; }
         public bool ShowNamedQueries { get; set; }
-        public bool Star { get; set; } // used to add or remove a favorite
+
+        // Update
+        public bool Star { get; set; }
+        public string? Name { get; set; }
+        public List<string> Keywords { get; set; } = new();
     }
 
     public class ColumnDefinition

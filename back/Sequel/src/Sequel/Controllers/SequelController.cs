@@ -204,5 +204,21 @@ namespace Sequel.Controllers
             await QueryManager.History.UpdateFavorite(code, query.Star);
             return Ok();
         }
+
+        [HttpPost]
+        [Route("history/names/{code}")]
+        public async Task<IActionResult> UpdateHistoryName(string code, QueryHistoryQuery query)
+        {
+            await QueryManager.History.UpdateName(code, query.Name);
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("history/keywords/{code}")]
+        public async Task<IActionResult> UpdateHistoryKeywords(string code, QueryHistoryQuery query)
+        {
+            await QueryManager.History.UpdateKeywords(code, query.Keywords);
+            return Ok();
+        }
     }
 }
