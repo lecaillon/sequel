@@ -232,6 +232,10 @@ export default new Vuex.Store({
       await http.post<void>(`${BASE_URL}/sequel/history/keywords/${queryHistory.code}`, { keywords: queryHistory.keywords });
       context.dispatch("showAppSnackbar", { message: "Query topics updated", color: "success" } as AppSnackbar);
     },
+    deleteHistory: async (context, code: string) => {
+      await http.delete<void>(`${BASE_URL}/sequel/history/${code}`);
+      context.dispatch("showAppSnackbar", { message: "Query deleted", color: "success" } as AppSnackbar);
+    },
     executeTreeViewMenuItem: async (context, item: TreeViewMenuItem) => {
       if (!context.getters.hasActiveTab || (context.getters.activeQueryTab as QueryTabContent)?.editor?.getValue()) {
         await context.dispatch("openNewQueryTab");

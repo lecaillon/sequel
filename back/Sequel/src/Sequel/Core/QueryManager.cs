@@ -271,6 +271,12 @@ namespace Sequel.Core
             public static async Task UpdateKeywords(string code, List<string> keywords)
                 => await ServerConnection.ExecuteNonQuery($"UPDATE query SET keywords = '{string.Join(';', keywords)}' WHERE code = '{code}'");
 
+            public static async Task Delete(string code)
+            {
+                await ServerConnection.ExecuteNonQuery($"DELETE FROM query WHERE code = '{code}'");
+                await ServerConnection.ExecuteNonQuery($"DELETE FROM stat WHERE code = '{code}'");
+            }
+
             public static async Task<IEnumerable<QueryHistory>> Load(QueryHistoryQuery query)
                 => await QueryList(BuildWhereClause(query));
 

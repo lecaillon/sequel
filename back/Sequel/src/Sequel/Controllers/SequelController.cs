@@ -220,5 +220,13 @@ namespace Sequel.Controllers
             await QueryManager.History.UpdateKeywords(code, query.Keywords);
             return Ok();
         }
+
+        [HttpDelete]
+        [Route("history/{code}")]
+        public async Task<IActionResult> DeleteHistory(string code)
+        {
+            await QueryManager.History.Delete(code);
+            return Ok();
+        }
     }
 }

@@ -345,7 +345,7 @@
                         elevation="2"
                         class="ml-3"
                         v-on="on"
-                        @click.stop="copySql()"
+                        @click.stop="deleteHistory()"
                       >
                         <v-icon color="red" small class="mr-1"
                           >mdi-delete-forever</v-icon
@@ -400,9 +400,7 @@ export default Vue.extend({
       this.fetchHistory();
     },
     show: function (showForm: boolean) {
-      if (showForm && this.queryHistory == null) {
-        this.fetchHistory();
-      }
+      this.fetchHistory();
     },
   },
   methods: {
@@ -452,13 +450,15 @@ export default Vue.extend({
         .getRowNode(this.gridApi.getFocusedCell().rowIndex.toString())
         .setSelected(true, true);
     },
-    fetchHistory() {
-      store.dispatch("fetchHistory", {
+    async fetchHistory() {
+      await store.dispatch("fetchHistory", {
         sql: this.search,
         showErrors: this.showErrors,
         showFavorites: this.showFavorites,
         showNamedQueries: this.showNamedQueries,
       } as QueryHistoryQuery);
+
+      this.gridApi.selectIndex(0, false, false);
     },
     copySql() {
       const el = document.getElementById("sql-copy") as HTMLInputElement;
@@ -474,6 +474,10 @@ export default Vue.extend({
     pasteSql() {
       store.dispatch("pasteSqlInActiveTab", this.sql);
       this.close();
+    },
+    async deleteHistory() {
+      await store.dispatch("deleteHistory", this.code);
+      this.fetchHistory();
     },
     updateFavorite() {
       this.queryHistory!.star = !this.queryHistory!.star;
