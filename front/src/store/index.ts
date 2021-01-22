@@ -220,16 +220,16 @@ export default new Vuex.Store({
       (context.getters.activeQueryTab as QueryTabContent)?.editor?.trigger('keyboard', 'type', { text: sql + ' ' });
     },
     updateHistoryFavorite: async (context, queryHistory: { code: string, star: boolean }) => {
-      await http.post<void>(`${BASE_URL}/sequel/history/favorites/${queryHistory.code}`, { star: queryHistory.star });
+      await http.post<void>(`${BASE_URL}/sequel/history/${queryHistory.code}/favorite`, { star: queryHistory.star });
       const msg = queryHistory.star ? "Added to the favorites" : "Removed from the favorites";
       context.dispatch("showAppSnackbar", { message: msg, color: "success" } as AppSnackbar);
     },
     updateHistoryName: async (context, queryHistory: { code: string, name: string }) => {
-      await http.post<void>(`${BASE_URL}/sequel/history/names/${queryHistory.code}`, { name: queryHistory.name });
+      await http.post<void>(`${BASE_URL}/sequel/history/${queryHistory.code}/name`, { name: queryHistory.name });
       context.dispatch("showAppSnackbar", { message: "Query name updated", color: "success" } as AppSnackbar);
     },
     updateHistoryKeywords: async (context, queryHistory: { code: string, keywords: string[] }) => {
-      await http.post<void>(`${BASE_URL}/sequel/history/keywords/${queryHistory.code}`, { keywords: queryHistory.keywords });
+      await http.post<void>(`${BASE_URL}/sequel/history/${queryHistory.code}/keywords`, { keywords: queryHistory.keywords });
       context.dispatch("showAppSnackbar", { message: "Query topics updated", color: "success" } as AppSnackbar);
     },
     deleteHistory: async (context, code: string) => {

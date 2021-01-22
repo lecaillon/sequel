@@ -198,7 +198,7 @@ namespace Sequel.Controllers
         }
 
         [HttpPost]
-        [Route("history/favorites/{code}")]
+        [Route("history/{code}/favorite")]
         public async Task<IActionResult> UpdateHistoryFavorite(string code, QueryHistoryQuery query)
         {
             await QueryManager.History.UpdateFavorite(code, query.Star);
@@ -206,7 +206,7 @@ namespace Sequel.Controllers
         }
 
         [HttpPost]
-        [Route("history/names/{code}")]
+        [Route("history/{code}/name")]
         public async Task<IActionResult> UpdateHistoryName(string code, QueryHistoryQuery query)
         {
             await QueryManager.History.UpdateName(code, query.Name);
@@ -214,7 +214,7 @@ namespace Sequel.Controllers
         }
 
         [HttpPost]
-        [Route("history/keywords/{code}")]
+        [Route("history/{code}/keywords")]
         public async Task<IActionResult> UpdateHistoryKeywords(string code, QueryHistoryQuery query)
         {
             await QueryManager.History.UpdateKeywords(code, query.Keywords);
