@@ -287,6 +287,7 @@ namespace Sequel.Models
     public class QueryHistoryQuery
     {
         // Filter
+        public DBMS? Dbms { get; set; }
         public string? Sql { get; set; }
         public bool ShowErrors { get; set; }
         public bool ShowFavorites { get; set; }

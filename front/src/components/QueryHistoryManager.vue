@@ -16,7 +16,7 @@
         <v-toolbar-title>Query history</v-toolbar-title>
         <v-spacer></v-spacer>
 
-        <v-btn-toggle dense group>
+        <v-btn-toggle dense group v-model="showDbms">
           <v-btn>
             <v-avatar size="22" tile>
               <v-img :src="require('../assets/db/PostgreSQL.png')"></v-img>
@@ -391,6 +391,7 @@ export default Vue.extend({
     sql: "" as string,
     code: "" as string,
     queryHistory: null as QueryHistory | null,
+    showDbms: undefined as number | undefined,
     showErrors: false as boolean,
     showFavorites: false as boolean,
     showNamedQueries: false as boolean,
@@ -400,6 +401,9 @@ export default Vue.extend({
       this.fetchHistory();
     },
     show: function (showForm: boolean) {
+      this.fetchHistory();
+    },
+    showDbms: function () {
       this.fetchHistory();
     },
   },
@@ -451,7 +455,24 @@ export default Vue.extend({
         .setSelected(true, true);
     },
     async fetchHistory() {
+      let dbms: string;
+      switch (this.showDbms) {
+        case 0:
+          dbms = "PostgreSQL";
+          break;
+        case 1:
+          dbms = "SQLServer";
+          break;
+        case 2:
+          dbms = "SQLite";
+          break;
+        default:
+          dbms = "";
+          break;
+      }
+
       await store.dispatch("fetchHistory", {
+        dbms: dbms,
         sql: this.search,
         showErrors: this.showErrors,
         showFavorites: this.showFavorites,

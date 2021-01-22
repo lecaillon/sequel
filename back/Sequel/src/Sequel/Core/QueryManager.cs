@@ -352,7 +352,11 @@ namespace Sequel.Core
             private static string BuildWhereClause(QueryHistoryQuery query)
             {
                 string sql = "";
-                if (query.Sql != null)
+                if (query.Dbms is not null)
+                {
+                    sql += $" {WhereOrAnd()} type = {(int)query.Dbms} ";
+                }
+                if (query.Sql is not null)
                 {
                     sql += $" {WhereOrAnd()} sql LIKE '%{query.Sql}%' ";
                 }
