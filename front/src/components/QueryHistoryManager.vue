@@ -86,7 +86,7 @@
           dense
           clearable
           hide-details
-          label="Filter SQL statements"
+          label="Search by name, topic, environment, database, sql"
           prepend-inner-icon="mdi-magnify"
           style="max-width: 400px"
           class="ml-1"
@@ -336,7 +336,7 @@
                         <span>Paste</span>
                       </v-btn>
                     </template>
-                    <span>Paste in active tab</span>
+                    <span>Paste in new tab</span>
                   </v-tooltip>
 
                   <v-tooltip bottom>
