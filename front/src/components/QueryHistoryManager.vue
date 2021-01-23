@@ -210,7 +210,7 @@
                           </v-col>
 
                           <v-col cols="6" md="4" align-self="center">
-                            <v-chip label small outlined color="red">
+                            <v-chip label small outlined :color="getChipColor(stat.environment)">
                               {{ stat.environment }}
                             </v-chip>
                           </v-col>
@@ -371,6 +371,7 @@ import store from "@/store";
 import { AppSnackbar } from "@/models/appSnackbar";
 import { QueryHistoryQuery } from "@/models/queryHistoryQuery";
 import { QueryHistory } from "@/models/queryHistory";
+import { ColorByEnvironment } from "@/appsettings";
 import DataGrid from "@/components/DataGrid.vue";
 import { GridApi, RefreshCellsParams } from "ag-grid-community";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
@@ -537,6 +538,9 @@ export default Vue.extend({
         force: true,
         suppressFlash: true,
       } as RefreshCellsParams);
+    },
+    getChipColor(environment: string) {
+      return ColorByEnvironment[environment];
     },
   },
   computed: {
