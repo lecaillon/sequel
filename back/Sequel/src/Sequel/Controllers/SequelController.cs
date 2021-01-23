@@ -166,11 +166,11 @@ namespace Sequel.Controllers
         private static readonly List<ColumnDefinition> QueryHistoryColumns = new List<ColumnDefinition>
         {
             new ColumnDefinition("code", "text", "Code") { Hide = true },
-            new ColumnDefinition("star", "bool", "Favorite") { Editable = false, Filter = false, CellRenderer = "cellRendererStar" },
-            new ColumnDefinition("type", "text", "DBMS") { Editable = false, Filter = false, CellRenderer = "cellRendererDbms" },
-            new ColumnDefinition("status", "text", "Status") { Editable = false, Filter = false, CellRenderer = "cellRendererQueryStatus" },
-            new ColumnDefinition("executionCount", "int", "Execution Count") { Editable = false, Filter = false },
-            new ColumnDefinition("lastExecutedOn", "date", "Executed On") { Editable = false, ValueFormatter = "new Date(value).toLocaleDateString()" },
+            new ColumnDefinition("star", "bool", "Favorite") { Editable = false, Filter = false, CellRenderer = "cellRendererStar", Width = 51 },
+            new ColumnDefinition("type", "text", "DBMS") { Editable = false, Filter = false, CellRenderer = "cellRendererDbms", Width = 55 },
+            new ColumnDefinition("status", "text", "Status") { Editable = false, Filter = false, CellRenderer = "cellRendererQueryStatus", Width = 51 },
+            new ColumnDefinition("executionCount", "int", "Execution Count") { Editable = false, Filter = false, Width = 59 },
+            new ColumnDefinition("lastExecutedOn", "date", "Executed On") { Editable = false, ValueFormatter = "new Date(value).toLocaleDateString()", Width = 115 },
             new ColumnDefinition("lastEnvironment", "text", "Environment") { Editable = false, Filter = false },
             new ColumnDefinition("lastDatabase", "text", "Database") { Editable = false, Filter = false },
             new ColumnDefinition("name", "text", "Name") { Editable = false, Filter = false },

@@ -249,7 +249,7 @@ namespace Sequel.Models
             LastEnvironment = query.Server.Environment.ToString();
             LastDatabase = query.Database;
 
-            Stats.Add(new (response.Status,
+            Stats.Add(new(response.Status,
                            LastExecutedOn,
                            LastEnvironment,
                            LastDatabase,
@@ -301,7 +301,7 @@ namespace Sequel.Models
 
     public class ColumnDefinition
     {
-        static readonly HashSet<string> NumericSqlTypes = new HashSet<string> 
+        static readonly HashSet<string> NumericSqlTypes = new HashSet<string>
         {
             "smallint", "integer", "bigint", "numeric", "real", "double precision", "smallserial", "serial",
             "bigserial", "bigint", "bit", "decimal", "int", "money", "smallmoney", "tinyint", "float", "real"
@@ -324,12 +324,25 @@ namespace Sequel.Models
         public bool Editable { get; set; } = true;
         public bool Resizable { get; set; } = true;
         public bool Hide { get; set; } = false;
-        public int? Width => SqlType.ToLower() switch
+        private int? _width = null;
+        public int? Width
         {
-            "jsonb" => 200,
-            "uuid" => 150,
-            _ => null
-        };
+            get
+            {
+                if (_width is not null)
+                {
+                    return _width;
+                }
+                return SqlType.ToLower() switch
+                {
+                    "jsonb" => 200,
+                    "uuid" => 150,
+                    _ => null
+                };
+            }
+            set { _width = value; }
+        }
+
         public string? CellRenderer { get; set; }
         public string? ValueFormatter { get; set; }
         private object? _filter = null;
