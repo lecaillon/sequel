@@ -189,7 +189,7 @@ namespace Sequel.Models
 
     public class QueryHistory
     {
-        public QueryHistory(string code, QueryResponseStatus status, DBMS type, string sql, bool star, int executionCount, DateTime lastExecutedOn, string lastEnvironment, string lastDatabase, string? name, string? keywords)
+        public QueryHistory(string code, QueryResponseStatus status, DBMS type, string sql, bool star, int executionCount, DateTime lastExecutedOn, string lastEnvironment, string lastDatabase, string? name, string? topics)
         {
             Code = Check.NotNullOrEmpty(code, nameof(code));
             Status = status;
@@ -201,7 +201,7 @@ namespace Sequel.Models
             LastEnvironment = lastEnvironment;
             LastDatabase = lastDatabase;
             Name = name;
-            Keywords = string.IsNullOrWhiteSpace(keywords) ? new() : keywords.Split(';').ToList();
+            Topics = string.IsNullOrWhiteSpace(topics) ? new() : topics.Split(QueryHistoryManager.TopicSeparator, StringSplitOptions.RemoveEmptyEntries).ToList();
         }
 
         public string Code { get; }
@@ -214,7 +214,7 @@ namespace Sequel.Models
         public string LastEnvironment { get; private set; }
         public string LastDatabase { get; private set; }
         public string? Name { get; }
-        public List<string> Keywords { get; }
+        public List<string> Topics { get; }
 
         public List<QueryHistoryStat> Stats { get; } = new();
 
@@ -232,7 +232,7 @@ namespace Sequel.Models
                                            lastEnvironment: query.Server.Environment.ToString(),
                                            lastDatabase: query.Database,
                                            name: null,
-                                           keywords: null);
+                                           topics: null);
 
             history.UpdateStatistics(query, response);
             return history;
@@ -288,7 +288,7 @@ namespace Sequel.Models
     {
         // Filter
         public DBMS? Dbms { get; set; }
-        public string? Sql { get; set; }
+        public string? Terms { get; set; }
         public bool ShowErrors { get; set; }
         public bool ShowFavorites { get; set; }
         public bool ShowNamedQueries { get; set; }
@@ -296,8 +296,10 @@ namespace Sequel.Models
         // Update
         public bool Star { get; set; }
         public string? Name { get; set; }
-        public List<string> Keywords { get; set; } = new();
+        public List<string> Topics { get; set; } = new();
     }
+
+    public record QueryHistoryTerm(QueryHistoryTermKind Kind, string? Name, string? Icon, bool Divider);
 
     public class ColumnDefinition
     {

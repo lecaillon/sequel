@@ -17,6 +17,7 @@ namespace Sequel.Controllers
     {
         private readonly IMemoryCache _cache;
         private static readonly MemoryCacheEntryOptions CodeLensCacheEntryOptions = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(1));
+        private const string TermsCacheKey = "Terms";
 
         public SequelController(IMemoryCache cache)
         {
@@ -182,9 +183,11 @@ namespace Sequel.Controllers
         {
             var response = new QueryResponseContext("id-history");
             response.Columns.AddRange(QueryHistoryColumns);
+
             try
             {
-                var history = await QueryManager.History.Load(query ?? new QueryHistoryQuery());
+                var history = await QueryHistoryManager.Search(query: query ?? new QueryHistoryQuery(), 
+                                                               terms: _cache.Get<List<QueryHistoryTerm>>(TermsCacheKey) ?? new());
                 response.Rows.AddRange(history);
                 response.Status = QueryResponseStatus.Succeeded;
             }
@@ -201,7 +204,7 @@ namespace Sequel.Controllers
         [Route("history/{code}/favorite")]
         public async Task<IActionResult> UpdateHistoryFavorite(string code, QueryHistoryQuery query)
         {
-            await QueryManager.History.UpdateFavorite(code, query.Star);
+            await QueryHistoryManager.UpdateFavorite(code, query.Star);
             return Ok();
         }
 
@@ -209,24 +212,37 @@ namespace Sequel.Controllers
         [Route("history/{code}/name")]
         public async Task<IActionResult> UpdateHistoryName(string code, QueryHistoryQuery query)
         {
-            await QueryManager.History.UpdateName(code, query.Name);
+            await QueryHistoryManager.UpdateName(code, query.Name);
             return Ok();
         }
 
         [HttpPost]
-        [Route("history/{code}/keywords")]
-        public async Task<IActionResult> UpdateHistoryKeywords(string code, QueryHistoryQuery query)
+        [Route("history/{code}/topics")]
+        public async Task<ActionResult<bool>> UpdateHistoryTopics(string code, QueryHistoryQuery query)
         {
-            await QueryManager.History.UpdateKeywords(code, query.Keywords);
-            return Ok();
+            return Ok(await QueryHistoryManager.UpdateTopics(code, query.Topics));
         }
 
         [HttpDelete]
         [Route("history/{code}")]
         public async Task<IActionResult> DeleteHistory(string code)
         {
-            await QueryManager.History.Delete(code);
+            await QueryHistoryManager.Delete(code);
             return Ok();
+        }
+
+        [HttpGet]
+        [Route("history/topics")]
+        public async Task<ActionResult<List<string>>> GetAllTopics()
+        {
+            return Ok(await QueryHistoryManager.LoadTopics());
+        }
+
+        [HttpGet]
+        [Route("history/terms")]
+        public async Task<ActionResult<List<QueryHistoryTerm>>> GetAllTerms()
+        {
+            return Ok(_cache.Set(TermsCacheKey, await QueryHistoryManager.LoadTerms()));
         }
     }
 }

@@ -12,6 +12,7 @@ import { AppSnackbar } from "@/models/appSnackbar";
 import { QueryTabContent } from "@/models/queryTabContent";
 import { QueryHistoryContent } from "@/models/queryHistoryContent";
 import { QueryHistoryQuery } from "@/models/queryHistoryQuery";
+import { QueryHistoryTerm } from "@/models/queryHistoryTerm";
 import { TreeViewMenuItem } from "@/models/treeViewMenuItem";
 import { v4 as uuidv4 } from "uuid";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
@@ -23,7 +24,7 @@ export default new Vuex.Store({
   state: {
     appSnackbar: {} as AppSnackbar,
     servers: [] as ServerConnection[],
-    activeServer: {} as ServerConnection,
+    activeServer: {} as ServerConnection | null,
     editServer: {} as ServerConnection,
     databases: [] as string[],
     activeDatabase: {} as string,
@@ -33,6 +34,8 @@ export default new Vuex.Store({
     activeQueryTabIndex: {} as number,
     queryTabs: [] as QueryTabContent[],
     history: {} as QueryHistoryContent,
+    historyTopics: [] as string[],
+    historyTerms: [] as QueryHistoryTerm[],
     isQueryHistoryManagerOpened: false as boolean,
     snippets: [] as monaco.languages.CompletionItem[]
   },
@@ -83,7 +86,7 @@ export default new Vuex.Store({
       context.commit("setEditServer", server);
     },
     fetchDatabases: async context => {
-      if (context.state.activeServer === undefined) {
+      if (context.state.activeServer == null) {
         context.commit("setDatabases", []);
       } else {
         const databases = await http.post<string[]>(`${BASE_URL}/sequel/databases`, context.state.activeServer);
@@ -117,11 +120,19 @@ export default new Vuex.Store({
         context.commit("setHistory", { loading: true } as QueryHistoryContent);
         const params = new URLSearchParams(Object.entries(query));
         const response = await http.get<QueryResponseContext>(`${BASE_URL}/sequel/history?` + params.toString());
-        context.commit("setHistory", { response: { columns: response.columns, rows: response.rows }, loading: false } as QueryHistoryContent);
+        context.commit("setHistory", { response: { columns: response.columns, rows: response.rows, rowCount: response.rowCount }, loading: false } as QueryHistoryContent);
       }
       catch (Error) {
-        context.commit("setHistory", { response: { columns: new Array<any>(), rows: new Array<any>() }, loading: false } as QueryHistoryContent);
+        context.commit("setHistory", { response: { columns: new Array<any>(), rows: new Array<any>(), rowCount: 0 }, loading: false } as QueryHistoryContent);
       }
+    },
+    fetchHistoryTopics: async context => {
+      const topics = await http.get<string[]>(`${BASE_URL}/sequel/history/topics`);
+      context.commit("setHistoryTopics", topics);
+    },
+    fetchHistoryTerms: async context => {
+      const terms = await http.get<QueryHistoryTerm[]>(`${BASE_URL}/sequel/history/terms`);
+      context.commit("setHistoryTerms", terms);
     },
     fetchTreeViewNodes: async (context, parent: TreeViewNode) => {
       if (context.state.activeDatabase === undefined || Object.keys(context.state.activeDatabase).length === 0) {
@@ -227,10 +238,15 @@ export default new Vuex.Store({
     },
     updateHistoryName: async (context, queryHistory: { code: string, name: string }) => {
       await http.post<void>(`${BASE_URL}/sequel/history/${queryHistory.code}/name`, { name: queryHistory.name });
+      context.dispatch("fetchHistoryTerms");
       context.dispatch("showAppSnackbar", { message: "Query name updated", color: "success" } as AppSnackbar);
     },
-    updateHistoryKeywords: async (context, queryHistory: { code: string, keywords: string[] }) => {
-      await http.post<void>(`${BASE_URL}/sequel/history/${queryHistory.code}/keywords`, { keywords: queryHistory.keywords });
+    updateHistoryTopics: async (context, queryHistory: { code: string, topics: string[] }) => {
+      const newTopic = await http.post<boolean>(`${BASE_URL}/sequel/history/${queryHistory.code}/topics`, { topics: queryHistory.topics });
+      if (newTopic) {
+        context.dispatch("fetchHistoryTopics");
+        context.dispatch("fetchHistoryTerms");
+      }
       context.dispatch("showAppSnackbar", { message: "Query topics updated", color: "success" } as AppSnackbar);
     },
     deleteHistory: async (context, code: string) => {
@@ -296,6 +312,12 @@ export default new Vuex.Store({
         return;
       }
       state.history = history;
+    },
+    setHistoryTopics(state, topics: string[]) {
+      state.historyTopics = topics;
+    },
+    setHistoryTerms(state, terms: QueryHistoryTerm[]) {
+      state.historyTerms = terms;
     },
     clearNodes(state) {
       state.nodes = [];

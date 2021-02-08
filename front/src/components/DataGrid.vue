@@ -64,6 +64,7 @@ export default Vue.extend({
           .filter(x => x.width === null)
           .map(x => x.colId)
       );
+      this.$emit("model-updated", this.gridApi);
     },
     onSelectionChanged() {
       this.$emit("selection-changed", this.gridApi);

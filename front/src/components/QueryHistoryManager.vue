@@ -16,6 +16,8 @@
         <v-toolbar-title>Query history</v-toolbar-title>
         <v-spacer></v-spacer>
 
+        <v-divider vertical inset />
+
         <v-btn-toggle dense group v-model="showDbms">
           <v-btn>
             <v-avatar size="22" tile>
@@ -34,6 +36,8 @@
           </v-btn>
         </v-btn-toggle>
 
+        <v-divider vertical inset />
+
         <v-btn-toggle dense group multiple>
           <v-tooltip bottom>
             <template v-slot:activator="{ on }">
@@ -44,7 +48,7 @@
                   fetchHistory();
                 "
               >
-                <v-icon color="grey lighten-2">mdi-playlist-remove</v-icon>
+                <v-icon color="grey lighten-4">mdi-playlist-remove</v-icon>
               </v-btn>
             </template>
             <span>Show failed queries only</span>
@@ -58,7 +62,7 @@
                   fetchHistory();
                 "
               >
-                <v-icon color="grey lighten-2">mdi-playlist-star</v-icon>
+                <v-icon color="grey lighten-4">mdi-playlist-star</v-icon>
               </v-btn>
             </template>
             <span>Show favorites only</span>
@@ -72,25 +76,53 @@
                   fetchHistory();
                 "
               >
-                <v-icon color="grey lighten-2">mdi-playlist-check</v-icon>
+                <v-icon color="grey lighten-4">mdi-playlist-check</v-icon>
               </v-btn>
             </template>
             <span>Show named queryies only</span>
           </v-tooltip>
         </v-btn-toggle>
 
-        <v-text-field
+        <v-combobox
+          label="Search (sql, terms)"
           v-model="search"
+          :return-object="false"
+          :items="historyTerms"
+          @change="fetchHistory"
+          item-text="name"
+          multiple
           solo
           flat
           dense
           clearable
-          hide-details
-          label="Search by name, topic, environment, database, sql"
+          hide-details="auto"
           prepend-inner-icon="mdi-magnify"
-          style="max-width: 400px"
+          style="max-width: 500px"
           class="ml-1"
-        ></v-text-field>
+        >
+          <template v-slot:item="{ item }">
+            <v-list-item-avatar v-if="item.icon">
+              <v-avatar size="32" color="secondary">
+                <v-icon size="18"> {{ item.icon }} </v-icon>
+              </v-avatar>
+            </v-list-item-avatar>
+            <v-list-item-avatar v-else>
+              <v-avatar size="32" color="secondary">
+                {{ item.name.substring(0, 1).toUpperCase() }}
+              </v-avatar>
+            </v-list-item-avatar>
+            <v-list-item-content>
+              <v-list-item-title
+                v-html="item.name"
+                class="subtitle-2"
+              ></v-list-item-title>
+              <v-list-item-subtitle
+                v-html="item.kind"
+                class="font-weight-regular"
+              ></v-list-item-subtitle>
+            </v-list-item-content>
+          </template>
+        </v-combobox>
       </v-toolbar>
       <v-card-text class="pa-0 pr-1" style="height: calc(100% - 64px)">
         <v-container fluid fill-height class="pa-0">
@@ -102,9 +134,10 @@
                 :rows="history.response.rows"
                 :loading="history.loading"
                 style="min-height: 150px"
-                @created="gridCreated"
+                @created="onGridCreated"
                 @selection-changed="onSelectionChanged"
                 @cell-focused="onCellFocused"
+                @model-updated="onGridUpdated"
               ></data-grid>
             </v-col>
 
@@ -126,11 +159,12 @@
                     ></v-text-field>
                   </v-col>
 
-                  <v-col cols="12" md="7">
+                  <v-col cols="12" md="7" class="history">
                     <v-combobox
                       label="Topics"
-                      v-model="queryHistory.keywords"
-                      @change="updateKeywords"
+                      v-model="queryHistory.topics"
+                      :items="historyTopics"
+                      @change="updateTopics"
                       hide-details="auto"
                       single-line
                       clearable
@@ -141,12 +175,13 @@
                         v-slot:selection="{ attrs, item, select, selected }"
                       >
                         <v-chip
+                          color="secondary"
                           small
                           v-bind="attrs"
                           :input-value="selected"
                           close
                           @click="select"
-                          @click:close="removeKeyword(item)"
+                          @click:close="removeTopic(item)"
                         >
                           {{ item }}
                         </v-chip>
@@ -154,7 +189,7 @@
                     </v-combobox>
                   </v-col>
 
-                  <v-col cols="12" class="pb-4">
+                  <v-col cols="12" class="pb-5">
                     <v-window v-resize="onResize" show-arrows>
                       <v-window-item
                         v-for="(stat, i) in queryHistory.stats"
@@ -163,10 +198,11 @@
                         <v-row no-gutters>
                           <v-col cols="6" md="4">
                             <v-list-item two-line dense class="pl-0">
-                              <v-list-item-avatar size="26">
-                                <v-icon size="26"> mdi-calendar-alert </v-icon>
+                              <v-list-item-avatar size="24">
+                                <v-icon color="grey lighten-4" size="24">
+                                  {{ getStatusIcon(stat.status) }}
+                                </v-icon>
                               </v-list-item-avatar>
-
                               <v-list-item-content>
                                 <v-list-item-title
                                   class="font-weight-regular subtitle-2"
@@ -190,10 +226,11 @@
 
                           <v-col cols="6" md="4">
                             <v-list-item two-line dense class="pl-0">
-                              <v-list-item-avatar size="26">
-                                <v-icon size="26"> mdi-database </v-icon>
+                              <v-list-item-avatar size="25">
+                                <v-icon color="grey lighten-4" size="25">
+                                  mdi-database
+                                </v-icon>
                               </v-list-item-avatar>
-
                               <v-list-item-content>
                                 <v-list-item-title
                                   class="font-weight-regular subtitle-2"
@@ -210,7 +247,11 @@
                           </v-col>
 
                           <v-col cols="6" md="4" align-self="center">
-                            <v-chip label small outlined :color="getChipColor(stat.environment)">
+                            <v-chip
+                              small
+                              outlined
+                              :color="getEnvironmentColor(stat.environment)"
+                            >
                               {{ stat.environment }}
                             </v-chip>
                           </v-col>
@@ -218,9 +259,10 @@
                           <v-col cols="6" md="4">
                             <v-list-item two-line dense class="pl-0">
                               <v-list-item-avatar size="26">
-                                <v-icon size="26"> mdi-timer </v-icon>
+                                <v-icon color="grey lighten-4" size="26">
+                                  mdi-timer
+                                </v-icon>
                               </v-list-item-avatar>
-
                               <v-list-item-content>
                                 <v-list-item-title
                                   class="font-weight-regular subtitle-2"
@@ -236,12 +278,11 @@
 
                           <v-col cols="6" md="4">
                             <v-list-item two-line dense class="pl-0">
-                              <v-list-item-avatar size="26">
-                                <v-icon size="26">
+                              <v-list-item-avatar size="24">
+                                <v-icon color="grey lighten-4" size="24">
                                   mdi-format-list-numbered
                                 </v-icon>
                               </v-list-item-avatar>
-
                               <v-list-item-content>
                                 <v-list-item-title
                                   class="font-weight-regular subtitle-2"
@@ -258,7 +299,7 @@
                           <v-col cols="6" md="4">
                             <v-list-item two-line dense class="pl-0">
                               <v-list-item-avatar size="26">
-                                <v-icon size="26">
+                                <v-icon color="grey lighten-4" size="26">
                                   mdi-content-save-outline
                                 </v-icon>
                               </v-list-item-avatar>
@@ -281,7 +322,11 @@
                   </v-col>
                 </v-row>
 
-                <v-row v-if="queryHistory" class="pb-5" style="flex: 1 1 auto">
+                <v-row
+                  v-show="queryHistory"
+                  class="pb-5"
+                  style="flex: 1 1 auto"
+                >
                   <v-col cols="12" class="pl-0">
                     <v-sheet
                       tile
@@ -292,7 +337,7 @@
                 </v-row>
 
                 <v-row
-                  v-if="queryHistory"
+                  v-show="queryHistory"
                   dense
                   class="mr-2 mb-1"
                   style="flex: 0 1 auto"
@@ -386,8 +431,6 @@ export default Vue.extend({
   },
   data: () => ({
     editor: null as monaco.editor.IStandaloneCodeEditor | null,
-    debouncedSearch: "" as string,
-    timeout: null as number | null,
     gridApi: {} as GridApi,
     sql: "" as string,
     code: "" as string,
@@ -396,11 +439,9 @@ export default Vue.extend({
     showErrors: false as boolean,
     showFavorites: false as boolean,
     showNamedQueries: false as boolean,
+    search: [] as string[],
   }),
   watch: {
-    search: function () {
-      this.fetchHistory();
-    },
     show: function (showForm: boolean) {
       this.fetchHistory();
     },
@@ -415,7 +456,7 @@ export default Vue.extend({
     close() {
       this.$emit("close");
     },
-    gridCreated(id: string, grid: GridApi) {
+    onGridCreated(id: string, grid: GridApi) {
       this.gridApi = grid;
     },
     onSelectionChanged() {
@@ -455,6 +496,11 @@ export default Vue.extend({
         .getRowNode(this.gridApi.getFocusedCell().rowIndex.toString())
         .setSelected(true, true);
     },
+    onGridUpdated() {
+      if (this.history.response.rowCount == 0) {
+        this.queryHistory = null;
+      }
+    },
     async fetchHistory() {
       let dbms: string;
       switch (this.showDbms) {
@@ -474,7 +520,7 @@ export default Vue.extend({
 
       await store.dispatch("fetchHistory", {
         dbms: dbms,
-        sql: this.search,
+        terms: this.search,
         showErrors: this.showErrors,
         showFavorites: this.showFavorites,
         showNamedQueries: this.showNamedQueries,
@@ -516,20 +562,20 @@ export default Vue.extend({
       });
       this.refreshDatagrid();
     },
-    updateKeywords() {
-      store.dispatch("updateHistoryKeywords", {
+    updateTopics() {
+      store.dispatch("updateHistoryTopics", {
         code: this.code,
-        keywords: this.queryHistory?.keywords ?? "",
+        topics: this.queryHistory?.topics ?? "",
       });
     },
-    removeKeyword(item: any) {
-      if (this.queryHistory?.keywords != null) {
-        this.queryHistory.keywords.splice(
-          this.queryHistory.keywords.indexOf(item),
+    removeTopic(item: any) {
+      if (this.queryHistory?.topics != null) {
+        this.queryHistory.topics.splice(
+          this.queryHistory.topics.indexOf(item),
           1
         );
-        this.queryHistory.keywords = [...this.queryHistory.keywords];
-        this.updateKeywords();
+        this.queryHistory.topics = [...this.queryHistory.topics];
+        this.updateTopics();
       }
     },
     refreshDatagrid() {
@@ -539,23 +585,29 @@ export default Vue.extend({
         suppressFlash: true,
       } as RefreshCellsParams);
     },
-    getChipColor(environment: string) {
+    getEnvironmentColor(environment: string) {
       return ColorByEnvironment[environment];
+    },
+    getStatusIcon(status: string) {
+      console.log("psg");
+
+      if (status == "Succeeded") {
+        return "mdi-calendar-check";
+      } else if (status == "Failed") {
+        return "mdi-calendar-remove";
+      } else {
+        return "mdi-calendar-alert";
+      }
     },
   },
   computed: {
     history: () => store.state.history,
-    search: {
-      get() {
-        return this.debouncedSearch ?? "";
-      },
-      set(val: string) {
-        if (this.timeout) clearTimeout(this.timeout);
-        this.timeout = setTimeout(() => {
-          this.debouncedSearch = val;
-        }, 600);
-      },
-    },
+    historyTopics: () => store.state.historyTopics,
+    historyTerms: () => store.state.historyTerms,
+  },
+  created() {
+    store.dispatch("fetchHistoryTopics");
+    store.dispatch("fetchHistoryTerms");
   },
 });
 </script>
@@ -570,5 +622,8 @@ export default Vue.extend({
 }
 .theme--dark.v-chip::before {
   opacity: 0.08;
+}
+.v-autocomplete__content .v-list-item__title {
+  font-size: 13px;
 }
 </style>

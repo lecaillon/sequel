@@ -11,6 +11,6 @@ export interface QueryHistory {
     lastEnvironment: string,
     lastDatabase: string,
     name?: string,
-    keywords?: string[],
+    topics?: string[],
     stats: QueryHistoryStat[]
 }

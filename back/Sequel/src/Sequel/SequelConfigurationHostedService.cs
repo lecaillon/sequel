@@ -26,7 +26,8 @@ namespace Sequel
         {
             Directory.CreateDirectory(Program.RootDirectory);
 
-            await QueryManager.History.Configure();
+            await QueryHistoryManager.Optimize();
+            await QueryHistoryManager.Configure();
             await TreeViewMenuItem.ConfigureAsync();
             await Snippet.ConfigureAsync();
 
