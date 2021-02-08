@@ -6,6 +6,7 @@
       ></v-app-bar-nav-icon>
       <v-toolbar-title>Sequel</v-toolbar-title>
       <v-spacer></v-spacer>
+      <v-divider vertical inset />
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
           <v-btn
