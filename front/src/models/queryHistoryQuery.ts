@@ -1,5 +1,7 @@
 export interface QueryHistoryQuery {
-    sql: string,
+    dbms?: string,
+    terms?: string[],
     showErrors: boolean,
-    showFavorites: boolean
+    showFavorites: boolean,
+    showNamedQueries: boolean,
 }

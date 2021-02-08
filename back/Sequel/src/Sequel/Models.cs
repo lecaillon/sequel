@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Sequel.Core;
 using Sequel.Core.Parser;
-using Sequel.Databases;
 using static Sequel.TreeViewNodeType;
 
 namespace Sequel.Models
@@ -190,7 +189,7 @@ namespace Sequel.Models
 
     public class QueryHistory
     {
-        public QueryHistory(string code, QueryResponseStatus status, DBMS type, string sql, bool star, int executionCount, DateTime lastExecutedOn, string? name, string? keywords)
+        public QueryHistory(string code, QueryResponseStatus status, DBMS type, string sql, bool star, int executionCount, DateTime lastExecutedOn, string lastEnvironment, string lastDatabase, string? name, string? topics)
         {
             Code = Check.NotNullOrEmpty(code, nameof(code));
             Status = status;
@@ -199,8 +198,10 @@ namespace Sequel.Models
             Star = star;
             ExecutionCount = executionCount;
             LastExecutedOn = lastExecutedOn;
+            LastEnvironment = lastEnvironment;
+            LastDatabase = lastDatabase;
             Name = name;
-            Keywords = keywords?.Split(';').ToList() ?? new();
+            Topics = string.IsNullOrWhiteSpace(topics) ? new() : topics.Split(QueryHistoryManager.TopicSeparator, StringSplitOptions.RemoveEmptyEntries).ToList();
         }
 
         public string Code { get; }
@@ -210,10 +211,12 @@ namespace Sequel.Models
         public bool Star { get; }
         public int ExecutionCount { get; private set; }
         public DateTime LastExecutedOn { get; private set; }
+        public string LastEnvironment { get; private set; }
+        public string LastDatabase { get; private set; }
         public string? Name { get; }
-        public List<string> Keywords { get; }
+        public List<string> Topics { get; }
 
-        public List<QueryStat> Stats { get; } = new();
+        public List<QueryHistoryStat> Stats { get; } = new();
 
         public static string GetCode(string hash, DBMS type) => hash + (int)type;
 
@@ -226,8 +229,10 @@ namespace Sequel.Models
                                            star: false,
                                            executionCount: 0,
                                            lastExecutedOn: DateTime.Now,
+                                           lastEnvironment: query.Server.Environment.ToString(),
+                                           lastDatabase: query.Database,
                                            name: null,
-                                           keywords: null);
+                                           topics: null);
 
             history.UpdateStatistics(query, response);
             return history;
@@ -235,27 +240,28 @@ namespace Sequel.Models
 
         public void UpdateStatistics(QueryExecutionContext query, QueryResponseContext response)
         {
-            var now = DateTime.Now;
-
             if (Status != QueryResponseStatus.Succeeded)
             {
                 Status = response.Status;
             }
             ExecutionCount++;
-            LastExecutedOn = now;
-            Stats.Add(new (response.Status,
-                           executedOn: now,
-                           query.Server.Environment.ToString(),
-                           query.Database,
+            LastExecutedOn = DateTime.Now;
+            LastEnvironment = query.Server.Environment.ToString();
+            LastDatabase = query.Database;
+
+            Stats.Add(new(response.Status,
+                           LastExecutedOn,
+                           LastEnvironment,
+                           LastDatabase,
                            query.Server.Name,
                            response.Elapsed,
-                           response.RecordsAffected,
-                           response.RowCount));
+                           response.RowCount,
+                           response.RecordsAffected));
         }
 
-        public class QueryStat
+        public class QueryHistoryStat
         {
-            public QueryStat(QueryResponseStatus status, DateTime executedOn, string environment, string database, string serverConnection, long elapsed, int rowCount, int recordsAffected)
+            public QueryHistoryStat(QueryResponseStatus status, DateTime executedOn, string environment, string database, string serverConnection, long elapsed, int rowCount, int recordsAffected)
             {
                 Status = status;
                 ExecutedOn = executedOn;
@@ -280,15 +286,24 @@ namespace Sequel.Models
 
     public class QueryHistoryQuery
     {
-        public string? Sql { get; set; }
+        // Filter
+        public DBMS? Dbms { get; set; }
+        public string? Terms { get; set; }
         public bool ShowErrors { get; set; }
         public bool ShowFavorites { get; set; }
-        public bool Star { get; set; } // used to add or remove a favorite
+        public bool ShowNamedQueries { get; set; }
+
+        // Update
+        public bool Star { get; set; }
+        public string? Name { get; set; }
+        public List<string> Topics { get; set; } = new();
     }
+
+    public record QueryHistoryTerm(QueryHistoryTermKind Kind, string? Name, string? Icon, bool Divider);
 
     public class ColumnDefinition
     {
-        static readonly HashSet<string> NumericSqlTypes = new HashSet<string> 
+        static readonly HashSet<string> NumericSqlTypes = new HashSet<string>
         {
             "smallint", "integer", "bigint", "numeric", "real", "double precision", "smallserial", "serial",
             "bigserial", "bigint", "bit", "decimal", "int", "money", "smallmoney", "tinyint", "float", "real"
@@ -311,12 +326,25 @@ namespace Sequel.Models
         public bool Editable { get; set; } = true;
         public bool Resizable { get; set; } = true;
         public bool Hide { get; set; } = false;
-        public int? Width => SqlType.ToLower() switch
+        private int? _width = null;
+        public int? Width
         {
-            "jsonb" => 200,
-            "uuid" => 150,
-            _ => null
-        };
+            get
+            {
+                if (_width is not null)
+                {
+                    return _width;
+                }
+                return SqlType.ToLower() switch
+                {
+                    "jsonb" => 200,
+                    "uuid" => 150,
+                    _ => null
+                };
+            }
+            set { _width = value; }
+        }
+
         public string? CellRenderer { get; set; }
         public string? ValueFormatter { get; set; }
         private object? _filter = null;

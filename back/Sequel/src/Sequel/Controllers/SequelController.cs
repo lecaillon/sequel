@@ -17,6 +17,7 @@ namespace Sequel.Controllers
     {
         private readonly IMemoryCache _cache;
         private static readonly MemoryCacheEntryOptions CodeLensCacheEntryOptions = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(1));
+        private const string TermsCacheKey = "Terms";
 
         public SequelController(IMemoryCache cache)
         {
@@ -166,11 +167,13 @@ namespace Sequel.Controllers
         private static readonly List<ColumnDefinition> QueryHistoryColumns = new List<ColumnDefinition>
         {
             new ColumnDefinition("code", "text", "Code") { Hide = true },
-            new ColumnDefinition("star", "bool", "Favorite") { Editable = false, Filter = false, CellRenderer = "cellRendererStar" },
-            new ColumnDefinition("type", "text", "DBMS") { Editable = false, Filter = false, CellRenderer = "cellRendererDbms" },
-            new ColumnDefinition("status", "text", "Status") { Editable = false, Filter = false, CellRenderer = "cellRendererQueryStatus" },
-            new ColumnDefinition("executionCount", "int", "Execution Count") { Editable = false, Filter = false },
-            new ColumnDefinition("lastExecutedOn", "date", "Last execution") { Editable = false, ValueFormatter = "new Date(value).toLocaleDateString() + ' ' + new Date(value).toLocaleTimeString()" },
+            new ColumnDefinition("star", "bool", "Favorite") { Editable = false, Filter = false, CellRenderer = "cellRendererStar", Width = 51 },
+            new ColumnDefinition("type", "text", "DBMS") { Editable = false, Filter = false, CellRenderer = "cellRendererDbms", Width = 55 },
+            new ColumnDefinition("status", "text", "Status") { Editable = false, Filter = false, CellRenderer = "cellRendererQueryStatus", Width = 51 },
+            new ColumnDefinition("executionCount", "int", "Execution Count") { Editable = false, Filter = false, Width = 59 },
+            new ColumnDefinition("lastExecutedOn", "date", "Executed On") { Editable = false, ValueFormatter = "new Date(value).toLocaleDateString()", Width = 115 },
+            new ColumnDefinition("lastEnvironment", "text", "Environment") { Editable = false, Filter = false },
+            new ColumnDefinition("lastDatabase", "text", "Database") { Editable = false, Filter = false },
             new ColumnDefinition("name", "text", "Name") { Editable = false, Filter = false },
         };
 
@@ -180,9 +183,11 @@ namespace Sequel.Controllers
         {
             var response = new QueryResponseContext("id-history");
             response.Columns.AddRange(QueryHistoryColumns);
+
             try
             {
-                var history = await QueryManager.History.Load(query ?? new QueryHistoryQuery());
+                var history = await QueryHistoryManager.Search(query: query ?? new QueryHistoryQuery(), 
+                                                               terms: _cache.Get<List<QueryHistoryTerm>>(TermsCacheKey) ?? new());
                 response.Rows.AddRange(history);
                 response.Status = QueryResponseStatus.Succeeded;
             }
@@ -196,11 +201,48 @@ namespace Sequel.Controllers
         }
 
         [HttpPost]
-        [Route("history/favorites/{code}")]
+        [Route("history/{code}/favorite")]
         public async Task<IActionResult> UpdateHistoryFavorite(string code, QueryHistoryQuery query)
         {
-            await QueryManager.History.UpdateFavorite(code, query.Star);
+            await QueryHistoryManager.UpdateFavorite(code, query.Star);
             return Ok();
+        }
+
+        [HttpPost]
+        [Route("history/{code}/name")]
+        public async Task<IActionResult> UpdateHistoryName(string code, QueryHistoryQuery query)
+        {
+            await QueryHistoryManager.UpdateName(code, query.Name);
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("history/{code}/topics")]
+        public async Task<ActionResult<bool>> UpdateHistoryTopics(string code, QueryHistoryQuery query)
+        {
+            return Ok(await QueryHistoryManager.UpdateTopics(code, query.Topics));
+        }
+
+        [HttpDelete]
+        [Route("history/{code}")]
+        public async Task<IActionResult> DeleteHistory(string code)
+        {
+            await QueryHistoryManager.Delete(code);
+            return Ok();
+        }
+
+        [HttpGet]
+        [Route("history/topics")]
+        public async Task<ActionResult<List<string>>> GetAllTopics()
+        {
+            return Ok(await QueryHistoryManager.LoadTopics());
+        }
+
+        [HttpGet]
+        [Route("history/terms")]
+        public async Task<ActionResult<List<QueryHistoryTerm>>> GetAllTerms()
+        {
+            return Ok(_cache.Set(TermsCacheKey, await QueryHistoryManager.LoadTerms()));
         }
     }
 }

@@ -90,4 +90,14 @@ namespace Sequel
         TypeParameter = 24,
         Snippet = 25
     }
+
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum QueryHistoryTermKind
+    {
+        Environment,
+        Database,
+        Topic,
+        QueryName,
+        Divider
+    }
 }
