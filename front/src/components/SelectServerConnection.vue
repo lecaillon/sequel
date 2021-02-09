@@ -17,16 +17,16 @@
       <v-avatar size="24" tile left class="mr-2">
         <v-img :src="require('../assets/db/' + item.type + '.png')"></v-img>
       </v-avatar>
-      <v-chip label small :color="getChipColor(item)">
+      <v-chip small outlined :color="getChipColor(item)">
         {{ item.environment }}
       </v-chip>
       <span class="ms-3 caption">{{ item.name }}</span>
     </template>
     <template v-slot:item="{ item }">
-      <v-avatar size="24" tile left class="mr-2">
+      <v-avatar size="24" tile left class="mr-3">
         <v-img :src="require('../assets/db/' + item.type + '.png')"></v-img>
       </v-avatar>
-      <v-chip label small :color="getChipColor(item)">
+      <v-chip small outlined :color="getChipColor(item)">
         {{ item.environment }}
       </v-chip>
       <span class="ms-3 caption">{{ item.name }}</span>
