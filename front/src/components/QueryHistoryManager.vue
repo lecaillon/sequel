@@ -163,7 +163,9 @@
                     <v-combobox
                       label="Topics"
                       v-model="queryHistory.topics"
+                      :return-object="false"
                       :items="historyTopics"
+                      item-text="name"
                       @change="updateTopics"
                       hide-details="auto"
                       single-line
@@ -185,6 +187,19 @@
                         >
                           {{ item }}
                         </v-chip>
+                      </template>
+                      <template v-slot:item="{ item }">
+                        <v-list-item-avatar>
+                          <v-avatar size="32" color="secondary">
+                            <v-icon size="18"> {{ item.icon }} </v-icon>
+                          </v-avatar>
+                        </v-list-item-avatar>
+                        <v-list-item-content>
+                          <v-list-item-title
+                            v-html="item.name"
+                            class="subtitle-2"
+                          ></v-list-item-title>
+                        </v-list-item-content>
                       </template>
                     </v-combobox>
                   </v-col>

@@ -299,7 +299,7 @@ namespace Sequel.Models
         public List<string> Topics { get; set; } = new();
     }
 
-    public record QueryHistoryTerm(QueryHistoryTermKind Kind, string? Name, string? Icon, bool Divider);
+    public record QueryHistoryTerm(QueryHistoryTermKind Kind, string? Name, string? Header, string? Icon, bool Divider);
 
     public class ColumnDefinition
     {

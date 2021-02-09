@@ -272,6 +272,7 @@ namespace Sequel.Core
 
             var terms = await ServerConnection.QueryList(sql, r => new QueryHistoryTerm(
                 Kind: (QueryHistoryTermKind)r.GetInt32(0),
+                Header: null,
                 Name: r.GetString(1),
                 Icon: r.GetString(2),
                 Divider: false));
@@ -284,7 +285,7 @@ namespace Sequel.Core
                 {
                     if (currentTermKind != null)
                     {
-                        list.Add(new(QueryHistoryTermKind.Divider, Name: null, Icon: null, Divider: true));
+                        list.Add(new(QueryHistoryTermKind.Divider, Name: null, Header: null, Icon: null, Divider: true));
                     }
                     currentTermKind = term.Kind;
                 }
@@ -294,7 +295,14 @@ namespace Sequel.Core
             return list;
         }
 
-        public static async Task<IEnumerable<string>> LoadTopics() => await ServerConnection.QueryStringList("SELECT name FROM topic ORDER BY name");
+        public static async Task<List<QueryHistoryTerm>> LoadTopics()
+        {
+            var topics = await ServerConnection.QueryStringList("SELECT name FROM topic ORDER BY name");
+            var terms = new List<QueryHistoryTerm> { new QueryHistoryTerm(QueryHistoryTermKind.Topic, Name: null, Header: "Topics", Icon: null, Divider: false) };
+            terms.AddRange(topics.Select(x => new QueryHistoryTerm(QueryHistoryTermKind.Topic, Name: x, Header: null, Icon: "mdi-shape", Divider: false)));
+
+            return terms;
+        }
 
         private static async Task<QueryHistory?> LoadByCode(string code)
             => (await QueryList($"WHERE q.code = '{code}'")).FirstOrDefault();

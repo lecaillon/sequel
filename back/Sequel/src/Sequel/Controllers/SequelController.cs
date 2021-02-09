@@ -233,7 +233,7 @@ namespace Sequel.Controllers
 
         [HttpGet]
         [Route("history/topics")]
-        public async Task<ActionResult<List<string>>> GetAllTopics()
+        public async Task<ActionResult<List<QueryHistoryTerm>>> GetAllTopics()
         {
             return Ok(await QueryHistoryManager.LoadTopics());
         }

@@ -34,7 +34,7 @@ export default new Vuex.Store({
     activeQueryTabIndex: {} as number,
     queryTabs: [] as QueryTabContent[],
     history: {} as QueryHistoryContent,
-    historyTopics: [] as string[],
+    historyTopics: [] as QueryHistoryTerm[],
     historyTerms: [] as QueryHistoryTerm[],
     isQueryHistoryManagerOpened: false as boolean,
     snippets: [] as monaco.languages.CompletionItem[]
@@ -127,7 +127,7 @@ export default new Vuex.Store({
       }
     },
     fetchHistoryTopics: async context => {
-      const topics = await http.get<string[]>(`${BASE_URL}/sequel/history/topics`);
+      const topics = await http.get<QueryHistoryTerm[]>(`${BASE_URL}/sequel/history/topics`);
       context.commit("setHistoryTopics", topics);
     },
     fetchHistoryTerms: async context => {
@@ -313,7 +313,7 @@ export default new Vuex.Store({
       }
       state.history = history;
     },
-    setHistoryTopics(state, topics: string[]) {
+    setHistoryTopics(state, topics: QueryHistoryTerm[]) {
       state.historyTopics = topics;
     },
     setHistoryTerms(state, terms: QueryHistoryTerm[]) {
