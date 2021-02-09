@@ -6,8 +6,10 @@
     clearable
     solo
     open-on-clear
+    return-object
     :items="servers"
     :filter="customFilter"
+    item-text="name"
     @input="selected"
     class="caption"
   >
